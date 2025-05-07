@@ -33,9 +33,9 @@ try {
 // 데이터베이스 연결
 try {
     $pdo = new PDO(
-        "mysql:host={$_ENV['DB_HOST']};dbname={$_ENV['DB_DATABASE']};charset=utf8mb4",
-        $_ENV['DB_USERNAME'],
-        $_ENV['DB_PASSWORD'],
+        "mysql:host={$_ENV['DB_HOST']};dbname={$_ENV['DB_NAME']};charset=utf8mb4",
+        $_ENV['DB_USER'],
+        $_ENV['DB_PASS'],
         [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -101,8 +101,17 @@ if ($searchQuery !== '') {
     $searchResults = $resourceModel->searchResources($searchQuery, 10);
 }
 
+// Request 객체 생성
+$request = new \App\Core\Request();
+
 // 라우터 설정
-$router = new Router();
+$router = new Router($request);
+
+// Load bootstrap file
+require_once __DIR__ . '/../src/bootstrap.php';
+
+// Load router
+require_once __DIR__ . '/../src/routes.php';
 
 // 라우트 정의
 $routes = require __DIR__ . '/../src/routes.php';

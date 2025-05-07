@@ -58,7 +58,10 @@ if (!function_exists('is_youtube_url')) {
 </form>
 <?php if (!empty($resources)): ?>
     <ul class="list-group mb-4">
-    <?php foreach ($resources as $resource): ?>
+    <?php foreach (
+        isset(
+            $resources
+        ) ? $resources : [] as $resource): ?>
         <li class="list-group-item d-flex align-items-center<?php if (!empty($resource['is_pinned'])) echo ' bg-warning-subtle border-warning'; ?>" style="min-height: 120px;">
             <?php 
             $youtubeId = !empty($resource['url']) ? extractYoutubeId($resource['url']) : null;
@@ -72,12 +75,12 @@ if (!function_exists('is_youtube_url')) {
             <?php endif; ?>
             <div class="ms-3 flex-grow-1 d-flex flex-column justify-content-center" style="height:120px;">
                 <div class="resource-text-vertical flex-grow-1">
-                    <a href="/resources/show/<?php echo $resource['resource_id']; ?>" class="resource-link-block text-decoration-none text-dark">
+                    <a href="/resources/show/<?= htmlspecialchars($resource['resource_id']) ?>" class="resource-link-block text-decoration-none text-dark">
                         <div class="resource-title-fixed mb-1">
                             <?php if (!empty($resource['is_pinned'])): ?>
                                 <span class="badge bg-warning text-dark me-1">공지</span>
                             <?php endif; ?>
-                            <?php echo htmlspecialchars($resource['title']); ?>
+                            <?= htmlspecialchars($resource['title']) ?>
                         </div>
                         <div class="resource-summary-fixed">
                             <?php
@@ -94,15 +97,15 @@ if (!function_exists('is_youtube_url')) {
                 </div>
             </div>
             <div class="d-flex gap-2 ms-3 align-items-center">
-                <span class="badge bg-secondary"><?php echo htmlspecialchars($resource['source_type']); ?></span>
-                <a href="/resources/show/<?= $resource['resource_id'] ?>" class="btn btn-sm btn-primary">
+                <span class="badge bg-secondary"><?= htmlspecialchars($resource['source_type']) ?></span>
+                <a href="/resources/show/<?= htmlspecialchars($resource['resource_id']) ?>" class="btn btn-sm btn-primary">
                     <i class="bi bi-eye"></i> 보기
                 </a>
                 <?php if (is_admin()): ?>
-                <a href="/resources/edit/<?= $resource['resource_id'] ?>" class="btn btn-sm btn-secondary">
+                <a href="/resources/edit/<?= htmlspecialchars($resource['resource_id']) ?>" class="btn btn-sm btn-secondary">
                     <i class="bi bi-pencil"></i> 수정
                 </a>
-                <form action="/resources/toggle-visibility/<?= $resource['resource_id'] ?>" method="POST" class="d-inline">
+                <form action="/resources/toggle-visibility/<?= htmlspecialchars($resource['resource_id']) ?>" method="POST" class="d-inline">
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <button type="submit" class="btn btn-sm <?= $resource['is_public'] ? 'btn-success' : 'btn-warning' ?>">
                         <i class="bi bi-<?= $resource['is_public'] ? 'unlock' : 'lock' ?>"></i>

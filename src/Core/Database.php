@@ -8,7 +8,7 @@ use PDOException;
 class Database
 {
     private static $instance = null;
-    private $connection = null;
+    private $pdo;
     private $config = [];
     private $inTransaction = false;
     private $statementCache = [];
@@ -29,6 +29,20 @@ class Database
     {
         $this->loadConfig();
         $this->initializeConnectionPool();
+        try {
+            $this->pdo = new PDO(
+                "mysql:host=" . $this->config['host'] . ";dbname=" . $this->config['database'] . ";charset=utf8mb4",
+                $this->config['username'],
+                $this->config['password'],
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]
+            );
+        } catch (PDOException $e) {
+            throw new \Exception("데이터베이스 연결 오류: " . $e->getMessage());
+        }
     }
 
     public static function getInstance()
@@ -45,7 +59,16 @@ class Database
         $this->config = $app->getConfig('database');
         
         if (empty($this->config)) {
-            throw new \Exception("Database configuration not found");
+            error_log("Database configuration not found. Attempting to load directly...");
+            $dbConfigPath = dirname(__DIR__, 2) . '/config/database.php';
+            if (!file_exists($dbConfigPath)) {
+                throw new \Exception("Database configuration file not found at: " . $dbConfigPath);
+            }
+            $this->config = require $dbConfigPath;
+        }
+
+        if (empty($this->config)) {
+            throw new \Exception("Database configuration is empty");
         }
 
         // 설정에서 연결 풀 관련 값 로드
@@ -81,7 +104,7 @@ class Database
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
-                PDO::ATTR_PERSISTENT => false
+                PDO::ATTR_PERSISTENT => false // 반드시 false로 설정 (persistent와 ATTR_STATEMENT_CLASS는 함께 쓸 수 없음)
             ];
 
             $connection = new PDO(
@@ -176,31 +199,14 @@ class Database
         }
     }
 
-    public function query($sql, $params = [])
+    public function query($query, $params = [])
     {
         try {
-            $cacheKey = md5($sql . serialize($params));
-            
-            if (isset($this->statementCache[$cacheKey])) {
-                $stmt = $this->statementCache[$cacheKey];
-                $stmt->execute($params);
-                return $stmt;
-            }
-
-            $connection = $this->getConnection();
-            $stmt = $connection->prepare($sql);
+            $stmt = $this->pdo->prepare($query);
             $stmt->execute($params);
-
-            if (count($this->statementCache) >= $this->maxCacheSize) {
-                array_shift($this->statementCache);
-            }
-
-            $this->statementCache[$cacheKey] = $stmt;
-            $this->releaseConnection($connection);
-            
             return $stmt;
         } catch (PDOException $e) {
-            throw new \Exception("Query failed: " . $e->getMessage());
+            throw new \Exception("쿼리 실행 오류: " . $e->getMessage());
         }
     }
 
@@ -227,7 +233,7 @@ class Database
         );
 
         $this->query($sql, array_values($data));
-        return $this->connection->lastInsertId();
+        return $this->pdo->lastInsertId();
     }
 
     public function update($table, $data, $where, $whereParams = [])
@@ -255,49 +261,32 @@ class Database
 
     public function beginTransaction()
     {
-        if (!$this->inTransaction) {
-            $this->connection = $this->getConnection();
-            if (!$this->checkConnection($this->connection)) {
-                $this->connection = $this->getConnection();
-            }
-            $this->connection->beginTransaction();
-            $this->inTransaction = true;
-        }
+        return $this->pdo->beginTransaction();
     }
 
     public function commit()
     {
-        if ($this->inTransaction) {
-            $this->connection->commit();
-            $this->releaseConnection($this->connection);
-            $this->connection = null;
-            $this->inTransaction = false;
-        }
+        return $this->pdo->commit();
     }
 
     public function rollback()
     {
-        if ($this->inTransaction) {
-            $this->connection->rollBack();
-            $this->releaseConnection($this->connection);
-            $this->connection = null;
-            $this->inTransaction = false;
-        }
+        return $this->pdo->rollBack();
     }
 
     public function quote($value)
     {
-        return $this->connection->quote($value);
+        return $this->pdo->quote($value);
     }
 
     public function getLastInsertId()
     {
-        return $this->connection->lastInsertId();
+        return $this->pdo->lastInsertId();
     }
 
     public function getRowCount()
     {
-        return $this->connection->rowCount();
+        return $this->pdo->rowCount();
     }
 
     public function getConnectionPoolSize()
@@ -311,10 +300,7 @@ class Database
 
     public function lastInsertId()
     {
-        $connection = $this->getConnection();
-        $id = $connection->lastInsertId();
-        $this->releaseConnection($connection);
-        return $id;
+        return $this->pdo->lastInsertId();
     }
 
     public function getCache($key)
@@ -361,6 +347,16 @@ class Database
         return new QueryBuilder($this);
     }
 
+    public function getTables()
+    {
+        return $this->fetchAll("SHOW TABLES");
+    }
+
+    public function getTableStructure($table)
+    {
+        return $this->fetchAll("SHOW COLUMNS FROM `$table`");
+    }
+
     public function __destruct()
     {
         foreach ($this->connectionPool as $connection) {
@@ -371,5 +367,9 @@ class Database
         $this->currentPoolSize = 0;
         $this->statementCache = [];
         $this->queryCache = [];
+
+        if ($this->inTransaction) {
+            $this->rollback();
+        }
     }
 } 

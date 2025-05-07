@@ -11,10 +11,14 @@ abstract class BaseController {
     protected $request;
     protected $auth;
 
-    public function __construct() {
+    public function __construct(Request $request) {
         $this->response = new Response();
-        $this->request = new Request();
+        $this->request = $request;
         $this->auth = new Auth();
+    }
+
+    protected function json($data, $statusCode = 200) {
+        return $this->response->json($data, $statusCode);
     }
 
     protected function requireAuth() {

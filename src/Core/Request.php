@@ -122,12 +122,12 @@ class Request
         return rtrim($path, '/') ?: '/';
     }
 
-    public function getQuery($key = null)
+    public function get($key = null, $default = null)
     {
         if ($key === null) {
             return $this->get;
         }
-        return $this->get[$key] ?? null;
+        return $this->get[$key] ?? $default;
     }
 
     public function getPost($key = null)

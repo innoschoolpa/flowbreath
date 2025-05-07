@@ -11,32 +11,15 @@ namespace App\Models;
 use PDO;
 use PDOException;
 use Exception;
-use App\Models\BaseModel;
-use Config\Database;
+use App\Core\Database;
+use App\Core\Model;
 
-// Database 클래스가 이미 로드되었는지 확인
-if (!class_exists('Config\Database')) {
-    error_log("Database class not found, attempting to load database.php");
-    $databasePath = __DIR__ . '/../config/database.php';
-    if (!file_exists($databasePath)) {
-        error_log("Error: database.php not found at: " . $databasePath);
-        throw new Exception("Database configuration file not found at: " . $databasePath);
-    }
-    require_once $databasePath;
-}
-
-class Tag extends BaseModel {
-    protected string $table = 'tags';
-    protected array $fillable = ['tag_name'];
+class Tag extends Model {
+    protected $table = 'tags';
+    protected $fillable = ['name'];
 
     public function __construct() {
-        try {
-            $pdo = Database::getInstance()->getConnection();
-            parent::__construct($pdo);
-        } catch (Exception $e) {
-            error_log("Tag model initialization failed: " . $e->getMessage());
-            throw new Exception("Tag model initialization failed: " . $e->getMessage());
-        }
+        parent::__construct(Database::getInstance());
     }
     
     /**
@@ -45,9 +28,7 @@ class Tag extends BaseModel {
     public function findByName(string $name): ?array
     {
         try {
-            $stmt = $this->pdo->prepare("SELECT * FROM tags WHERE tag_name = ?");
-            $stmt->execute([$name]);
-            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+            return $this->db->fetch("SELECT * FROM tags WHERE name = ?", [$name]) ?: null;
         } catch (PDOException $e) {
             error_log("Tag::findByName error: " . $e->getMessage());
             return null;
@@ -63,19 +44,15 @@ class Tag extends BaseModel {
     public function create(array $data): ?array
     {
         try {
-            $this->pdo->beginTransaction();
+            $this->db->beginTransaction();
 
-            $sql = "INSERT INTO {$this->table} (name) VALUES (:name)";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute(['name' => $data['name']]);
+            $id = $this->db->insert($this->table, ['name' => $data['name']]);
             
-            $id = (int)$this->pdo->lastInsertId();
-            
-            $this->pdo->commit();
+            $this->db->commit();
             
             return $this->find($id);
         } catch (PDOException $e) {
-            $this->pdo->rollBack();
+            $this->db->rollback();
             error_log("Error in Tag::create: " . $e->getMessage());
             return null;
         }
@@ -87,9 +64,10 @@ class Tag extends BaseModel {
     public function search(string $query): array
     {
         try {
-            $stmt = $this->pdo->prepare("SELECT * FROM tags WHERE tag_name LIKE ? ORDER BY tag_name LIMIT 10");
-            $stmt->execute(["%$query%"]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $this->db->fetchAll(
+                "SELECT * FROM tags WHERE tag_name LIKE ? ORDER BY tag_name LIMIT 10",
+                ["%$query%"]
+            );
         } catch (PDOException $e) {
             error_log("Tag::search error: " . $e->getMessage());
             return [];
@@ -99,21 +77,20 @@ class Tag extends BaseModel {
     /**
      * 인기 태그 가져오기
      */
-    public function getPopularTags(int $limit = 20): array
+    public function getPopularTags($limit = 8)
     {
         try {
-            $sql = "SELECT t.tag_id, t.tag_name, COUNT(rt.resource_id) as count
+            $sql = "SELECT t.*, COUNT(rt.resource_id) as resource_count
                     FROM tags t
-                    JOIN resource_tags rt ON t.tag_id = rt.tag_id
-                    GROUP BY t.tag_id, t.tag_name
-                    ORDER BY count DESC
+                    LEFT JOIN resource_tags rt ON t.id = rt.tag_id
+                    GROUP BY t.id
+                    ORDER BY resource_count DESC
                     LIMIT ?";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$limit]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Tag::getPopularTags error: " . $e->getMessage());
-            return [];
+            
+            return $this->db->fetchAll($sql, [$limit]);
+        } catch (\PDOException $e) {
+            error_log("Error in getPopularTags: " . $e->getMessage());
+            throw new \Exception("인기 태그를 조회하는 중 오류가 발생했습니다.");
         }
     }
     
@@ -123,14 +100,14 @@ class Tag extends BaseModel {
     public function getByResourceId(int $resourceId): array
     {
         try {
-            $sql = "SELECT t.tag_id, t.tag_name 
-                    FROM tags t 
-                    JOIN resource_tags rt ON t.tag_id = rt.tag_id 
-                    WHERE rt.resource_id = ?
-                    ORDER BY t.tag_name";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$resourceId]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $this->db->fetchAll(
+                "SELECT t.tag_id, t.tag_name 
+                FROM tags t 
+                JOIN resource_tags rt ON t.tag_id = rt.tag_id 
+                WHERE rt.resource_id = ?
+                ORDER BY t.tag_name",
+                [$resourceId]
+            );
         } catch (PDOException $e) {
             error_log("Tag::getByResourceId error: " . $e->getMessage());
             return [];
@@ -143,8 +120,7 @@ class Tag extends BaseModel {
     public function getAll(): array
     {
         try {
-            $stmt = $this->pdo->query("SELECT * FROM tags ORDER BY tag_name");
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $this->db->fetchAll("SELECT * FROM tags ORDER BY tag_name");
         } catch (PDOException $e) {
             error_log("Tag::getAll error: " . $e->getMessage());
             return [];
@@ -154,23 +130,64 @@ class Tag extends BaseModel {
     /**
      * 태그 삭제
      */
-    public function delete(int $tagId): bool
+    public function delete(int $id): bool
     {
         try {
-            $this->pdo->beginTransaction();
+            $this->db->beginTransaction();
             
-            $stmt = $this->pdo->prepare("DELETE FROM resource_tags WHERE tag_id = ?");
-            $stmt->execute([$tagId]);
+            // 연관된 resource_tags 삭제
+            $this->db->delete('resource_tags', 'tag_id = ?', [$id]);
             
-            $stmt = $this->pdo->prepare("DELETE FROM tags WHERE tag_id = ?");
-            $result = $stmt->execute([$tagId]);
+            // 태그 삭제
+            $result = parent::delete($id);
             
-            $this->pdo->commit();
+            $this->db->commit();
             return $result;
         } catch (PDOException $e) {
-            $this->pdo->rollBack();
+            $this->db->rollback();
             error_log("Tag::delete error: " . $e->getMessage());
             return false;
+        }
+    }
+
+    public function findOrCreate($name)
+    {
+        try {
+            // 기존 태그 찾기
+            $sql = "SELECT * FROM tags WHERE name = ?";
+            $tag = $this->db->fetch($sql, [$name]);
+
+            if ($tag) {
+                return $tag;
+            }
+
+            // 새 태그 생성
+            $sql = "INSERT INTO tags (name, created_at) VALUES (?, NOW())";
+            $this->db->query($sql, [$name]);
+            
+            return [
+                'id' => $this->db->lastInsertId(),
+                'name' => $name
+            ];
+        } catch (\PDOException $e) {
+            error_log("Error in findOrCreate: " . $e->getMessage());
+            throw new \Exception("태그를 생성하는 중 오류가 발생했습니다.");
+        }
+    }
+
+    public function getResourceTags($resourceId)
+    {
+        try {
+            $sql = "SELECT t.*
+                    FROM tags t
+                    JOIN resource_tags rt ON t.id = rt.tag_id
+                    WHERE rt.resource_id = ?
+                    ORDER BY t.name";
+            
+            return $this->db->fetchAll($sql, [$resourceId]);
+        } catch (\PDOException $e) {
+            error_log("Error in getResourceTags: " . $e->getMessage());
+            throw new \Exception("리소스의 태그를 조회하는 중 오류가 발생했습니다.");
         }
     }
 }

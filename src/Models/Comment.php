@@ -38,6 +38,85 @@ $searchResults = [];
 if ($searchQuery !== '') {
     $searchResults = $resourceModel->searchResources($searchQuery, 10);
 }
+
+namespace App\Models;
+
+use App\Core\Database;
+
+class Comment
+{
+    private static function getDB()
+    {
+        return Database::getInstance();
+    }
+
+    public static function getResourceComments($resourceId, $limit = 10, $offset = 0)
+    {
+        $db = self::getDB();
+        $sql = "
+            SELECT c.*, u.name as user_name 
+            FROM comments c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.resource_id = ? AND c.parent_id IS NULL AND c.is_deleted = 0
+            ORDER BY c.created_at DESC
+            LIMIT ? OFFSET ?
+        ";
+        return $db->fetchAll($sql, [$resourceId, $limit, $offset]);
+    }
+
+    public static function getReplies($parentId, $limit = 5, $offset = 0)
+    {
+        $db = self::getDB();
+        $sql = "
+            SELECT c.*, u.name as user_name 
+            FROM comments c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.parent_id = ? AND c.is_deleted = 0
+            ORDER BY c.created_at ASC
+            LIMIT ? OFFSET ?
+        ";
+        return $db->fetchAll($sql, [$parentId, $limit, $offset]);
+    }
+
+    public static function countResourceComments($resourceId)
+    {
+        $db = self::getDB();
+        $sql = "SELECT COUNT(*) as count FROM comments WHERE resource_id = ? AND is_deleted = 0";
+        $result = $db->fetch($sql, [$resourceId]);
+        return $result['count'] ?? 0;
+    }
+
+    public static function findOrFail($id)
+    {
+        $db = self::getDB();
+        $sql = "SELECT * FROM comments WHERE id = ? AND is_deleted = 0";
+        $comment = $db->fetch($sql, [$id]);
+        
+        if (!$comment) {
+            throw new \Exception('댓글을 찾을 수 없습니다.');
+        }
+        
+        return $comment;
+    }
+
+    public static function create($data)
+    {
+        $db = self::getDB();
+        return $db->insert('comments', $data);
+    }
+
+    public static function update($id, $data)
+    {
+        $db = self::getDB();
+        return $db->update('comments', $data, 'id = ?', [$id]);
+    }
+
+    public static function softDelete($id)
+    {
+        $db = self::getDB();
+        return $db->update('comments', ['is_deleted' => 1], 'id = ?', [$id]);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ko">

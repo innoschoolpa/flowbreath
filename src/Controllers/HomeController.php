@@ -1,9 +1,13 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controllers;
 
 use App\Core\Response;
 use App\Core\Request;
+use App\Core\Language;
+use App\Core\Database;
+use App\Models\Resource;
+use App\Models\Tag;
 
 class HomeController
 {
@@ -20,11 +24,41 @@ class HomeController
         if (ob_get_level()) {
             ob_end_clean();
         }
+
+        // Language 객체 생성
+        $language = Language::getInstance();
+
+        // 최근 리소스
+        $resourceModel = new Resource();
+        $recentResources = $resourceModel->getRecentPublic(4);
+
+        // 인기 태그
+        $tagModel = new Tag();
+        $popularTags = $tagModel->getPopularTags(8);
+
+        // 로그인 상태
+        $isLoggedIn = isset($_SESSION['user']);
+        $user = $isLoggedIn ? $_SESSION['user'] : null;
+
+        // 검색 처리
+        $searchQuery = isset($_GET['q']) ? trim($_GET['q']) : '';
+        $searchResults = [];
+        if ($searchQuery !== '') {
+            try {
+                $searchResults = $resourceModel->searchResources($searchQuery, 10, 0);
+            } catch (\Exception $e) {
+                error_log("Search error: " . $e->getMessage());
+                $searchResults = [];
+            }
+        }
+
+        // 메인 페이지 HTML 생성
+        $html = $this->renderMainPage($language, $recentResources, $popularTags, $isLoggedIn, $user, $searchQuery, $searchResults);
         
         $response = new Response();
         $response->setContentType('text/html; charset=UTF-8');
         $response->setStatusCode(200);
-        $response->setContent($this->renderIndexPage());
+        $response->setContent($html);
         return $response;
     }
 
@@ -42,82 +76,16 @@ class HomeController
         return $response;
     }
 
-    private function renderIndexPage()
+    public function apiDocs()
     {
-        return <<<HTML
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowBreath.io</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #f8f9fa;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-        p {
-            color: #34495e;
-            margin-bottom: 15px;
-        }
-        .api-list {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 20px;
-        }
-        .api-list h2 {
-            color: #2c3e50;
-            margin-top: 0;
-        }
-        .api-list ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        .api-list li {
-            margin-bottom: 10px;
-            padding: 8px;
-            background-color: white;
-            border-radius: 4px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>FlowBreath.io에 오신 것을 환영합니다</h1>
-        <p>이 서비스는 API 엔드포인트를 제공합니다.</p>
-        
-        <div class="api-list">
-            <h2>사용 가능한 API 엔드포인트:</h2>
-            <ul>
-                <li><strong>GET /api/health</strong> - 서비스 상태 확인</li>
-                <li><strong>GET /api/test/error</strong> - 에러 테스트</li>
-                <li><strong>GET /api/test/warning</strong> - 경고 테스트</li>
-                <li><strong>GET /api/test/notice</strong> - 알림 테스트</li>
-                <li><strong>GET /api/test/memory</strong> - 메모리 테스트</li>
-                <li><strong>GET /api/test/performance</strong> - 성능 테스트</li>
-            </ul>
-        </div>
-    </div>
-</body>
-</html>
-HTML;
+        require dirname(__DIR__) . '/View/api/docs.php';
+    }
+
+    private function renderMainPage($language, $recentResources, $popularTags, $isLoggedIn, $user, $searchQuery, $searchResults)
+    {
+        ob_start();
+        include dirname(__DIR__, 2) . '/templates/home.php';
+        return ob_get_clean();
     }
 
     private function renderNotFoundPage()

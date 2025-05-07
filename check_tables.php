@@ -1,29 +1,25 @@
 <?php
-require_once __DIR__ . '/src/config/database.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
-use Config\Database;
+use App\Core\Database;
 
 try {
     $db = Database::getInstance();
-    $pdo = $db->getConnection();
-
+    
     // 테이블 목록 조회
-    $stmt = $pdo->query("SHOW TABLES");
-    $tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-    echo "Database Tables:\n";
-    echo str_repeat('-', 80) . "\n";
-
+    $tables = $db->getTables();
+    
+    echo "=== Database Tables ===\n";
     foreach ($tables as $table) {
-        echo "\nTable: $table\n";
-        echo str_repeat('-', 80) . "\n";
+        $tableName = reset($table); // 첫 번째 컬럼 값이 테이블 이름
+        echo "\nTable: $tableName\n";
+        echo "-------------------\n";
         
         // 테이블 구조 조회
-        $stmt = $pdo->query("DESCRIBE $table");
-        $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+        $columns = $db->getTableStructure($tableName);
         foreach ($columns as $column) {
-            printf("%-20s %-20s %-10s %-10s %-20s\n",
+            echo sprintf(
+                "Field: %-20s Type: %-15s Null: %-5s Key: %-5s Default: %s\n",
                 $column['Field'],
                 $column['Type'],
                 $column['Null'],
@@ -31,9 +27,7 @@ try {
                 $column['Default'] ?? 'NULL'
             );
         }
-        echo "\n";
     }
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
-    exit(1);
 } 

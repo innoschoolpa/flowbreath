@@ -1,159 +1,3 @@
-<?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-session_start();
-
-define('PROJECT_ROOT', __DIR__);
-
-// Composer Autoloader
-require_once PROJECT_ROOT . '/vendor/autoload.php';
-
-// .env 환경변수 로드
-if (file_exists(PROJECT_ROOT . '/.env')) {
-    $dotenv = Dotenv\Dotenv::createImmutable(PROJECT_ROOT);
-    $dotenv->load();
-}
-
-// --- 라우터 분기 추가 시작 ---
-require_once PROJECT_ROOT . '/src/Core/Router.php';
-require_once PROJECT_ROOT . '/src/Controllers/LanguageController.php';
-// 필요시 다른 컨트롤러도 require
-
-require_once PROJECT_ROOT . '/src/Core/Request.php';
-require_once PROJECT_ROOT . '/src/Core/Response.php';
-
-use App\Core\Request;
-use App\Core\Response;
-use App\Core\Router;
-
-$request = new Request();
-$uri = $request->getPath();
-$method = $request->getMethod();
-
-// 라우터 초기화 및 라우트 설정
-$router = new Router($request);
-$routes = require PROJECT_ROOT . '/src/routes.php';
-$routes($router);
-
-try {
-    // 라우트 처리
-    $result = $router->dispatch($method, $uri);
-    
-    // 응답 처리
-    if ($result instanceof Response) {
-        $result->send();
-    } else if (is_string($result)) {
-        echo $result;
-    } else {
-        throw new \Exception('Invalid response type', 500);
-    }
-} catch (\Exception $e) {
-    // 에러 처리
-    $response = new Response();
-    $response->setContentType('text/html; charset=UTF-8');
-    $response->setStatusCode($e->getCode() ?: 500);
-    
-    // 에러 페이지 HTML 생성
-    $errorHtml = <<<HTML
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error {$e->getCode()}</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #f8f9fa;
-        }
-        .error-container {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 500px;
-        }
-        h1 {
-            color: #e74c3c;
-            margin: 0 0 20px;
-        }
-        p {
-            color: #34495e;
-            margin: 0 0 20px;
-        }
-        .home-link {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-        .home-link:hover {
-            background-color: #2980b9;
-        }
-    </style>
-</head>
-<body>
-    <div class="error-container">
-        <h1>Error {$e->getCode()}</h1>
-        <p>{$e->getMessage()}</p>
-        <a href="/" class="home-link">홈으로 돌아가기</a>
-    </div>
-</body>
-</html>
-HTML;
-    
-    $response->setContent($errorHtml);
-    $response->send();
-}
-exit;
-// --- 라우터 분기 추가 끝 ---
-
-// DB 연결 (config/database.php 사용)
-require_once PROJECT_ROOT . '/config/database.php';
-$pdo = getDbConnection();
-
-// Language 객체 생성
-require_once PROJECT_ROOT . '/src/Core/Language.php';
-use App\Core\Language;
-$language = Language::getInstance();
-
-// 최근 리소스
-$resourceModel = new \App\Models\Resource();
-$recentResources = $resourceModel->getRecentPublic(4);
-
-// 인기 태그
-$tagModel = new \App\Models\Tag();
-$popularTags = $tagModel->getPopularTags(8);
-
-// 로그인 상태
-$isLoggedIn = isset($_SESSION['user']);
-$user = $isLoggedIn ? $_SESSION['user'] : null;
-
-// 검색 처리
-$searchQuery = isset($_GET['q']) ? trim($_GET['q']) : '';
-$searchResults = [];
-if ($searchQuery !== '') {
-    try {
-        $searchResults = $resourceModel->searchResources($searchQuery, 10, 0);
-    } catch (Exception $e) {
-        error_log("Search error: " . $e->getMessage());
-        $searchResults = [];
-    }
-}
-?>
 <!DOCTYPE html>
 <html lang="<?= isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko' ?>">
 <head>
@@ -235,7 +79,7 @@ if ($searchQuery !== '') {
                         <div class="card-body">
                             <h5 class="card-title mb-2"><?= htmlspecialchars($resource['title']) ?></h5>
                             <div class="resource-meta mb-2">
-                                <i class="fa fa-user"></i> <?= htmlspecialchars($resource['user_name'] ?? $language->get('common.anonymous')) ?> ·
+                                <i class="fa fa-user"></i> <?= htmlspecialchars($resource['username'] ?? $language->get('common.anonymous')) ?> ·
                                 <i class="fa fa-calendar"></i> <?= htmlspecialchars(substr($resource['created_at'],0,10)) ?>
                             </div>
                             <p class="card-text mb-2"><?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']),0,80,'...')) ?></p>
@@ -262,7 +106,7 @@ if ($searchQuery !== '') {
                         <div class="card-body">
                             <h5 class="card-title mb-2"><?= htmlspecialchars($resource['title']) ?></h5>
                             <div class="resource-meta mb-2">
-                                <i class="fa fa-user"></i> <?= htmlspecialchars($resource['user_name'] ?? $language->get('common.anonymous')) ?> ·
+                                <i class="fa fa-user"></i> <?= htmlspecialchars($resource['username'] ?? $language->get('common.anonymous')) ?> ·
                                 <i class="fa fa-calendar"></i> <?= htmlspecialchars(substr($resource['created_at'],0,10)) ?>
                             </div>
                             <p class="card-text mb-2"><?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']),0,120,'...')) ?></p>
@@ -294,4 +138,4 @@ if ($searchQuery !== '') {
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
+</html> 

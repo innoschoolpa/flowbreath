@@ -54,8 +54,11 @@ class Application
     private function loadFullConfig()
     {
         if (!isset($this->config['database'])) {
-            $dbConfig = require PROJECT_ROOT . '/config/database.php';
-            $this->config['database'] = $dbConfig;
+            $dbConfigPath = PROJECT_ROOT . '/config/database.php';
+            if (!file_exists($dbConfigPath)) {
+                throw new \Exception("Database configuration file not found at: " . $dbConfigPath);
+            }
+            $this->config['database'] = require $dbConfigPath;
 
             // 가비지 컬렉션 강제 실행
             if (function_exists('gc_collect_cycles')) {
@@ -72,8 +75,18 @@ class Application
         return self::$instance;
     }
 
+    private function debug($message) {
+        error_log($message);
+        if (php_sapi_name() !== 'cli') {
+            echo '<pre style="color:#c00;background:#fffbe6;padding:4px 8px;border:1px solid #f5c6cb;margin:2px 0;font-size:13px;z-index:9999;position:relative;">' . htmlspecialchars($message) . '</pre>';
+        } else {
+            echo $message . "\n";
+        }
+    }
+
     private function initialize()
     {
+        $this->debug('[DEBUG] Application::initialize() called');
         if (!$this->initialized) {
             $this->memoryManager->createCheckpoint('initialization_start');
             
@@ -105,11 +118,13 @@ class Application
 
     private function initializeComponents()
     {
+        $this->debug('[DEBUG] Application::initializeComponents() called');
         // 요청/응답 객체 초기화
         $this->request = new Request();
         
         // 라우터 초기화
         if ($this->router === null) {
+            $this->debug('[DEBUG] Initializing Router');
             $this->router = new Router($this->request);
             $routes = require PROJECT_ROOT . '/src/routes.php';
             if (is_callable($routes)) {
@@ -117,16 +132,26 @@ class Application
             }
         }
         
+        // 라우팅 매핑에서 controller 키가 없는 경우 예외 처리
+        if (!isset($this->container['controller'])) {
+            $this->debug('[DEBUG] Controller key is missing in the container.');
+            // 적절한 예외 처리 또는 기본 컨트롤러 지정
+            // throw new \Exception('Controller key is missing in the container.', 500);
+        }
+        
         // 필요한 컴포넌트만 초기화
         if (isset($this->config['database'])) {
+            $this->debug('[DEBUG] Initializing Database');
             $this->container['db'] = Database::getInstance();
         }
         
         // 세션 초기화
-        $this->container['session'] = new Session();
+        $this->debug('[DEBUG] Initializing Session');
+        $this->container['session'] = Session::getInstance();
         
         // 인증 관리자 초기화
-        $this->container['auth'] = new Auth();
+        $this->debug('[DEBUG] Initializing Auth');
+        $this->container['auth'] = Auth::getInstance();
 
         // 가비지 컬렉션 강제 실행
         if (function_exists('gc_collect_cycles')) {
@@ -136,34 +161,41 @@ class Application
 
     public function run()
     {
+        $this->debug('[DEBUG] Application::run() called');
         try {
             $this->initialize();
             
             $this->memoryManager->createCheckpoint('request_start');
             
             // 라우터를 통해 요청 처리
+            $this->debug('[DEBUG] Dispatching request: ' . $this->request->getMethod() . ' ' . $this->request->getPath());
             $result = $this->router->dispatch($this->request->getMethod(), $this->request->getPath());
             
             if ($result === null) {
+                $this->debug('[DEBUG] Route not found');
                 throw new \Exception('Route not found', 404);
             }
 
             // 응답 처리
             if ($result instanceof Response) {
+                $this->debug('[DEBUG] Sending Response object');
                 $result->send();
             } else if (is_array($result)) {
+                $this->debug('[DEBUG] Sending array response');
                 $this->response
                     ->setContentType('application/json')
                     ->setStatusCode(200)
                     ->setContent(json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
                     ->send();
             } else if (is_string($result)) {
+                $this->debug('[DEBUG] Sending string response');
                 $this->response
                     ->setContentType('text/html; charset=UTF-8')
                     ->setStatusCode(200)
                     ->setContent($result)
                     ->send();
             } else {
+                $this->debug('[DEBUG] Invalid response type');
                 throw new \Exception('Invalid response type', 500);
             }
 
@@ -174,7 +206,7 @@ class Application
             if (ob_get_level()) {
                 ob_end_clean();
             }
-            
+            $this->debug('[DEBUG] Exception caught in Application::run(): ' . $e->getMessage());
             $this->handleError($e);
             exit;
         }

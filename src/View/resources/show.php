@@ -101,217 +101,105 @@ function copyShareLink() {
 }
 </script>
 
+<?php require dirname(__DIR__) . '/layout/header.php'; ?>
+
 <div class="container mt-4">
-    <?php if (isset($_SESSION['success_message'])): ?>
-        <div class="alert alert-success">
-            <?php 
-            echo $_SESSION['success_message'];
-            unset($_SESSION['success_message']);
-            ?>
-        </div>
-    <?php endif; ?>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/resources">자료 목록</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><?= htmlspecialchars($resource['title']) ?></li>
+        </ol>
+    </nav>
 
-    <?php if (isset($_SESSION['error_message'])): ?>
-        <div class="alert alert-danger">
-            <?php 
-            echo $_SESSION['error_message'];
-            unset($_SESSION['error_message']);
-            ?>
-        </div>
-    <?php endif; ?>
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><?php echo htmlspecialchars($resource['title']); ?></h2>
-        <div>
-            <?php if (is_admin()): ?>
-                <a href="/resources/create" class="btn btn-success me-2">리소스 등록</a>
-            <?php endif; ?>
-            <a href="/resources/edit/<?php echo $resource['resource_id']; ?>" class="btn btn-primary me-2">수정</a>
-            <form action="/resources/delete/<?php echo $resource['resource_id']; ?>" method="POST" class="d-inline">
-                <button type="submit" class="btn btn-danger" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-8">
-            <!-- <h1 class="mb-4"><?php echo htmlspecialchars($resource['title'] ?? ''); ?></h1> -->
+    <div class="card">
+        <div class="card-body">
+            <h1 class="card-title h2 mb-4"><?= htmlspecialchars($resource['title']) ?></h1>
             
-            <!-- Basic Info -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">기본 정보</h5>
-                    <dl class="row">
-                        <dt class="col-sm-3">유형</dt>
-                        <dd class="col-sm-9"><?php echo htmlspecialchars($resource['source_type'] ?? ''); ?></dd>
-                        
-                        <dt class="col-sm-3">저자/창작자</dt>
-                        <dd class="col-sm-9"><?php echo htmlspecialchars($resource['author_creator'] ?? ''); ?></dd>
-                        
-                        <dt class="col-sm-3">출판/발행 정보</dt>
-                        <dd class="col-sm-9"><?php echo nl2br(htmlspecialchars($resource['publication_info'] ?? '')); ?></dd>
-                        
-                        <dt class="col-sm-3">URL</dt>
-                        <dd class="col-sm-9">
-                            <?php if (!empty($resource['url'])): ?>
-                                <a href="<?php echo htmlspecialchars($resource['url']); ?>" target="_blank">
-                                    <?php echo htmlspecialchars($resource['url']); ?>
-                                </a>
-                                <?php
-                                // 유튜브 URL에서 영상 ID 추출 함수
-                                function extractYoutubeId($url) {
-                                    if (preg_match('/(?:youtube\\.com\\/(?:[^\\/\\n\\s]+\\/\\S+\\/|(?:v|e(?:mbed)?|shorts)\\/|.*[?&]v=)|youtu\\.be\\/)([\\w-]{11})/', $url, $matches)) {
-                                        return $matches[1];
-                                    }
-                                    return null;
-                                }
-                                $youtubeId = extractYoutubeId($resource['url']);
-                                ?>
-                                <?php if ($youtubeId): ?>
-                                    <div class="mt-3 mb-3">
-                                        <div class="ratio ratio-16x9">
-                                            <iframe src="https://www.youtube.com/embed/<?php echo htmlspecialchars($youtubeId); ?>" title="YouTube video preview" allowfullscreen></iframe>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                            <?php endif; ?>
-                        </dd>
-                    </dl>
-                </div>
+            <div class="resource-meta mb-4">
+                <span class="me-3">
+                    <i class="fas fa-user"></i> <?= htmlspecialchars($resource['user_name'] ?? '익명') ?>
+                </span>
+                <span class="me-3">
+                    <i class="fas fa-calendar"></i> <?= date('Y-m-d H:i', strtotime($resource['created_at'])) ?>
+                </span>
+                <span>
+                    <i class="fas fa-eye"></i> <?= number_format($resource['view_count'] ?? 0) ?>
+                </span>
             </div>
 
-            <!-- Content -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">내용</h5>
-                    <div class="markdown-content">
-                        <?php
-                        $content = $resource['content'] ?? '';
-                        if (is_html($content)) {
-                            echo $content;
-                        } else {
-                            echo markdown_to_html($content);
-                        }
-                        ?>
-                    </div>
+            <?php if (!empty($resource['tags'])): ?>
+                <div class="mb-4">
+                    <?php foreach ($resource['tags'] as $tag): ?>
+                        <a href="/resources?tag=<?= urlencode($tag) ?>" class="tag-badge text-decoration-none">
+                            #<?= htmlspecialchars($tag) ?>
+                        </a>
+                    <?php endforeach; ?>
                 </div>
+            <?php endif; ?>
+
+            <div class="resource-content mb-4">
+                <?= nl2br(htmlspecialchars($resource['content'])) ?>
             </div>
 
-            <!-- Evaluation -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">평가</h5>
-                    <dl class="row">
-                        <dt class="col-sm-3">신뢰성</dt>
-                        <dd class="col-sm-9">
-                            <?php echo htmlspecialchars($resource['reliability'] ?? ''); ?>
-                            <?php if (!empty($resource['reliability_rationale'])): ?>
-                                <div class="mt-2"><?php echo nl2br(htmlspecialchars($resource['reliability_rationale'])); ?></div>
-                            <?php endif; ?>
-                        </dd>
-                        
-                        <dt class="col-sm-3">유용성</dt>
-                        <dd class="col-sm-9">
-                            <?php echo htmlspecialchars($resource['usefulness'] ?? ''); ?>
-                            <?php if (!empty($resource['usefulness_context'])): ?>
-                                <div class="mt-2"><?php echo nl2br(htmlspecialchars($resource['usefulness_context'])); ?></div>
-                            <?php endif; ?>
-                        </dd>
-                        
-                        <dt class="col-sm-3">관점/편향</dt>
-                        <dd class="col-sm-9"><?php echo nl2br(htmlspecialchars($resource['perspective_bias'] ?? '')); ?></dd>
-                    </dl>
+            <?php if (isset($_SESSION['user']) && ($_SESSION['user']['id'] == $resource['user_id'] || $_SESSION['user']['is_admin'])): ?>
+                <div class="btn-group">
+                    <a href="/resources/edit/<?= $resource['id'] ?>" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> 수정
+                    </a>
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="fas fa-trash"></i> 삭제
+                    </button>
                 </div>
-            </div>
-
-            <!-- Analysis -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">분석</h5>
-                    <dl class="row">
-                        <dt class="col-sm-3">강점</dt>
-                        <dd class="col-sm-9"><?php echo nl2br(htmlspecialchars($resource['strengths'] ?? '')); ?></dd>
-                        
-                        <dt class="col-sm-3">약점/한계</dt>
-                        <dd class="col-sm-9"><?php echo nl2br(htmlspecialchars($resource['weaknesses_limitations'] ?? '')); ?></dd>
-                        
-                        <dt class="col-sm-3">FlowBreath 연관성</dt>
-                        <dd class="col-sm-9"><?php echo nl2br(htmlspecialchars($resource['flowbreath_relevance'] ?? '')); ?></dd>
-                    </dl>
-                </div>
-            </div>
-
-            <!-- Reflection -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">성찰</h5>
-                    <dl class="row">
-                        <dt class="col-sm-3">성찰/인사이트</dt>
-                        <dd class="col-sm-9"><?php echo nl2br(htmlspecialchars($resource['reflection_insights'] ?? '')); ?></dd>
-                        
-                        <dt class="col-sm-3">적용 아이디어</dt>
-                        <dd class="col-sm-9"><?php echo nl2br(htmlspecialchars($resource['application_ideas'] ?? '')); ?></dd>
-                    </dl>
-                </div>
-            </div>
+            <?php endif; ?>
         </div>
+    </div>
 
-        <!-- Sidebar -->
-        <div class="col-md-4">
-            <!-- Tags -->
-            <div class="card mb-4">
+    <!-- 댓글 섹션 -->
+    <div class="mt-5">
+        <h3>댓글</h3>
+        <div id="comments-container">
+            <!-- 댓글은 JavaScript로 로드됩니다 -->
+        </div>
+        <?php if (isset($_SESSION['user'])): ?>
+            <div class="card mt-3">
                 <div class="card-body">
-                    <h5 class="card-title">태그</h5>
-                    <?php if (!empty($tags)): ?>
-                        <div class="d-flex flex-wrap gap-2">
-                            <?php foreach ($tags as $tag): ?>
-                                <span class="badge bg-primary"><?php echo htmlspecialchars($tag['tag_name']); ?></span>
-                            <?php endforeach; ?>
+                    <form id="comment-form">
+                        <div class="mb-3">
+                            <textarea class="form-control" rows="3" placeholder="댓글을 작성하세요..."></textarea>
                         </div>
-                    <?php else: ?>
-                        <p class="text-muted">태그가 없습니다.</p>
-                    <?php endif; ?>
+                        <button type="submit" class="btn btn-primary">댓글 작성</button>
+                    </form>
                 </div>
             </div>
-
-            <!-- Related Resources -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">관련 리소스</h5>
-                    <?php if (!empty($related_resources)): ?>
-                        <ul class="list-unstyled">
-                            <?php foreach ($related_resources as $related): ?>
-                                <li class="mb-2">
-                                    <a href="/resources/show/<?php echo $related['resource_id']; ?>">
-                                        <?php echo htmlspecialchars($related['title']); ?>
-                                    </a>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php else: ?>
-                        <p class="text-muted">관련 리소스가 없습니다.</p>
-                    <?php endif; ?>
-                </div>
+        <?php else: ?>
+            <div class="alert alert-info">
+                댓글을 작성하려면 <a href="/login">로그인</a>이 필요합니다.
             </div>
+        <?php endif; ?>
+    </div>
+</div>
 
-            <!-- Metadata -->
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">메타데이터</h5>
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">등록일</dt>
-                        <dd class="col-sm-8"><?php echo htmlspecialchars($resource['date_added'] ?? ''); ?></dd>
-                        
-                        <dt class="col-sm-4">수정일</dt>
-                        <dd class="col-sm-8"><?php echo htmlspecialchars($resource['last_updated'] ?? ''); ?></dd>
-                    </dl>
+<!-- 삭제 확인 모달 -->
+<?php if (isset($_SESSION['user']) && ($_SESSION['user']['id'] == $resource['user_id'] || $_SESSION['user']['is_admin'])): ?>
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">자료 삭제 확인</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    정말로 이 자료를 삭제하시겠습니까?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <form action="/resources/delete/<?= $resource['id'] ?>" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">삭제</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+<?php endif; ?>
 
-    <!-- Actions -->
-    <div class="mt-4">
-        <a href="/resources" class="btn btn-secondary">목록으로</a>
-    </div>
-</div> 
+<?php require dirname(__DIR__) . '/layout/footer.php'; ?> 

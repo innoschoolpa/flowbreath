@@ -106,8 +106,8 @@
                             <p class="card-text"><?= htmlspecialchars($resource['summary']) ?></p>
                             <div class="mb-2">
                                 <?php if (!empty($resource['tags'])): ?>
-                                    <?php foreach (explode(',', $resource['tags']) as $tag): ?>
-                                        <span class="badge bg-secondary me-1"><?= htmlspecialchars($tag) ?></span>
+                                    <?php foreach ($resource['tags'] as $tag): ?>
+                                        <span class="badge bg-secondary me-1"><?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </div>
