@@ -1,0 +1,59 @@
+# IDE and Editor files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Dependency directories
+/vendor/
+/node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Log files
+*.log
+/logs/
+/php_errors.log
+
+# Cache and temporary files
+/cache/
+/temp/
+*.cache
+*.tmp
+
+# Build and distribution files
+/dist/
+/build/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Composer files
+composer.phar
+composer-setup.php
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Test coverage
+/coverage/
+.phpunit.result.cache
+
+# Uploaded files
+/public/uploads/
+/storage/uploads/
+
+# Database files
+*.sql
+*.sqlite
+*.db
+
+# Configuration files that might contain sensitive data
+config/database.php
+config/app.php 
