@@ -16,13 +16,44 @@ if (file_exists(PROJECT_ROOT . '/.env')) {
     $dotenv->load();
 }
 
+// --- 라우터 분기 추가 시작 ---
+require_once PROJECT_ROOT . '/src/Core/Router.php';
+require_once PROJECT_ROOT . '/src/Controllers/LanguageController.php';
+// 필요시 다른 컨트롤러도 require
+
+require_once PROJECT_ROOT . '/src/Core/Request.php';
+$request = new \App\Core\Request();
+$uri = $request->getPath();
+$method = $request->getMethod();
+$router = new \App\Core\Router($request);
+$routes = require PROJECT_ROOT . '/src/routes.php';
+$routes($router);
+
+$route = $router->resolve($method, $uri);
+if ($route !== null && strpos($uri, '/language/switch/') === 0) {
+    $handler = $route['handler'];
+    $params = $route['params'];
+    if (is_array($handler)) {
+        [$class, $action] = $handler;
+        $controller = new $class($request);
+        $controller->$action(...array_values($params));
+        exit;
+    }
+}
+// --- 라우터 분기 추가 끝 ---
+
 // DB 연결 (config/database.php 사용)
 require_once PROJECT_ROOT . '/config/database.php';
 $pdo = getDbConnection();
 
+// Language 객체 생성
+require_once PROJECT_ROOT . '/src/Core/Language.php';
+use App\Core\Language;
+$language = Language::getInstance();
+
 // 최근 리소스
 $resourceModel = new \App\Models\Resource($pdo);
-$recentResources = $resourceModel->getRecentPublic(6);
+$recentResources = $resourceModel->getRecentPublic(4);
 
 // 인기 태그
 $tagModel = new \App\Models\Tag($pdo);
@@ -40,11 +71,11 @@ if ($searchQuery !== '') {
 }
 ?>
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="<?= isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko' ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowBreath.io - 호흡 자료 공유 플랫폼</title>
+    <title><?= $language->get('common.site_name') ?> - <?= $language->get('home.hero.title') ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -70,17 +101,23 @@ if ($searchQuery !== '') {
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="/resources">자료</a></li>
-                <li class="nav-item"><a class="nav-link" href="/tags">태그</a></li>
+                <li class="nav-item"><a class="nav-link" href="/resources"><?= $language->get('resources.title') ?></a></li>
+                <li class="nav-item"><a class="nav-link" href="/tags"><?= $language->get('resources.tags') ?></a></li>
                 <li class="nav-item"><a class="nav-link" href="/api/docs">API 안내</a></li>
             </ul>
             <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item">
+                    <a href="/language/switch/ko" class="btn btn-outline-light btn-sm me-2 <?php if(isset($_SESSION['lang']) && $_SESSION['lang']==='ko') echo 'active'; ?>">한국어</a>
+                </li>
+                <li class="nav-item me-3">
+                    <a href="/language/switch/en" class="btn btn-outline-light btn-sm <?php if(isset($_SESSION['lang']) && $_SESSION['lang']==='en') echo 'active'; ?>">English</a>
+                </li>
                 <?php if ($isLoggedIn): ?>
-                    <li class="nav-item"><a class="nav-link" href="/profile"><i class="fa fa-user"></i> 내 정보</a></li>
-                    <li class="nav-item ms-2"><a class="btn btn-outline-light" href="/logout">로그아웃</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/profile"><i class="fa fa-user"></i> <?= $language->get('common.profile') ?></a></li>
+                    <li class="nav-item ms-2"><a class="btn btn-outline-light" href="/logout"><?= $language->get('common.logout') ?></a></li>
                 <?php else: ?>
-                    <li class="nav-item ms-2"><a class="btn btn-primary me-2" href="/login">로그인</a></li>
-                    <li class="nav-item"><a class="btn btn-outline-primary" href="/register">회원가입</a></li>
+                    <li class="nav-item ms-2"><a class="btn btn-primary me-2" href="/login"><?= $language->get('common.login') ?></a></li>
+                    <li class="nav-item ms-3"><a class="btn btn-outline-primary" href="/register"><?= $language->get('common.register') ?></a></li>
                 <?php endif; ?>
             </ul>
         </div>
@@ -89,12 +126,12 @@ if ($searchQuery !== '') {
 
 <section class="hero-section">
     <div class="container">
-        <h1 class="display-5 fw-bold mb-3">호흡을 위한 최고의 자료, <span style="color:#ffe082;">FlowBreath.io</span></h1>
-        <p class="lead mb-4">호흡 건강, 운동, 명상, 치료 등 다양한 호흡 자료를 쉽고 빠르게 찾아보세요.</p>
+        <h1 class="display-5 fw-bold mb-3"><?= $language->get('home.hero.title') ?></h1>
+        <p class="lead mb-4"><?= $language->get('home.hero.subtitle') ?></p>
         <form class="search-box" method="get" action="/">
             <div class="input-group input-group-lg">
-                <input type="text" class="form-control" name="q" placeholder="자료, 태그, 키워드로 검색..." value="<?= htmlspecialchars($searchQuery) ?>">
-                <button class="btn btn-warning" type="submit"><i class="fa fa-search"></i> 검색</button>
+                <input type="text" class="form-control" name="q" placeholder="<?= $language->get('home.hero.search_placeholder') ?>" value="<?= htmlspecialchars($searchQuery) ?>">
+                <button class="btn btn-warning" type="submit"><i class="fa fa-search"></i> <?= $language->get('common.search') ?></button>
             </div>
         </form>
     </div>
@@ -102,17 +139,17 @@ if ($searchQuery !== '') {
 
 <div class="container mt-5">
     <?php if ($searchQuery !== ''): ?>
-        <h4 class="mb-4">'<?= htmlspecialchars($searchQuery) ?>' 검색 결과</h4>
+        <h4 class="mb-4">'<?= htmlspecialchars($searchQuery) ?>' <?= $language->get('common.search') ?> <?= $language->get('home.recent_resources.no_results') ?></h4>
         <div class="row">
             <?php if (empty($searchResults)): ?>
-                <div class="col-12"><div class="alert alert-warning">검색 결과가 없습니다.</div></div>
+                <div class="col-12"><div class="alert alert-warning"><?= $language->get('home.recent_resources.no_results') ?></div></div>
             <?php else: foreach ($searchResults as $resource): ?>
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card card-resource h-100">
                         <div class="card-body">
                             <h5 class="card-title mb-2"><?= htmlspecialchars($resource['title']) ?></h5>
                             <div class="resource-meta mb-2">
-                                <i class="fa fa-user"></i> <?= htmlspecialchars($resource['username'] ?? '익명') ?> ·
+                                <i class="fa fa-user"></i> <?= htmlspecialchars($resource['username'] ?? $language->get('common.anonymous')) ?> ·
                                 <i class="fa fa-calendar"></i> <?= htmlspecialchars(substr($resource['created_at'],0,10)) ?>
                             </div>
                             <p class="card-text mb-2"><?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']),0,80,'...')) ?></p>
@@ -121,7 +158,7 @@ if ($searchQuery !== '') {
                                     <span class="tag-badge">#<?= htmlspecialchars($tag['name']) ?></span>
                                 <?php endforeach; ?>
                             </div>
-                            <a href="/resources/view/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm">자세히 보기</a>
+                            <a href="/resources/view/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm"><?= $language->get('common.read_more') ?></a>
                         </div>
                     </div>
                 </div>
@@ -129,8 +166,8 @@ if ($searchQuery !== '') {
         </div>
     <?php else: ?>
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="mb-0">최근 등록된 호흡 자료</h4>
-            <a href="/resources" class="btn btn-link">전체 보기 <i class="fa fa-arrow-right"></i></a>
+            <h4 class="mb-0"><?= $language->get('home.recent_resources.title') ?></h4>
+            <a href="/resources" class="btn btn-link"><?= $language->get('common.view_all') ?> <i class="fa fa-arrow-right"></i></a>
         </div>
         <div class="row">
             <?php foreach ($recentResources as $resource): ?>
@@ -139,7 +176,7 @@ if ($searchQuery !== '') {
                         <div class="card-body">
                             <h5 class="card-title mb-2"><?= htmlspecialchars($resource['title']) ?></h5>
                             <div class="resource-meta mb-2">
-                                <i class="fa fa-user"></i> <?= htmlspecialchars($resource['username'] ?? '익명') ?> ·
+                                <i class="fa fa-user"></i> <?= htmlspecialchars($resource['username'] ?? $language->get('common.anonymous')) ?> ·
                                 <i class="fa fa-calendar"></i> <?= htmlspecialchars(substr($resource['created_at'],0,10)) ?>
                             </div>
                             <p class="card-text mb-2"><?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']),0,120,'...')) ?></p>
@@ -148,14 +185,14 @@ if ($searchQuery !== '') {
                                     <span class="tag-badge">#<?= htmlspecialchars($tag['name']) ?></span>
                                 <?php endforeach; ?>
                             </div>
-                            <a href="/resources/view/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm">자세히 보기</a>
+                            <a href="/resources/view/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm"><?= $language->get('common.read_more') ?></a>
                         </div>
                     </div>
                 </div>
             <?php endforeach; ?>
         </div>
         <div class="popular-tags mt-5">
-            <h5 class="mb-3">인기 태그</h5>
+            <h5 class="mb-3"><?= $language->get('home.popular_tags.title') ?></h5>
             <?php foreach ($popularTags as $tag): ?>
                 <a href="/tags/view/<?= $tag['id'] ?>" class="tag-badge">#<?= htmlspecialchars($tag['name']) ?></a>
             <?php endforeach; ?>
@@ -165,8 +202,8 @@ if ($searchQuery !== '') {
 
 <footer class="footer mt-5">
     <div class="container text-center">
-        <div class="mb-2">&copy; <?= date('Y') ?> FlowBreath.io. All rights reserved.</div>
-        <div>호흡 건강을 위한 최고의 자료 플랫폼</div>
+        <div class="mb-2"><?= $language->get('footer.copyright', ['year' => date('Y')]) ?></div>
+        <div><?= $language->get('footer.description') ?></div>
     </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
