@@ -7,6 +7,7 @@ use Exception;
 use App\Core\Database;
 use App\Models\BaseModel;
 use App\Exceptions\ModelException;
+use App\Core\Language;
 
 error_log("Resource.php loaded from: " . __FILE__); // 파일 로드 확인 로그
 

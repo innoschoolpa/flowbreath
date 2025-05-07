@@ -2,6 +2,10 @@
 
 namespace App\Core;
 
+if (!defined('PROJECT_ROOT')) {
+    define('PROJECT_ROOT', dirname(__DIR__, 2));
+}
+
 class Application
 {
     private static $instance = null;
