@@ -80,7 +80,7 @@ class Response
         $this->send();
     }
 
-    public function redirect($url)
+    public function redirect($url, $statusCode = 302)
     {
         if ($this->sent) {
             throw new \RuntimeException('Cannot send response after it has been sent');
@@ -88,7 +88,7 @@ class Response
 
         $this->clearOutputBuffer();
         $this->setHeader('Location', $url);
-        $this->setStatusCode(302);
+        $this->setStatusCode($statusCode);
         $this->send();
     }
 
@@ -152,54 +152,5 @@ class Response
     public function getHeaders()
     {
         return $this->headers;
-    }
-
-    public static function redirect($url)
-    {
-        header("Location: {$url}");
-        exit;
-    }
-
-    public static function json($data, $statusCode = 200)
-    {
-        http_response_code($statusCode);
-        header('Content-Type: application/json');
-        echo json_encode($data);
-        exit;
-    }
-
-    public static function error($message, $statusCode = 500)
-    {
-        http_response_code($statusCode);
-        return self::json(['error' => $message], $statusCode);
-    }
-
-    public static function success($data = null, $message = 'Success')
-    {
-        return self::json([
-            'success' => true,
-            'message' => $message,
-            'data' => $data
-        ]);
-    }
-
-    public static function notFound($message = 'Not Found')
-    {
-        return self::error($message, 404);
-    }
-
-    public static function unauthorized($message = 'Unauthorized')
-    {
-        return self::error($message, 401);
-    }
-
-    public static function forbidden($message = 'Forbidden')
-    {
-        return self::error($message, 403);
-    }
-
-    public static function badRequest($message = 'Bad Request')
-    {
-        return self::error($message, 400);
     }
 } 

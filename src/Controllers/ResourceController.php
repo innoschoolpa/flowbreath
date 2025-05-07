@@ -62,51 +62,40 @@ class ResourceController extends BaseController {
         }
     }
 
-    public function show(Request $request, $id) {
+    /**
+     * 리소스 상세 보기
+     */
+    public function show(Request $request, $id)
+    {
         try {
             $resource = $this->resource->findById($id);
-            
             if (!$resource) {
-                if ($request->wantsJson()) {
-                    return $this->response->json(['error' => '리소스를 찾을 수 없습니다.'], 404);
-                }
-                http_response_code(404);
-                require dirname(__DIR__) . '/View/errors/404.php';
-                return;
+                throw new \Exception("리소스를 찾을 수 없습니다.", 404);
             }
 
-            // 비공개 리소스인 경우 권한 확인
-            if ($resource['is_public'] === false) {
-                $user = $this->auth->user();
-                if (!$user || ($user['id'] !== $resource['user_id'] && !$user['is_admin'])) {
-                    if ($request->wantsJson()) {
-                        return $this->response->json(['error' => '접근 권한이 없습니다.'], 403);
-                    }
-                    http_response_code(403);
-                    require dirname(__DIR__) . '/View/errors/403.php';
-                    return;
-                }
+            // JSON 요청인 경우 JSON 응답
+            if ($request->wantsJson() || $request->isAjax()) {
+                return $this->response->json($resource);
             }
 
-            if ($request->wantsJson()) {
-                return $this->response->json(['data' => $resource]);
-            }
-
-            // HTML 응답
-            $viewData = [
+            // 일반 요청인 경우 HTML 뷰 렌더링
+            return $this->view('resources/show', [
                 'resource' => $resource,
-                'lang' => $_SESSION['lang'] ?? 'ko'
-            ];
-            
-            extract($viewData);
-            require dirname(__DIR__) . '/View/resources/show.php';
+                'title' => $resource['title']
+            ]);
         } catch (\Exception $e) {
-            error_log('Error in ResourceController@show: ' . $e->getMessage());
-            if ($request->wantsJson()) {
-                return $this->response->json(['error' => $e->getMessage()], 500);
+            // JSON 요청인 경우 JSON 에러 응답
+            if ($request->wantsJson() || $request->isAjax()) {
+                return $this->response->json([
+                    'error' => $e->getMessage()
+                ], $e->getCode() ?: 500);
             }
-            http_response_code(500);
-            require dirname(__DIR__) . '/View/errors/500.php';
+
+            // 일반 요청인 경우 에러 페이지 렌더링
+            return $this->view('errors/500', [
+                'error' => $e->getMessage(),
+                'title' => '500 Internal Server Error'
+            ], 500);
         }
     }
 

@@ -93,7 +93,36 @@ class Router
             if (!method_exists($controller, $method)) {
                 throw new \Exception("Method {$method} not found in controller {$class}", 500);
             }
-            return $controller->$method(...array_values($params));
+
+            // Get method parameters using reflection
+            $reflection = new \ReflectionMethod($controller, $method);
+            $methodParams = $reflection->getParameters();
+            
+            // Prepare arguments array
+            $args = [];
+            foreach ($methodParams as $param) {
+                $paramName = $param->getName();
+                $paramType = $param->getType();
+                
+                // If parameter is Request type, pass the request object
+                if ($paramType && $paramType->getName() === 'App\\Core\\Request') {
+                    $args[] = $this->request;
+                }
+                // Otherwise, try to get the value from route parameters
+                else if (isset($params[$paramName])) {
+                    $args[] = $params[$paramName];
+                }
+                // If parameter is optional, use default value
+                else if ($param->isOptional()) {
+                    $args[] = $param->getDefaultValue();
+                }
+                // Required parameter is missing
+                else {
+                    throw new \Exception("Required parameter {$paramName} is missing", 400);
+                }
+            }
+            
+            return $controller->$method(...$args);
         }
 
         return $handler(...array_values($params));

@@ -112,14 +112,21 @@ class Request
         return strtoupper($this->server['REQUEST_METHOD'] ?? 'GET');
     }
 
+    /**
+     * 현재 요청의 경로를 반환
+     * 
+     * @return string
+     */
     public function getPath()
     {
-        $path = $this->server['REQUEST_URI'] ?? '/';
+        $path = $_SERVER['REQUEST_URI'] ?? '/';
         $position = strpos($path, '?');
-        if ($position !== false) {
-            $path = substr($path, 0, $position);
+        
+        if ($position === false) {
+            return $path;
         }
-        return rtrim($path, '/') ?: '/';
+        
+        return substr($path, 0, $position);
     }
 
     public function get($key = null, $default = null)
@@ -161,15 +168,36 @@ class Request
         return $this->headers[$key] ?? null;
     }
 
-    public function isAjax()
+    /**
+     * 요청이 JSON 응답을 원하는지 확인
+     * 
+     * @return bool
+     */
+    public function wantsJson()
     {
-        return isset($this->headers['X-Requested-With']) && 
-               strtolower($this->headers['X-Requested-With']) === 'xmlhttprequest';
+        $accept = $this->getHeader('Accept');
+        return $accept && strpos($accept, 'application/json') !== false;
     }
 
+    /**
+     * 요청이 AJAX 요청인지 확인
+     * 
+     * @return bool
+     */
+    public function isAjax()
+    {
+        return $this->getHeader('X-Requested-With') === 'XMLHttpRequest';
+    }
+
+    /**
+     * 요청이 JSON 데이터를 포함하는지 확인
+     * 
+     * @return bool
+     */
     public function isJson()
     {
-        return strpos($this->getHeader('Content-Type'), 'application/json') !== false;
+        $contentType = $this->getHeader('Content-Type');
+        return $contentType && strpos($contentType, 'application/json') !== false;
     }
 
     public function getIp()

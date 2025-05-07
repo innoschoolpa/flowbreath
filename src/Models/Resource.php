@@ -305,18 +305,42 @@ class Resource extends Model {
     }
 
     /**
-     * ID로 리소스 조회 (태그 포함)
+     * ID로 리소스 조회
+     * 
+     * @param int $id 리소스 ID
+     * @return array|null 리소스 정보 또는 null
      */
-    public function getById($id) {
+    public function findById($id)
+    {
         try {
-            $sql = "SELECT r.*, u.username, u.display_name 
-                    FROM {$this->table} r 
-                    LEFT JOIN users u ON r.user_id = u.id 
-                    WHERE r.id = ?";
-            return $this->db->fetch($sql, [$id]);
-        } catch (PDOException $e) {
-            error_log("Database error in getById: " . $e->getMessage());
-            throw new Exception("리소스를 조회하는 중 오류가 발생했습니다.");
+            $sql = "SELECT r.*, u.name as user_name, 
+                    GROUP_CONCAT(t.name) as tags
+                    FROM resources r
+                    LEFT JOIN users u ON r.user_id = u.id
+                    LEFT JOIN resource_tags rt ON r.id = rt.resource_id
+                    LEFT JOIN tags t ON rt.tag_id = t.id
+                    WHERE r.id = ?
+                    GROUP BY r.id";
+            
+            $resource = $this->db->fetch($sql, [$id]);
+
+            if ($resource) {
+                // 태그 처리
+                $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
+                
+                // 날짜 포맷팅
+                $resource['date_added'] = $resource['created_at'];
+                
+                // 기본값 설정 (아직 구현되지 않은 기능들)
+                $resource['like_count'] = 0;
+                $resource['view_count'] = 0;
+                $resource['comment_count'] = 0;
+            }
+
+            return $resource;
+        } catch (\PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            throw new \Exception("리소스를 불러오는 중 오류가 발생했습니다.");
         }
     }
 
