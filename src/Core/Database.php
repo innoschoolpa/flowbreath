@@ -372,4 +372,15 @@ class Database
             $this->rollback();
         }
     }
+
+    /**
+     * SQL 문을 준비하고 PDOStatement를 반환합니다.
+     *
+     * @param string $sql SQL 쿼리문
+     * @return \PDOStatement
+     */
+    public function prepare(string $sql): \PDOStatement
+    {
+        return $this->pdo->prepare($sql);
+    }
 } 

@@ -40,6 +40,40 @@ require_once __DIR__ . '/../layout/header.php'; ?>
                             <textarea class="form-control" id="summary" name="summary" rows="3" required><?= htmlspecialchars($resource['summary']) ?></textarea>
                             <div class="invalid-feedback">요약을 입력해주세요.</div>
                         </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label">유형 <span class="text-danger">*</span></label>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="source_type" id="source_type_website" value="Website">
+                                    <label class="form-check-label" for="source_type_website">웹사이트</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="source_type" id="source_type_paper" value="Paper">
+                                    <label class="form-check-label" for="source_type_paper">논문</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="source_type" id="source_type_book" value="Book">
+                                    <label class="form-check-label" for="source_type_book">도서</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="source_type" id="source_type_video" value="Video" checked>
+                                    <label class="form-check-label" for="source_type_video">비디오</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="source_type" id="source_type_podcast" value="Podcast">
+                                    <label class="form-check-label" for="source_type_podcast">팟캐스트</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="source_type" id="source_type_personal" value="Personal Experience">
+                                    <label class="form-check-label" for="source_type_personal">개인 경험</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="source_type" id="source_type_other" value="Other">
+                                    <label class="form-check-label" for="source_type_other">기타</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -49,7 +83,49 @@ require_once __DIR__ . '/../layout/header.php'; ?>
                     <div class="row g-3">
                         <div class="col-md-12">
                             <label for="content" class="form-label"><?= __('resource.content') ?></label>
-                            <textarea class="form-control tinymce-editor" id="content" name="content" rows="5"><?= htmlspecialchars($resource['content'] ?? '') ?></textarea>
+                            <textarea class="form-control tinymce-editor" id="content" name="content" rows="5"># 횡격막 호흡과 복식 호흡이 안 되는 5가지 원인과 해결 방안
+
+## 1. 잘못된 자세
+- **원인**: 구부정한 자세로 인해 횡격막이 제대로 움직이지 못함
+- **해결방안**: 
+  - 바른 자세 유지하기
+  - 등 스트레칭 정기적으로 하기
+  - 자세 교정 운동하기
+
+## 2. 스트레스와 긴장
+- **원인**: 스트레스로 인한 근육 긴장이 호흡을 방해
+- **해결방안**:
+  - 명상과 이완 운동
+  - 규칙적인 운동
+  - 충분한 휴식
+
+## 3. 잘못된 호흡 습관
+- **원인**: 오랜 기간 잘못된 호흡 패턴 형성
+- **해결방안**:
+  - 호흡 운동 꾸준히 하기
+  - 전문가와 함께 올바른 호흡법 배우기
+  - 일상생활에서 의식적으로 복식호흡 하기
+
+## 4. 신체적 제한
+- **원인**: 횡격막 기능 저하나 신체적 문제
+- **해결방안**:
+  - 의사와 상담
+  - 물리치료
+  - 단계적인 호흡 운동
+
+## 5. 환경적 요인
+- **원인**: 공기 질 나쁨, 알레르기 등
+- **해결방안**:
+  - 공기청정기 사용
+  - 알레르기 원인 제거
+  - 환기 자주하기
+
+## 실천 방법
+1. 매일 10분씩 호흡 운동하기
+2. 자세 체크 알람 설정하기
+3. 스트레스 관리 루틴 만들기
+4. 전문가 상담 받기
+5. 호흡 일지 작성하기</textarea>
                         </div>
 
                         <div class="col-md-12">
@@ -80,15 +156,8 @@ require_once __DIR__ . '/../layout/header.php'; ?>
                     <div class="row g-3">
                         <div class="col-md-12">
                             <label for="tags" class="form-label">태그</label>
-                            <select class="form-select" id="tags" name="tags[]" multiple>
-                                <?php foreach ($all_tags as $tag): ?>
-                                    <option value="<?= $tag['id'] ?>" 
-                                        <?= in_array($tag['id'], $current_tag_ids ?? []) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($tag['name']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <div class="form-text">새로운 태그를 추가하려면 입력 후 Enter를 누르세요.</div>
+                            <input type="text" class="form-control" id="tags" name="tags" value="Laravel,PHP">
+                            <small class="text-muted">쉼표(,)로 구분하여 입력하세요.</small>
                         </div>
                     </div>
                 </div>

@@ -61,7 +61,7 @@ class Response
         $this->send();
     }
 
-    public function view($view, $data = [])
+    public function view($view, $data = [], $statusCode = 200)
     {
         if ($this->sent) {
             throw new \RuntimeException('Cannot send response after it has been sent');
@@ -73,6 +73,9 @@ class Response
         }
 
         $this->clearOutputBuffer();
+        $this->setStatusCode($statusCode);
+        $this->setContentType('text/html; charset=UTF-8');
+        
         ob_start();
         extract($data);
         require $viewPath;

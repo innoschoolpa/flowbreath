@@ -77,10 +77,22 @@ $title = $title ?? '리소스 상세';
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="mb-4">
-                        <h5 class="card-title">내용</h5>
-                        <p class="card-text"><?php echo nl2br(htmlspecialchars($resource['content'] ?? '')); ?></p>
-                    </div>
+                    <?php if (!empty($resource['content'])): ?>
+                        <div class="mb-4">
+                            <h5>상세 내용</h5>
+                            <div class="card-text">
+                                <?php
+                                if (function_exists('is_html') && is_html($resource['content'])) {
+                                    echo $resource['content'];
+                                } else if (function_exists('markdown_to_html')) {
+                                    echo markdown_to_html($resource['content']);
+                                } else {
+                                    echo nl2br(htmlspecialchars($resource['content']));
+                                }
+                                ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
 
                     <?php if (!empty($resource['tags'])): ?>
                         <div class="mb-4">

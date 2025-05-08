@@ -18,107 +18,71 @@ if (!function_exists('is_youtube_url')) {
 ?>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<h1>리소스 목록</h1>
-<form method="get" class="row g-2 mb-4">
-    <div class="col-md-4">
-        <div class="input-group">
-            <input type="text" name="keyword" class="form-control" placeholder="키워드(제목, 저자, 요약 등)" value="<?php echo htmlspecialchars($keyword ?? ''); ?>">
-            <?php if (!empty($keyword)): ?>
-                <button type="button" class="btn btn-outline-secondary" onclick="clearKeyword()" style="padding: 0.375rem 0.75rem;">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            <?php endif; ?>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <select name="source_type" class="form-select">
-            <option value="">전체 유형</option>
-            <option value="Website" <?php if (($source_type ?? '') === 'Website') echo 'selected'; ?>>웹사이트</option>
-            <option value="Paper" <?php if (($source_type ?? '') === 'Paper') echo 'selected'; ?>>논문</option>
-            <option value="Book" <?php if (($source_type ?? '') === 'Book') echo 'selected'; ?>>책</option>
-            <option value="Video" <?php if (($source_type ?? '') === 'Video') echo 'selected'; ?>>비디오</option>
-            <option value="Podcast" <?php if (($source_type ?? '') === 'Podcast') echo 'selected'; ?>>팟캐스트</option>
-            <option value="Personal Experience" <?php if (($source_type ?? '') === 'Personal Experience') echo 'selected'; ?>>개인 경험</option>
-            <option value="Other" <?php if (($source_type ?? '') === 'Other') echo 'selected'; ?>>기타</option>
-        </select>
-    </div>
-    <div class="col-md-3">
-        <select name="tag_ids[]" class="form-select" id="tagSelect" multiple>
-            <?php foreach (($all_tags ?? []) as $tag): ?>
-                <option value="<?php echo $tag['tag_id']; ?>"
-                    <?php if (!empty($selected_tag_ids) && in_array($tag['tag_id'], $selected_tag_ids)) echo 'selected'; ?>>
-                    <?php echo htmlspecialchars($tag['tag_name']); ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">검색</button>
-    </div>
-</form>
-<?php if (!empty($resources)): ?>
-    <ul class="list-group mb-4">
-    <?php foreach (
-        isset(
-            $resources
-        ) ? $resources : [] as $resource): ?>
-        <li class="list-group-item d-flex align-items-center<?php if (!empty($resource['is_pinned'])) echo ' bg-warning-subtle border-warning'; ?>" style="min-height: 120px;">
-            <?php 
-            $youtubeId = !empty($resource['url']) ? extractYoutubeId($resource['url']) : null;
-            ?>
-            <?php if ($youtubeId): ?>
-                <div style="width: 200px; height: 120px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
-                    <iframe style="width: 100%; height: 100%; object-fit:cover; border-radius: 8px;" src="https://www.youtube.com/embed/<?php echo htmlspecialchars($youtubeId); ?>" frameborder="0" allowfullscreen></iframe>
-                </div>
-            <?php else: ?>
-                <div style="width: 200px; height: 120px; flex-shrink:0;"></div>
-            <?php endif; ?>
-            <div class="ms-3 flex-grow-1 d-flex flex-column justify-content-center" style="height:120px;">
-                <div class="resource-text-vertical flex-grow-1">
-                    <a href="/resources/show/<?= htmlspecialchars($resource['resource_id']) ?>" class="resource-link-block text-decoration-none text-dark">
-                        <div class="resource-title-fixed mb-1">
-                            <?php if (!empty($resource['is_pinned'])): ?>
-                                <span class="badge bg-warning text-dark me-1">공지</span>
-                            <?php endif; ?>
-                            <?= htmlspecialchars($resource['title']) ?>
-                        </div>
-                        <div class="resource-summary-fixed">
-                            <?php
-                            if (!empty($resource['content'])) {
-                                // HTML 태그 제거 후 일부만 미리보기
-                                $preview = mb_strimwidth(strip_tags($resource['content']), 0, 200, '...');
-                                echo '<div class="text-muted summary-clamp">' . htmlspecialchars($preview) . '</div>';
-                            } elseif (!empty($resource['summary'])) {
-                                echo '<div class="text-muted summary-clamp">' . htmlspecialchars($resource['summary']) . '</div>';
-                            }
-                            ?>
-                        </div>
-                    </a>
-                </div>
-            </div>
-            <div class="d-flex gap-2 ms-3 align-items-center">
-                <span class="badge bg-secondary"><?= htmlspecialchars($resource['source_type']) ?></span>
-                <a href="/resources/show/<?= htmlspecialchars($resource['resource_id']) ?>" class="btn btn-sm btn-primary">
-                    <i class="bi bi-eye"></i> 보기
-                </a>
-                <?php if (is_admin()): ?>
-                <a href="/resources/edit/<?= htmlspecialchars($resource['resource_id']) ?>" class="btn btn-sm btn-secondary">
-                    <i class="bi bi-pencil"></i> 수정
-                </a>
-                <form action="/resources/toggle-visibility/<?= htmlspecialchars($resource['resource_id']) ?>" method="POST" class="d-inline">
-                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                    <button type="submit" class="btn btn-sm <?= $resource['is_public'] ? 'btn-success' : 'btn-warning' ?>">
-                        <i class="bi bi-<?= $resource['is_public'] ? 'unlock' : 'lock' ?>"></i>
+<div class="container">
+    <h1 class="mb-4">리소스 목록</h1>
+    <form method="get" class="row g-2 mb-4">
+        <div class="col-md-4">
+            <div class="input-group">
+                <input type="text" name="keyword" class="form-control" placeholder="키워드(제목, 저자, 요약 등)" value="<?php echo htmlspecialchars($keyword ?? ''); ?>">
+                <?php if (!empty($keyword)): ?>
+                    <button type="button" class="btn btn-outline-secondary" onclick="clearKeyword()" style="padding: 0.375rem 0.75rem;">
+                        <i class="bi bi-x-lg"></i>
                     </button>
-                </form>
                 <?php endif; ?>
             </div>
-        </li>
-    <?php endforeach; ?>
-    </ul>
-<?php else: ?>
-    <p>등록된 리소스가 없습니다.</p>
-<?php endif; ?>
+        </div>
+        <div class="col-md-3">
+            <select name="source_type" class="form-select">
+                <option value="">전체 유형</option>
+                <option value="Website" <?php if (($source_type ?? '') === 'Website') echo 'selected'; ?>>웹사이트</option>
+                <option value="Paper" <?php if (($source_type ?? '') === 'Paper') echo 'selected'; ?>>논문</option>
+                <option value="Book" <?php if (($source_type ?? '') === 'Book') echo 'selected'; ?>>책</option>
+                <option value="Video" <?php if (($source_type ?? '') === 'Video') echo 'selected'; ?>>비디오</option>
+                <option value="Podcast" <?php if (($source_type ?? '') === 'Podcast') echo 'selected'; ?>>팟캐스트</option>
+                <option value="Personal Experience" <?php if (($source_type ?? '') === 'Personal Experience') echo 'selected'; ?>>개인 경험</option>
+                <option value="Other" <?php if (($source_type ?? '') === 'Other') echo 'selected'; ?>>기타</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="tag_ids[]" class="form-select" id="tagSelect" multiple>
+                <?php foreach (($all_tags ?? []) as $tag): ?>
+                    <option value="<?php echo $tag['tag_id']; ?>"
+                        <?php if (!empty($selected_tag_ids) && in_array($tag['tag_id'], $selected_tag_ids)) echo 'selected'; ?>>
+                        <?php echo htmlspecialchars($tag['tag_name']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">검색</button>
+        </div>
+    </form>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <?php foreach ($resources as $resource): ?>
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-2"><?= htmlspecialchars($resource['title']) ?></h5>
+                        <span class="badge bg-secondary mb-2"><?= htmlspecialchars($resource['source_type'] ?? '') ?></span>
+                        <p class="card-text flex-grow-1">
+                            <?php
+                            $preview = '';
+                            if (!empty($resource['content'])) {
+                                $preview = mb_strimwidth(strip_tags($resource['content']), 0, 100, '...');
+                            } elseif (!empty($resource['summary'])) {
+                                $preview = $resource['summary'];
+                            }
+                            echo htmlspecialchars($preview);
+                            ?>
+                        </p>
+                        <a href="/resources/show/<?= htmlspecialchars($resource['id']) ?>" class="btn btn-outline-primary mt-auto">자세히 보기</a>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
 <a href="/resources/create" class="btn btn-success">리소스 등록</a>
 <?php if ($total_pages > 1): ?>
 <nav aria-label="페이지네이션">

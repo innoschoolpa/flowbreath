@@ -69,7 +69,13 @@
                 <div class="mb-4">
                     <h5>상세 내용</h5>
                     <div class="card-text">
-                        <?= nl2br(htmlspecialchars($resource['content'])) ?>
+                        <?php
+                        if (is_html($resource['content'])) {
+                            echo $resource['content'];
+                        } else {
+                            echo markdown_to_html($resource['content']);
+                        }
+                        ?>
                     </div>
                 </div>
             <?php endif; ?>

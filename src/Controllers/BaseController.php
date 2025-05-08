@@ -164,29 +164,8 @@ abstract class BaseController {
      * @param int $status HTTP 상태 코드
      * @return string
      */
-    protected function view($view, $data = [], $status = 200)
+    protected function view($view, $data = [], $statusCode = 200)
     {
-        // HTTP 상태 코드 설정
-        http_response_code($status);
-
-        // 뷰 파일 경로 생성
-        $viewPath = dirname(__DIR__) . '/View/' . $view . '.php';
-        
-        // 뷰 파일이 존재하는지 확인
-        if (!file_exists($viewPath)) {
-            throw new \Exception("View file not found: {$viewPath}");
-        }
-
-        // 데이터를 변수로 추출
-        extract($data);
-
-        // 출력 버퍼링 시작
-        ob_start();
-        
-        // 뷰 파일 포함
-        require $viewPath;
-        
-        // 버퍼 내용 반환
-        return ob_get_clean();
+        return $this->response->view($view, $data, $statusCode);
     }
 } 

@@ -21,7 +21,7 @@
                         <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
                         <div class="mb-3">
                             <label for="title" class="form-label">제목 <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="title" name="title" required>
+                            <input type="text" class="form-control" id="title" name="title" value="횡격막 호흡과 복식 호흡이 안 되는 5가지 원인과 해결 방안" required>
                         </div>
                         <div class="mb-3">
                             <label for="url" class="form-label">URL</label>
@@ -62,8 +62,8 @@
                         </div>
                         <div class="mb-3">
                             <label for="tags" class="form-label">태그</label>
-                            <input type="text" class="form-control" id="tags" name="tags" placeholder="태그를 쉼표로 구분하여 입력하세요">
-                            <div class="form-text">태그를 쉼표로 구분하여 입력하세요. 예: 교육, 기술, 혁신</div>
+                            <input type="text" class="form-control" id="tags" name="tags" value="호흡,건강,스트레스,자세,운동">
+                            <small class="text-muted">쉼표(,)로 구분하여 입력하세요.</small>
                         </div>
                         <div class="mb-3">
                             <label for="related_resources" class="form-label">관련 리소스</label>
@@ -79,12 +79,55 @@
                             <input type="text" class="form-control" id="publication_info" name="publication_info">
                         </div>
                         <div class="mb-3">
-                            <label for="content" class="form-label">내용 (서식 지원, 붙여넣기 가능)</label>
-                            <textarea name="content" id="content" class="form-control" rows="10"></textarea>
+                            <label for="content" class="form-label">내용 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="content" name="content" rows="10" required>
+# 횡격막 호흡과 복식 호흡이 안 되는 5가지 원인과 해결 방안
+
+## 1. 잘못된 자세
+- **원인**: 구부정한 자세로 인해 횡격막이 제대로 움직이지 못함
+- **해결방안**: 
+  - 바른 자세 유지하기
+  - 등 스트레칭 정기적으로 하기
+  - 자세 교정 운동하기
+
+## 2. 스트레스와 긴장
+- **원인**: 스트레스로 인한 근육 긴장이 호흡을 방해
+- **해결방안**:
+  - 명상과 이완 운동
+  - 규칙적인 운동
+  - 충분한 휴식
+
+## 3. 잘못된 호흡 습관
+- **원인**: 오랜 기간 잘못된 호흡 패턴 형성
+- **해결방안**:
+  - 호흡 운동 꾸준히 하기
+  - 전문가와 함께 올바른 호흡법 배우기
+  - 일상생활에서 의식적으로 복식호흡 하기
+
+## 4. 신체적 제한
+- **원인**: 횡격막 기능 저하나 신체적 문제
+- **해결방안**:
+  - 의사와 상담
+  - 물리치료
+  - 단계적인 호흡 운동
+
+## 5. 환경적 요인
+- **원인**: 공기 질 나쁨, 알레르기 등
+- **해결방안**:
+  - 공기청정기 사용
+  - 알레르기 원인 제거
+  - 환기 자주하기
+
+## 실천 방법
+1. 매일 10분씩 호흡 운동하기
+2. 자세 체크 알람 설정하기
+3. 스트레스 관리 루틴 만들기
+4. 전문가 상담 받기
+5. 호흡 일지 작성하기</textarea>
                         </div>
                         <div class="mb-3">
                             <label for="summary" class="form-label">요약</label>
-                            <textarea class="form-control" id="summary" name="summary" rows="3"></textarea>
+                            <textarea class="form-control" id="summary" name="summary" rows="3">횡격막 호흡과 복식 호흡이 잘 되지 않는 주요 원인 5가지와 각각의 해결 방안을 상세히 설명합니다.</textarea>
                         </div>
                         <div class="mb-3">
                             <label for="initial_impression" class="form-label">초기 인상</label>
@@ -169,17 +212,11 @@
                             <textarea class="form-control" id="application_ideas" name="application_ideas" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">공개 여부 <span class="text-danger">*</span></label>
-                            <div class="d-flex flex-row gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="is_public" id="is_public_1" value="1" checked>
-                                    <label class="form-check-label" for="is_public_1">공개</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="is_public" id="is_public_0" value="0">
-                                    <label class="form-check-label" for="is_public_0">비공개</label>
-                                </div>
-                            </div>
+                            <label for="visibility" class="form-label">공개 여부</label>
+                            <select class="form-select" id="visibility" name="visibility">
+                                <option value="public" selected>공개</option>
+                                <option value="private">비공개</option>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">공지로 고정</label>
@@ -188,8 +225,8 @@
                                 <label class="form-check-label" for="is_pinned">상단에 고정(공지)</label>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-between">
-                            <a href="/resources" class="btn btn-secondary">목록으로</a>
+                        <div class="text-end">
+                            <a href="/resources" class="btn btn-secondary me-2">취소</a>
                             <button type="submit" class="btn btn-primary">등록</button>
                         </div>
                     </form>
@@ -225,6 +262,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (ckeditorInstance) {
             document.getElementById('content').value = ckeditorInstance.getData();
         }
+    });
+
+    // 태그 입력 처리
+    const tagsInput = document.getElementById('tags');
+    tagsInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9,]/g, '');
     });
 });
 </script> 

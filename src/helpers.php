@@ -134,23 +134,12 @@ if (!function_exists('dd')) {
      * @param mixed ...$vars 덤프할 변수들 (가변 인자)
      */
     function dd(...$vars): void {
-        // 웹 환경에서 보기 좋게 출력
-        echo '<pre style="background-color: #f4f4f4; border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; color: #333; overflow-x: auto; z-index: 9999; position: relative;">';
-        // 함수가 호출된 파일과 라인 번호 출력 (디버깅에 유용)
-        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
-        if (isset($backtrace[0]['file']) && isset($backtrace[0]['line'])) {
-            echo '<strong>DD at: ' . htmlspecialchars($backtrace[0]['file']) . ':' . $backtrace[0]['line'] . "</strong>\n\n";
-        }
-        // 전달된 모든 변수를 var_dump로 출력
-        foreach ($vars as $var) {
-            var_dump($var);
-            echo "\n"; // 변수 사이에 줄바꿈 추가
-        }
+        echo '<pre style="background:#222;color:#fff;padding:10px;border-radius:6px;z-index:9999;position:relative;">';
+        foreach ($vars as $var) var_dump($var);
         echo '</pre>';
-        die(); // 스크립트 실행 중단
+        die();
     }
 }
-
 
 if (!function_exists('e')) {
     /**
@@ -450,5 +439,8 @@ if (!function_exists('asset')) {
         return '/assets/' . ltrim($path, '/');
     }
 }
+
+// view() 함수는 더 이상 직접 사용하지 않고, 컨트롤러에서는 반드시 $this->response->view() 또는 $this->view()를 사용하세요.
+// load_view()는 내부적으로만 사용하세요.
 
 ?>

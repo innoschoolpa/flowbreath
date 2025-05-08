@@ -68,8 +68,7 @@ function checkApiStatus(string $endpoint): array {
 
 // 최근 공개 리소스 가져오기
 $resourceModel = new Resource($pdo);
-$lang = isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko';
-$recentResources = $resourceModel->getRecentPublic(4, $lang);
+$recentResources = $resourceModel->getRecentPublic(4);
 
 // 인기 태그 가져오기
 $tagModel = new Tag($pdo);

@@ -28,12 +28,13 @@ return function (Router $router) {
 
     // Resource routes
     $router->add('GET', '/resources', [ResourceController::class, 'index']);
+    $router->add('GET', '/resources/', [ResourceController::class, 'index']);
     $router->add('GET', '/resources/show/{id}', [ResourceController::class, 'show']);
     $router->add('GET', '/resources/create', [ResourceController::class, 'create']);
     $router->add('POST', '/resources/store', [ResourceController::class, 'store']);
-    $router->add('GET', '/resources/edit/{id}', [ResourceController::class, 'edit']);
-    $router->add('POST', '/resources/update/{id}', [ResourceController::class, 'update']);
-    $router->add('POST', '/resources/delete/{id}', [ResourceController::class, 'destroy']);
+    $router->add('GET', '/resources/{id}/edit', [ResourceController::class, 'edit']);
+    $router->add('POST', '/resources/{id}/update', [ResourceController::class, 'update']);
+    $router->add('POST', '/resources/{id}/delete', [ResourceController::class, 'delete']);
     $router->add('GET', '/resources/search', [ResourceController::class, 'search']);
     $router->add('POST', '/resources/toggle-visibility/{id}', [ResourceController::class, 'toggleVisibility']);
     $router->add('GET', '/resources/view/{id}', [ResourceController::class, 'show']);

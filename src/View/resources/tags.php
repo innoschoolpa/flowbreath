@@ -1,6 +1,6 @@
 <?php
 // src/View/resources/tags.php
-require dirname(__DIR__) . '/layout/header.php';
+require __DIR__ . '/../layouts/header.php';
 ?>
 
 <div class="container mt-4">
@@ -50,34 +50,34 @@ require dirname(__DIR__) . '/layout/header.php';
                             <?php foreach ($tags as $tag): ?>
                                 <tr>
                                     <td>
-                                        <a href="/resources?tag_ids[]=<?= $tag['tag_id'] ?>" class="text-decoration-none">
-                                            #<?= htmlspecialchars($tag['tag_name']) ?>
+                                        <a href="/resources?tag_ids[]=<?= $tag['id'] ?>" class="text-decoration-none">
+                                            #<?= htmlspecialchars($tag['name']) ?>
                                         </a>
                                     </td>
                                     <td><?= htmlspecialchars($tag['description'] ?? '') ?></td>
-                                    <td><?= number_format($tag['usage_count'] ?? 0) ?></td>
+                                    <td><?= number_format($tag['count'] ?? 0) ?></td>
                                     <?php if (isset($_SESSION['user']) && $_SESSION['user']['is_admin']): ?>
                                         <td>
                                             <div class="btn-group btn-group-sm">
                                                 <button type="button" 
                                                         class="btn btn-outline-primary"
                                                         data-bs-toggle="modal"
-                                                        data-bs-target="#editTagModal<?= $tag['tag_id'] ?>">
+                                                        data-bs-target="#editTagModal<?= $tag['id'] ?>">
                                                     <i class="bi bi-pencil"></i>
                                                 </button>
                                                 <button type="button"
                                                         class="btn btn-outline-danger"
                                                         data-bs-toggle="modal"
-                                                        data-bs-target="#deleteTagModal<?= $tag['tag_id'] ?>">
+                                                        data-bs-target="#deleteTagModal<?= $tag['id'] ?>">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </div>
 
                                             <!-- 수정 모달 -->
-                                            <div class="modal fade" id="editTagModal<?= $tag['tag_id'] ?>" tabindex="-1">
+                                            <div class="modal fade" id="editTagModal<?= $tag['id'] ?>" tabindex="-1">
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
-                                                        <form action="/resources/tags/update/<?= $tag['tag_id'] ?>" method="POST">
+                                                        <form action="/resources/tags/update/<?= $tag['id'] ?>" method="POST">
                                                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                                             <div class="modal-header">
                                                                 <h5 class="modal-title">태그 수정</h5>
@@ -85,19 +85,19 @@ require dirname(__DIR__) . '/layout/header.php';
                                                             </div>
                                                             <div class="modal-body">
                                                                 <div class="mb-3">
-                                                                    <label for="editTagName<?= $tag['tag_id'] ?>" class="form-label">태그 이름</label>
+                                                                    <label for="editTagName<?= $tag['id'] ?>" class="form-label">태그 이름</label>
                                                                     <input type="text" 
                                                                            class="form-control" 
-                                                                           id="editTagName<?= $tag['tag_id'] ?>" 
+                                                                           id="editTagName<?= $tag['id'] ?>" 
                                                                            name="tag_name" 
-                                                                           value="<?= htmlspecialchars($tag['tag_name']) ?>" 
+                                                                           value="<?= htmlspecialchars($tag['name']) ?>" 
                                                                            required>
                                                                 </div>
                                                                 <div class="mb-3">
-                                                                    <label for="editTagDescription<?= $tag['tag_id'] ?>" class="form-label">설명</label>
+                                                                    <label for="editTagDescription<?= $tag['id'] ?>" class="form-label">설명</label>
                                                                     <input type="text" 
                                                                            class="form-control" 
-                                                                           id="editTagDescription<?= $tag['tag_id'] ?>" 
+                                                                           id="editTagDescription<?= $tag['id'] ?>" 
                                                                            name="description" 
                                                                            value="<?= htmlspecialchars($tag['description'] ?? '') ?>">
                                                                 </div>
@@ -112,7 +112,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                             </div>
 
                                             <!-- 삭제 모달 -->
-                                            <div class="modal fade" id="deleteTagModal<?= $tag['tag_id'] ?>" tabindex="-1">
+                                            <div class="modal fade" id="deleteTagModal<?= $tag['id'] ?>" tabindex="-1">
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
@@ -120,12 +120,12 @@ require dirname(__DIR__) . '/layout/header.php';
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                         </div>
                                                         <div class="modal-body">
-                                                            <p>정말로 태그 "<?= htmlspecialchars($tag['tag_name']) ?>"를 삭제하시겠습니까?</p>
+                                                            <p>정말로 태그 "<?= htmlspecialchars($tag['name']) ?>"를 삭제하시겠습니까?</p>
                                                             <p class="text-danger">이 작업은 되돌릴 수 없으며, 이 태그를 사용하는 모든 리소스에서 태그가 제거됩니다.</p>
                                                         </div>
                                                         <div class="modal-footer">
                                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                                                            <form action="/resources/tags/delete/<?= $tag['tag_id'] ?>" method="POST" style="display: inline;">
+                                                            <form action="/resources/tags/delete/<?= $tag['id'] ?>" method="POST" style="display: inline;">
                                                                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                                                 <button type="submit" class="btn btn-danger">삭제</button>
                                                             </form>
@@ -147,4 +147,4 @@ require dirname(__DIR__) . '/layout/header.php';
     </div>
 </div>
 
-<?php require dirname(__DIR__) . '/layout/footer.php'; ?> 
+<?php require __DIR__ . '/../layouts/footer.php'; ?> 

@@ -9,14 +9,20 @@ class Language
     private $currentLang = 'ko';
     private $fallbackLang = 'en';
     private $langPath;
+    private $currentLanguage = 'ko';
+    private $defaultLanguage = 'ko';
+    private $availableLanguages = ['ko', 'en'];
 
     private function __construct()
     {
         $this->langPath = dirname(__DIR__, 2) . '/src/Lang';
         $this->loadLanguage();
+        if (isset($_SESSION['lang']) && in_array($_SESSION['lang'], $this->availableLanguages)) {
+            $this->currentLanguage = $_SESSION['lang'];
+        }
     }
 
-    public static function getInstance()
+    public static function getInstance(): self
     {
         if (self::$instance === null) {
             self::$instance = new self();
@@ -55,9 +61,9 @@ class Language
         }
     }
 
-    public function setLanguage($lang)
+    public function setLanguage(string $lang): void
     {
-        if (in_array($lang, ['ko', 'en'])) {
+        if (in_array($lang, $this->availableLanguages)) {
             $this->currentLang = $lang;
             $_SESSION['lang'] = $lang;
             $this->loadTranslationFile($lang);
@@ -107,8 +113,18 @@ class Language
         return $this->currentLang;
     }
 
-    public function getAvailableLanguages()
+    public function getCurrentLanguage(): string
     {
-        return ['ko' => '한국어', 'en' => 'English'];
+        return $this->currentLanguage;
+    }
+
+    public function getDefaultLanguage(): string
+    {
+        return $this->defaultLanguage;
+    }
+
+    public function getAvailableLanguages(): array
+    {
+        return $this->availableLanguages;
     }
 } 

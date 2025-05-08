@@ -21,43 +21,16 @@ class ResourceController extends BaseController {
         $this->resourceManager = ResourceManager::getInstance();
     }
 
-    public function index() {
+    public function index(Request $request) {
         try {
-            $lang = $_SESSION['lang'] ?? 'ko';
-            $keyword = $_GET['keyword'] ?? '';
-            $page = max(1, (int)($_GET['page'] ?? 1));
-            $limit = 10;
-            $offset = ($page - 1) * $limit;
-
-            // 태그 목록 가져오기
-            $tagModel = new \App\Models\Tag();
-            $tags = $tagModel->getAll();
-            $tag_ids = isset($_GET['tags']) ? (array)$_GET['tags'] : [];
-
-            $resourceModel = new \App\Models\Resource();
-            $resources = $resourceModel->searchWithLang([
-                'lang' => $lang,
-                'keyword' => $keyword,
-                'tag_ids' => $tag_ids,
-                'limit' => $limit,
-                'offset' => $offset
-            ]);
-
-            // 뷰에 필요한 변수들
-            $viewData = [
+            $resources = $this->resource->getAll();
+            $types = $this->resource->getTypes();
+            return $this->view('resources/list', [
                 'resources' => $resources,
-                'tags' => $tags,
-                'tag_ids' => $tag_ids,
-                'keyword' => $keyword,
-                'current_page' => $page,
-                'total_pages' => ceil(count($resources) / $limit),
-                'lang' => $lang
-            ];
-
-            // 뷰 렌더링
-            return $this->view('resource/index', $viewData);
+                'types' => $types,
+                'title' => '리소스 목록'
+            ]);
         } catch (\Exception $e) {
-            error_log('Error in ResourceController@index: ' . $e->getMessage());
             return $this->view('errors/500', [
                 'error' => $e->getMessage(),
                 'title' => '500 Internal Server Error'
@@ -71,30 +44,24 @@ class ResourceController extends BaseController {
     public function show(Request $request, $id)
     {
         try {
-            $resource = $this->resource->findById($id);
+            $lang = $_SESSION['lang'] ?? 'ko';
+            $resource = $this->resource->findById($id, $lang);
             if (!$resource) {
                 throw new \Exception("리소스를 찾을 수 없습니다.", 404);
             }
-
-            // JSON 요청인 경우 JSON 응답
             if ($request->wantsJson() || $request->isAjax()) {
                 return $this->response->json($resource);
             }
-
-            // 일반 요청인 경우 HTML 뷰 렌더링
             return $this->view('resources/show', [
                 'resource' => $resource,
                 'title' => $resource['title']
             ]);
         } catch (\Exception $e) {
-            // JSON 요청인 경우 JSON 에러 응답
             if ($request->wantsJson() || $request->isAjax()) {
                 return $this->response->json([
                     'error' => $e->getMessage()
                 ], $e->getCode() ?: 500);
             }
-
-            // 일반 요청인 경우 에러 페이지 렌더링
             return $this->view('errors/500', [
                 'error' => $e->getMessage(),
                 'title' => '500 Internal Server Error'
@@ -108,19 +75,15 @@ class ResourceController extends BaseController {
             if (!$user) {
                 return $this->response->json(['error' => '로그인이 필요합니다.'], 401);
             }
-
-            // 입력 데이터 검증
             $data = $this->validateResourceData($request);
             if (isset($data['error'])) {
                 return $this->response->json(['error' => $data['error']], 422);
             }
-
             $data['user_id'] = $user['id'];
-            $resourceId = $this->resource->create($data);
-
+            $resource = $this->resource->create($data);
             return $this->response->json([
                 'message' => '리소스가 생성되었습니다.',
-                'data' => ['id' => $resourceId]
+                'data' => ['id' => $resource['id'] ?? null]
             ], 201);
         } catch (\Exception $e) {
             return $this->response->json(['error' => $e->getMessage()], 500);
@@ -133,25 +96,18 @@ class ResourceController extends BaseController {
             if (!$user) {
                 return $this->response->json(['error' => '로그인이 필요합니다.'], 401);
             }
-
             $resource = $this->resource->findById($id);
             if (!$resource) {
                 return $this->response->json(['error' => '리소스를 찾을 수 없습니다.'], 404);
             }
-
-            // 권한 확인
             if ($resource['user_id'] !== $user['id'] && !$user['is_admin']) {
                 return $this->response->json(['error' => '수정 권한이 없습니다.'], 403);
             }
-
-            // 입력 데이터 검증
             $data = $this->validateResourceData($request, true);
             if (isset($data['error'])) {
                 return $this->response->json(['error' => $data['error']], 422);
             }
-
             $this->resource->update($id, $data);
-
             return $this->response->json(['message' => '리소스가 수정되었습니다.']);
         } catch (\Exception $e) {
             return $this->response->json(['error' => $e->getMessage()], 500);
@@ -240,30 +196,28 @@ class ResourceController extends BaseController {
     private function validateResourceData(Request $request, $isUpdate = false) {
         $data = [];
         $errors = [];
+        $lang = $_SESSION['lang'] ?? 'ko';
+        $translations = [];
 
-        if (!$isUpdate || $request->has('title')) {
+        // 다국어 입력 처리 (여기서는 기본적으로 'ko'만, 확장 가능)
             $title = trim($request->get('title'));
+        $content = trim($request->get('content'));
+        $description = trim($request->get('description'));
             if (empty($title)) {
                 $errors[] = '제목은 필수입니다.';
-            }
-            $data['title'] = $title;
         }
-
-        if (!$isUpdate || $request->has('content')) {
-            $content = trim($request->get('content'));
             if (empty($content)) {
                 $errors[] = '내용은 필수입니다.';
-            }
-            $data['content'] = $content;
         }
-
-        if (!$isUpdate || $request->has('description')) {
-            $description = trim($request->get('description'));
             if (empty($description)) {
                 $errors[] = '설명은 필수입니다.';
             }
-            $data['description'] = $description;
-        }
+        $translations[$lang] = [
+            'title' => $title,
+            'content' => $content,
+            'description' => $description
+        ];
+        $data['translations'] = $translations;
 
         if ($request->has('visibility')) {
             $visibility = $request->get('visibility');
@@ -272,7 +226,6 @@ class ResourceController extends BaseController {
             }
             $data['visibility'] = $visibility;
         }
-
         if ($request->has('status')) {
             $status = $request->get('status');
             if (!in_array($status, ['draft', 'published'])) {
@@ -280,7 +233,6 @@ class ResourceController extends BaseController {
             }
             $data['status'] = $status;
         }
-
         if ($request->has('tags')) {
             $tags = $request->get('tags');
             if (!is_array($tags)) {
@@ -288,11 +240,9 @@ class ResourceController extends BaseController {
             }
             $data['tags'] = $tags;
         }
-
         if (!empty($errors)) {
             return ['error' => implode(' ', $errors)];
         }
-
         return $data;
     }
 } 

@@ -65,7 +65,7 @@ class Tag extends Model {
     {
         try {
             return $this->db->fetchAll(
-                "SELECT * FROM tags WHERE tag_name LIKE ? ORDER BY tag_name LIMIT 10",
+                "SELECT * FROM tags WHERE name LIKE ? ORDER BY name LIMIT 10",
                 ["%$query%"]
             );
         } catch (PDOException $e) {
@@ -101,11 +101,11 @@ class Tag extends Model {
     {
         try {
             return $this->db->fetchAll(
-                "SELECT t.tag_id, t.tag_name 
+                "SELECT t.id, t.name 
                 FROM tags t 
-                JOIN resource_tags rt ON t.tag_id = rt.tag_id 
+                JOIN resource_tags rt ON t.id = rt.tag_id 
                 WHERE rt.resource_id = ?
-                ORDER BY t.tag_name",
+                ORDER BY t.name",
                 [$resourceId]
             );
         } catch (PDOException $e) {
@@ -120,7 +120,7 @@ class Tag extends Model {
     public function getAll(): array
     {
         try {
-            return $this->db->fetchAll("SELECT * FROM tags ORDER BY tag_name");
+            return $this->db->fetchAll("SELECT * FROM tags ORDER BY name");
         } catch (PDOException $e) {
             error_log("Tag::getAll error: " . $e->getMessage());
             return [];
