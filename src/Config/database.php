@@ -30,14 +30,20 @@ ini_set('log_errors', 1);     // 오류 로그 기록 활성화
 class Database {
     private static $instance = null;
     private $connection = null;
+    private $lastConnectionTime = null;
+    private $connectionTimeout = 300; // 5분
     
     private function __construct() {
+        $this->connect();
+    }
+    
+    private function connect() {
         try {
-            // 환경 변수 대신 직접 설정값 사용
-            $host = 'srv636.hstgr.io';
-            $dbname = 'u573434051_flowbreath';
-            $username = 'u573434051_flow';
-            $password = 'Eduispa1712!';
+            // 환경 변수에서 데이터베이스 설정 가져오기
+            $host = getenv('DB_HOST') ?: 'srv636.hstgr.io';
+            $dbname = getenv('DB_NAME') ?: 'u573434051_flowbreath';
+            $username = getenv('DB_USER') ?: 'u573434051_flow';
+            $password = getenv('DB_PASS') ?: 'Eduispa1712!';
             
             error_log("Attempting to connect to database: {$dbname} on {$host}");
             
@@ -48,15 +54,67 @@ class Database {
                 [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                    PDO::ATTR_PERSISTENT => true // 영구 연결 사용
                 ]
             );
             
+            $this->lastConnectionTime = time();
             error_log("Database connection established successfully");
+            
+            // 연결 직후 테스트 쿼리 실행
+            $this->testConnection();
+            
         } catch (PDOException $e) {
             error_log("Database connection error: " . $e->getMessage());
             throw new Exception("데이터베이스 연결에 실패했습니다: " . $e->getMessage());
         }
+    }
+    
+    public function testConnection() {
+        try {
+            if (!$this->connection) {
+                throw new Exception("데이터베이스 연결이 없습니다.");
+            }
+            
+            // 연결 상태 확인
+            $this->connection->query('SELECT 1');
+            
+            // 서버 상태 확인
+            $status = $this->connection->query('SHOW STATUS')->fetchAll(PDO::FETCH_KEY_PAIR);
+            error_log("Database server status: " . json_encode($status));
+            
+            // 연결 시간 확인
+            $uptime = $this->connection->query('SHOW STATUS LIKE "Uptime"')->fetch(PDO::FETCH_ASSOC);
+            error_log("Database uptime: " . json_encode($uptime));
+            
+            return true;
+        } catch (PDOException $e) {
+            error_log("Database connection test failed: " . $e->getMessage());
+            $this->reconnect();
+            return false;
+        }
+    }
+    
+    public function reconnect() {
+        try {
+            if ($this->connection) {
+                $this->connection = null;
+            }
+            $this->connect();
+            return true;
+        } catch (Exception $e) {
+            error_log("Database reconnection failed: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    public function getConnection() {
+        // 연결이 없거나 타임아웃된 경우 재연결
+        if (!$this->connection || (time() - $this->lastConnectionTime) > $this->connectionTimeout) {
+            $this->reconnect();
+        }
+        return $this->connection;
     }
     
     public static function getInstance() {
@@ -64,10 +122,6 @@ class Database {
             self::$instance = new self();
         }
         return self::$instance;
-    }
-    
-    public function getConnection() {
-        return $this->connection;
     }
     
     // 싱글톤 패턴을 위한 메서드들
@@ -78,13 +132,21 @@ class Database {
     }
 }
 
-// 연결 테스트
+// 초기 연결 테스트
 try {
     $db = Database::getInstance();
     $pdo = $db->getConnection();
-    error_log("Connection test successful");
+    
+    // 상세 연결 정보 로깅
+    $version = $pdo->query('SELECT VERSION()')->fetchColumn();
+    $charset = $pdo->query('SHOW VARIABLES LIKE "character_set_database"')->fetch(PDO::FETCH_ASSOC);
+    
+    error_log("Database connection test successful");
+    error_log("MySQL Version: " . $version);
+    error_log("Database Charset: " . json_encode($charset));
+    
 } catch (Exception $e) {
-    error_log("Connection test failed: " . $e->getMessage());
+    error_log("Initial database connection test failed: " . $e->getMessage());
     throw $e;
 }
 

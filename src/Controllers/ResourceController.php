@@ -236,6 +236,10 @@ class ResourceController extends BaseController {
     public function tags() {
         $tagModel = new \App\Models\Tag();
         $tags = $tagModel->getPopularTags(1000); // 모든 태그와 리소스 개수
+        // 리소스가 1개 이상인 태그만 필터링
+        $tags = array_filter($tags, function($tag) {
+            return ($tag['resource_count'] ?? 0) > 0;
+        });
         return $this->view('resources/tags', [
             'tags' => $tags
         ]);

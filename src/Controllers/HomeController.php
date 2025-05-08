@@ -78,7 +78,16 @@ class HomeController
 
     public function apiDocs()
     {
-        require dirname(__DIR__) . '/View/api/docs.php';
+        // Clear any previous output
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
+        
+        $response = new Response();
+        $response->setContentType('text/html; charset=UTF-8');
+        $response->setStatusCode(200);
+        $response->setContent($this->renderApiDocsPage());
+        return $response;
     }
 
     private function renderMainPage($language, $recentResources, $popularTags, $isLoggedIn, $user, $searchQuery, $searchResults)
@@ -148,5 +157,12 @@ class HomeController
 </body>
 </html>
 HTML;
+    }
+
+    private function renderApiDocsPage()
+    {
+        ob_start();
+        include dirname(__DIR__) . '/View/api/docs.php';
+        return ob_get_clean();
     }
 } 

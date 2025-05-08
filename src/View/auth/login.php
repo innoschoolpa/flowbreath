@@ -1,9 +1,7 @@
 <?php
 // src/View/auth/login.php
 // 로그인 폼 뷰
-
-// 헤더 불러오기
-require APP_PATH . '/View/layouts/header.php';
+require_once __DIR__ . '/../layouts/header.php';
 ?>
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -21,7 +19,7 @@ require APP_PATH . '/View/layouts/header.php';
                     <?php endif; ?>
 
                     <form method="POST" action="/login">
-                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                        <input type="hidden" name="csrf_token" value="<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ''; ?>">
                         
                         <div class="form-group">
                             <label for="email">이메일</label>
@@ -41,27 +39,25 @@ require APP_PATH . '/View/layouts/header.php';
                         </div>
 
                         <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary">로그인</button>
+                            <button type="submit" class="btn btn-primary w-100">로그인</button>
                         </div>
                     </form>
 
-                    <div class="mt-4 text-center">
-                        <p>계정이 없으신가요? <a href="/register">회원가입</a></p>
-                        <p><a href="/password/reset">비밀번호를 잊으셨나요?</a></p>
+                    <div class="text-center mt-3">
+                        <a href="/register">회원가입</a>
                     </div>
 
                     <hr>
 
-                    <div class="d-grid gap-2">
-                        <a href="/auth/google" class="btn btn-danger">
-                            <i class="fab fa-google"></i> Google로 로그인
-                        </a>
-                    </div>
+                    <!-- 소셜 로그인 버튼 -->
+                    <a href="/auth/google" class="btn btn-outline-danger w-100 mt-2">
+                        <i class="fab fa-google"></i> 구글로 로그인
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 <?php
-// 푸터 불러오기
-require APP_PATH . '/View/layouts/footer.php'; 
+require_once __DIR__ . '/../layouts/footer.php';
+?> 

@@ -14,30 +14,22 @@ use PDO;
 use PDOException;
 use Exception;
 use App\Models\BaseModel;
+use App\Core\Model;
 
 /**
  * User 모델 클래스
  * users 테이블 관련 데이터베이스 작업을 처리합니다.
  */
-class User extends BaseModel {
-    protected string $table = 'users';
-    protected array $fillable = [
-        'email', 'password', 'name', 'is_admin', 'username', 'role', 
-        'google_id', 'created_at', 'last_login'
-    ];
-
-    /**
-     * PDO 데이터베이스 연결 객체
-     * @var PDO
-     */
-    private $pdo;
+class User extends Model {
+    protected $table = 'users';
+    protected $fillable = ['name', 'email', 'password', 'role', 'google_id', 'status'];
 
     /**
      * 생성자
-     * @param PDO $pdo 데이터베이스 연결 객체 주입
+     * @param \App\Core\Database $db 데이터베이스 객체 주입
      */
-    public function __construct(PDO $pdo) {
-        parent::__construct($pdo);
+    public function __construct(\App\Core\Database $db) {
+        parent::__construct($db);
     }
 
     /**
@@ -47,11 +39,8 @@ class User extends BaseModel {
      */
     public function findByEmailOrUsername(string $identifier): ?array {
         try {
-            $sql = "SELECT * FROM users WHERE email = :identifier OR username = :identifier LIMIT 1";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':identifier', $identifier, PDO::PARAM_STR);
-            $stmt->execute();
-            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+            $sql = "SELECT * FROM users WHERE (email = :identifier OR name = :identifier) AND status = 'active' LIMIT 1";
+            return $this->db->fetch($sql, ['identifier' => $identifier]);
         } catch (PDOException $e) {
             error_log("Error in findByEmailOrUsername: " . $e->getMessage());
             return null;
@@ -65,15 +54,14 @@ class User extends BaseModel {
      */
     public function findById(int $userId): ?array {
         try {
-            $sql = "SELECT user_id, username, email, role, google_id, created_at, last_login 
-                    FROM users 
-                    WHERE user_id = :user_id";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
-            $stmt->execute();
-            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+            error_log("Finding user by ID: " . $userId);
+            $sql = "SELECT * FROM users WHERE id = :id AND status = 'active'";
+            $result = $this->db->fetch($sql, ['id' => $userId]);
+            error_log("User found: " . ($result ? "yes" : "no"));
+            return $result;
         } catch (PDOException $e) {
             error_log("Error in findById: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             return null;
         }
     }
@@ -85,11 +73,8 @@ class User extends BaseModel {
      */
     public function findByGoogleId(string $googleId): ?array {
         try {
-            $sql = "SELECT * FROM users WHERE google_id = :google_id LIMIT 1";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':google_id', $googleId, PDO::PARAM_STR);
-            $stmt->execute();
-            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+            $sql = "SELECT * FROM users WHERE google_id = :google_id AND status = 'active' LIMIT 1";
+            return $this->db->fetch($sql, ['google_id' => $googleId]);
         } catch (PDOException $e) {
             error_log("Error in findByGoogleId: " . $e->getMessage());
             return null;
@@ -97,42 +82,165 @@ class User extends BaseModel {
     }
 
     /**
+     * 데이터베이스 연결 상태 확인
+     */
+    private function checkDatabaseConnection(): bool {
+        try {
+            echo "Checking database connection...\n";
+            $this->db->query("SELECT 1");
+            echo "Database connection successful.\n";
+            return true;
+        } catch (\Exception $e) {
+            echo "Database connection failed: " . $e->getMessage() . "\n";
+            error_log("Database connection check failed: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * 새로운 사용자 생성 (회원가입 또는 Google 최초 로그인 시)
-     * @param string $username 사용자 이름
+     * @param string $name 사용자 이름
      * @param string $email 이메일 주소
-     * @param string|null $passwordHash 해시된 비밀번호 (Google 가입 시 null 가능)
+     * @param string|null $password 비밀번호 (Google 가입 시 null 가능)
      * @param string $role 사용자 역할 (기본값 'user')
      * @param string|null $googleId Google ID (Google 가입 시 제공)
+     * @param string|null $profileImage 프로필 이미지 URL
      * @return int|false 생성된 사용자의 ID 또는 실패 시 false
      */
     public function createUser(
-        string $username,
+        string $name,
         string $email,
-        ?string $passwordHash,
+        ?string $password = null,
         string $role = 'user',
-        ?string $googleId = null
+        ?string $googleId = null,
+        ?string $profileImage = null
     ): int|false {
         try {
-            $sql = "INSERT INTO users (username, email, password_hash, role, google_id, created_at, last_login)
-                    VALUES (:username, :email, :password_hash, :role, :google_id, NOW(), NULL)";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':username', $username);
-            $stmt->bindParam(':email', $email);
-            $stmt->bindParam(
-                ':password_hash',
-                $passwordHash,
-                $passwordHash === null ? PDO::PARAM_NULL : PDO::PARAM_STR
-            );
-            $stmt->bindParam(':role', $role);
-            $stmt->bindParam(
-                ':google_id',
-                $googleId,
-                $googleId === null ? PDO::PARAM_NULL : PDO::PARAM_STR
-            );
+            echo "\n=== Starting User Creation Process ===\n";
+            
+            // Check database connection first
+            if (!$this->checkDatabaseConnection()) {
+                echo "Cannot proceed with user creation due to database connection failure.\n";
+                return false;
+            }
 
-            return $stmt->execute() ? (int)$this->pdo->lastInsertId() : false;
-        } catch (PDOException $e) {
-            error_log("Error in createUser: " . $e->getMessage());
+            echo "Creating user with:\n";
+            echo "- Name: " . $name . "\n";
+            echo "- Email: " . $email . "\n";
+            echo "- Google ID: " . ($googleId ?? 'none') . "\n";
+            
+            // Start transaction
+            echo "Starting database transaction...\n";
+            $this->db->beginTransaction();
+            
+            try {
+                // Check if email already exists
+                echo "Checking for existing email...\n";
+                $existingUser = $this->findByEmail($email);
+                if ($existingUser) {
+                    echo "Email already exists in the system.\n";
+                    $this->db->rollBack();
+                    return false;
+                }
+                echo "Email is available.\n";
+
+                // Check if Google ID already exists
+                if ($googleId) {
+                    echo "Checking for existing Google ID...\n";
+                    $existingGoogleUser = $this->findByGoogleId($googleId);
+                    if ($existingGoogleUser) {
+                        echo "Google ID already exists in the system.\n";
+                        $this->db->rollBack();
+                        return false;
+                    }
+                    echo "Google ID is available.\n";
+                }
+
+                // Prepare user data
+                echo "Preparing user data...\n";
+                $currentTime = date('Y-m-d H:i:s');
+                $data = [
+                    'name' => $name,
+                    'email' => $email,
+                    'password' => $password ? password_hash($password, PASSWORD_DEFAULT) : null,
+                    'role' => $role,
+                    'google_id' => $googleId,
+                    'profile_image' => $profileImage,
+                    'status' => 'active',
+                    'email_verified_at' => $googleId ? $currentTime : null,
+                    'created_at' => $currentTime,
+                    'updated_at' => $currentTime,
+                    'last_login_at' => $currentTime,
+                    'login_count' => 1,
+                    'failed_login_attempts' => 0,
+                    'locked_until' => null,
+                    'bio' => null,
+                    'last_password_change' => $password ? $currentTime : null
+                ];
+
+                // First, try to insert without profile_image
+                $insertData = $data;
+                unset($insertData['profile_image']); // Remove profile_image temporarily
+
+                echo "Inserting user data into database...\n";
+                $sql = "INSERT INTO users (
+                    name, email, password, role, google_id, status,
+                    email_verified_at, created_at, updated_at, last_login_at,
+                    login_count, failed_login_attempts, locked_until,
+                    bio, last_password_change
+                ) VALUES (
+                    :name, :email, :password, :role, :google_id, :status,
+                    :email_verified_at, :created_at, :updated_at, :last_login_at,
+                    :login_count, :failed_login_attempts, :locked_until,
+                    :bio, :last_password_change
+                )";
+                
+                echo "Executing SQL with data: " . json_encode($insertData) . "\n";
+                $result = $this->db->query($sql, $insertData);
+                if (!$result) {
+                    echo "Failed to insert user data.\n";
+                    $this->db->rollBack();
+                    return false;
+                }
+
+                $userId = $this->db->lastInsertId();
+                if (!$userId) {
+                    echo "Failed to get new user ID.\n";
+                    $this->db->rollBack();
+                    return false;
+                }
+                echo "User created with ID: " . $userId . "\n";
+
+                // If profile image exists, update it separately
+                if ($profileImage) {
+                    echo "Updating profile image...\n";
+                    $updateSql = "UPDATE users SET profile_image = :profile_image WHERE id = :id";
+                    $updateResult = $this->db->query($updateSql, [
+                        'profile_image' => $profileImage,
+                        'id' => $userId
+                    ]);
+                    
+                    if (!$updateResult) {
+                        echo "Warning: Failed to update profile image.\n";
+                    } else {
+                        echo "Profile image updated successfully.\n";
+                    }
+                }
+
+                // Commit transaction
+                echo "Committing transaction...\n";
+                $this->db->commit();
+                echo "User creation completed successfully.\n";
+                return (int)$userId;
+            } catch (\Exception $e) {
+                echo "Error during user creation: " . $e->getMessage() . "\n";
+                $this->db->rollBack();
+                throw $e;
+            }
+        } catch (\Exception $e) {
+            echo "Fatal error in user creation: " . $e->getMessage() . "\n";
+            error_log("Failed to create user: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             return false;
         }
     }
@@ -141,17 +249,91 @@ class User extends BaseModel {
      * 기존 사용자의 Google ID 업데이트 (이메일로 찾은 사용자를 Google 계정과 연결 시)
      * @param int $userId 사용자 ID
      * @param string $googleId 연결할 Google ID
+     * @param string|null $profileImage 프로필 이미지 URL
      * @return bool 성공 여부
      */
-    public function updateGoogleId(int $userId, string $googleId): bool {
+    public function updateGoogleId(int $userId, string $googleId, ?string $profileImage = null): bool {
         try {
-            $sql = "UPDATE users SET google_id = :google_id WHERE user_id = :user_id";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':google_id', $googleId, PDO::PARAM_STR);
-            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            error_log("Error in updateGoogleId: " . $e->getMessage());
+            echo "\n=== Starting Google ID Update Process ===\n";
+            
+            // Check database connection first
+            if (!$this->checkDatabaseConnection()) {
+                echo "Cannot proceed with Google ID update due to database connection failure.\n";
+                return false;
+            }
+
+            echo "Updating Google ID for user ID: " . $userId . "\n";
+            echo "New Google ID: " . $googleId . "\n";
+            
+            // Start transaction
+            echo "Starting database transaction...\n";
+            $this->db->beginTransaction();
+            
+            try {
+                // Check if Google ID is already used by another user
+                echo "Checking for existing Google ID...\n";
+                $existingUser = $this->findByGoogleId($googleId);
+                if ($existingUser && $existingUser['id'] !== $userId) {
+                    echo "Google ID is already in use by another user.\n";
+                    $this->db->rollBack();
+                    return false;
+                }
+                echo "Google ID is available.\n";
+
+                // First update basic info
+                echo "Updating user information...\n";
+                $data = [
+                    'google_id' => $googleId,
+                    'email_verified_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                    'id' => $userId
+                ];
+
+                $sql = "UPDATE users SET 
+                        google_id = :google_id,
+                        email_verified_at = :email_verified_at,
+                        updated_at = :updated_at
+                        WHERE id = :id";
+                        
+                $result = $this->db->query($sql, $data);
+                $success = $result && $result->rowCount() > 0;
+                
+                if (!$success) {
+                    echo "Failed to update Google ID.\n";
+                    $this->db->rollBack();
+                    return false;
+                }
+                echo "User information updated successfully.\n";
+
+                // If profile image exists, update it separately
+                if ($profileImage) {
+                    echo "Updating profile image...\n";
+                    $updateSql = "UPDATE users SET profile_image = :profile_image WHERE id = :id";
+                    $updateResult = $this->db->query($updateSql, [
+                        'profile_image' => $profileImage,
+                        'id' => $userId
+                    ]);
+                    
+                    if (!$updateResult) {
+                        echo "Warning: Failed to update profile image.\n";
+                    } else {
+                        echo "Profile image updated successfully.\n";
+                    }
+                }
+
+                echo "Committing transaction...\n";
+                $this->db->commit();
+                echo "Google ID update completed successfully.\n";
+                return true;
+            } catch (\Exception $e) {
+                echo "Error during Google ID update: " . $e->getMessage() . "\n";
+                $this->db->rollBack();
+                throw $e;
+            }
+        } catch (\Exception $e) {
+            echo "Fatal error in Google ID update: " . $e->getMessage() . "\n";
+            error_log("Failed to update Google ID: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             return false;
         }
     }
@@ -163,12 +345,35 @@ class User extends BaseModel {
      */
     public function updateLastLogin(int $userId): bool {
         try {
-            $sql = "UPDATE users SET last_login = NOW() WHERE user_id = :user_id";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            error_log("Error in updateLastLogin: " . $e->getMessage());
+            $data = [
+                'last_login_at' => date('Y-m-d H:i:s'),
+                'login_count' => 1,
+                'failed_login_attempts' => 0,
+                'locked_until' => null,
+                'id' => $userId
+            ];
+
+            $sql = "UPDATE users SET 
+                    last_login_at = :last_login_at,
+                    login_count = login_count + :login_count,
+                    failed_login_attempts = :failed_login_attempts,
+                    locked_until = :locked_until,
+                    updated_at = CURRENT_TIMESTAMP
+                    WHERE id = :id";
+                    
+            $result = $this->db->query($sql, $data);
+            $success = $result && $result->rowCount() > 0;
+            
+            if ($success) {
+                error_log("Last login updated successfully for user: " . $userId);
+            } else {
+                error_log("Failed to update last login for user: " . $userId);
+            }
+            
+            return $success;
+        } catch (\Exception $e) {
+            error_log("Failed to update last login: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             return false;
         }
     }
@@ -178,12 +383,15 @@ class User extends BaseModel {
      */
     public function findByEmail($email) {
         try {
-            $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} WHERE email = :email LIMIT 1");
-            $stmt->execute(['email' => $email]);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Error in findByEmail: " . $e->getMessage());
-            throw new Exception("사용자를 찾는 중 오류가 발생했습니다.");
+            error_log("Finding user by email: " . $email);
+            $sql = "SELECT * FROM users WHERE email = :email AND status = 'active'";
+            $result = $this->db->fetch($sql, ['email' => $email]);
+            error_log("User found: " . ($result ? "yes" : "no"));
+            return $result;
+        } catch (\Exception $e) {
+            error_log("Failed to find user by email: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            return false;
         }
     }
 
@@ -197,25 +405,47 @@ class User extends BaseModel {
                 return false;
             }
 
-            if (!password_verify($password, $user['password'])) {
+            // Check if account is locked
+            if ($user['locked_until'] && strtotime($user['locked_until']) > time()) {
                 return false;
             }
 
-            // 마지막 로그인 시간 업데이트
-            $stmt = $this->pdo->prepare("UPDATE {$this->table} SET last_login_at = NOW() WHERE id = :id");
-            $stmt->execute(['id' => $user['id']]);
+            // Verify password
+            if (!password_verify($password, $user['password'])) {
+                // Increment failed login attempts
+                $this->incrementFailedLoginAttempts($user['id']);
+                return false;
+            }
 
+            // Reset failed login attempts and update last login
+            $this->updateLastLogin($user['id']);
             return $user;
-        } catch (PDOException $e) {
-            error_log("Error in attemptLogin: " . $e->getMessage());
-            throw new Exception("로그인 처리 중 오류가 발생했습니다.");
+        } catch (\Exception $e) {
+            error_log("Failed to attempt login: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function incrementFailedLoginAttempts($userId)
+    {
+        try {
+            $sql = "UPDATE users SET 
+                    failed_login_attempts = failed_login_attempts + 1,
+                    locked_until = CASE 
+                        WHEN failed_login_attempts + 1 >= 5 THEN DATE_ADD(NOW(), INTERVAL 30 MINUTE)
+                        ELSE NULL 
+                    END
+                    WHERE id = :id";
+            $this->db->query($sql, ['id' => $userId]);
+        } catch (\Exception $e) {
+            error_log("Failed to increment failed login attempts: " . $e->getMessage());
         }
     }
 
     /**
      * 사용자 생성
      */
-    public function create(array $data) {
+    public function create(array $data): ?array {
         try {
             // 이메일 중복 체크
             if ($this->findByEmail($data['email'])) {
@@ -223,9 +453,14 @@ class User extends BaseModel {
             }
 
             // 비밀번호 해시화
-            $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+            $data['password_hash'] = password_hash($data['password'], PASSWORD_DEFAULT);
+            unset($data['password']); // 원본 비밀번호 제거
 
-            return parent::create($data);
+            $id = $this->db->insert($this->table, $data);
+            if ($id === false) {
+                return null;
+            }
+            return $this->findById((int)$id);
         } catch (PDOException $e) {
             error_log("Error in create: " . $e->getMessage());
             throw new Exception("사용자 생성 중 오류가 발생했습니다.");
@@ -235,18 +470,101 @@ class User extends BaseModel {
     /**
      * 사용자 정보 업데이트
      */
-    public function update($id, array $data) {
+    public function update(int $id, array $data): ?array {
         try {
             // 비밀번호가 있는 경우에만 해시화
             if (isset($data['password'])) {
-                $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+                $data['password_hash'] = password_hash($data['password'], PASSWORD_DEFAULT);
+                unset($data['password']); // 원본 비밀번호 제거
             }
 
-            return parent::update($id, $data);
+            $this->db->update($this->table, $data, 'user_id = :user_id', ['user_id' => $id]);
+            return $this->findById($id);
         } catch (PDOException $e) {
             error_log("Error in update: " . $e->getMessage());
             throw new Exception("사용자 정보 업데이트 중 오류가 발생했습니다.");
         }
+    }
+
+    /**
+     * Get the user's resources
+     */
+    public function resources()
+    {
+        $sql = "SELECT * FROM resources WHERE user_id = :user_id";
+        return $this->db->fetchAll($sql, ['user_id' => $this->getAuthIdentifier()]);
+    }
+
+    /**
+     * Get the user's comments
+     */
+    public function comments()
+    {
+        $sql = "SELECT * FROM comments WHERE user_id = :user_id";
+        return $this->db->fetchAll($sql, ['user_id' => $this->getAuthIdentifier()]);
+    }
+
+    /**
+     * Get the user's likes
+     */
+    public function likes()
+    {
+        $sql = "SELECT * FROM likes WHERE user_id = :user_id";
+        return $this->db->fetchAll($sql, ['user_id' => $this->getAuthIdentifier()]);
+    }
+
+    /**
+     * Get the user's ID
+     */
+    public function getAuthIdentifier()
+    {
+        return $this->id ?? null;
+    }
+
+    /**
+     * Get the name of the unique identifier for the user
+     */
+    public function getAuthIdentifierName()
+    {
+        return 'id';
+    }
+
+    /**
+     * Get the password for the user
+     */
+    public function getAuthPassword()
+    {
+        return $this->password ?? null;
+    }
+
+    /**
+     * Get the remember token for the user
+     */
+    public function getRememberToken()
+    {
+        $sql = "SELECT remember_token FROM users WHERE id = :id";
+        $result = $this->db->fetch($sql, ['id' => $this->getAuthIdentifier()]);
+        return $result['remember_token'] ?? null;
+    }
+
+    /**
+     * Set the remember token for the user
+     */
+    public function setRememberToken($value)
+    {
+        $sql = "UPDATE users SET remember_token = :token WHERE id = :id";
+        return $this->db->query($sql, [
+            'token' => $value,
+            'id' => $this->getAuthIdentifier()
+        ]);
+    }
+
+    /**
+     * Get the column name for the remember token
+     */
+    public function getRememberTokenName()
+    {
+        return 'remember_token';
     }
 
     // --- 필요한 경우 다른 메소드 추가 ---
