@@ -21,14 +21,13 @@
         "psr-4": {
             "App\\": "src/",
             "App\\Controllers\\": "src/Controllers/",
-            "App\\Database\\": "src/Database/",
-            "App\\Utils\\": "src/Utils/",
             "App\\Models\\": "src/Models/",
             "App\\Core\\": "src/Core/",
+            "App\\Database\\": "src/Database/",
+            "App\\Utils\\": "src/Utils/",
             "App\\Middleware\\": "src/Middleware/",
-            "App\\View\\": "src/View/",
-            "App\\Mail\\": "src/Mail/",
             "App\\Auth\\": "src/Auth/",
+            "App\\Mail\\": "src/Mail/",
             "Config\\": "src/Config/"
         },
         "classmap": [
