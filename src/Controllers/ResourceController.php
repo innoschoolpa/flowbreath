@@ -29,10 +29,16 @@ class ResourceController extends BaseController {
             $limit = 10;
             $offset = ($page - 1) * $limit;
 
-            $resourceModel = new \App\Models\Resource($this->pdo);
+            // 태그 목록 가져오기
+            $tagModel = new \App\Models\Tag();
+            $tags = $tagModel->getAll();
+            $tag_ids = isset($_GET['tags']) ? (array)$_GET['tags'] : [];
+
+            $resourceModel = new \App\Models\Resource();
             $resources = $resourceModel->searchWithLang([
                 'lang' => $lang,
                 'keyword' => $keyword,
+                'tag_ids' => $tag_ids,
                 'limit' => $limit,
                 'offset' => $offset
             ]);
@@ -40,6 +46,8 @@ class ResourceController extends BaseController {
             // 뷰에 필요한 변수들
             $viewData = [
                 'resources' => $resources,
+                'tags' => $tags,
+                'tag_ids' => $tag_ids,
                 'keyword' => $keyword,
                 'current_page' => $page,
                 'total_pages' => ceil(count($resources) / $limit),
@@ -47,18 +55,13 @@ class ResourceController extends BaseController {
             ];
 
             // 뷰 렌더링
-            $viewPath = dirname(__DIR__) . '/View/resources/index.php';
-            if (!file_exists($viewPath)) {
-                throw new \Exception('View file not found: ' . $viewPath);
-            }
-            
-            extract($viewData);
-            require $viewPath;
+            return $this->view('resource/index', $viewData);
         } catch (\Exception $e) {
             error_log('Error in ResourceController@index: ' . $e->getMessage());
-            // 에러 페이지 표시 또는 500 에러 반환
-            http_response_code(500);
-            echo 'Internal Server Error';
+            return $this->view('errors/500', [
+                'error' => $e->getMessage(),
+                'title' => '500 Internal Server Error'
+            ], 500);
         }
     }
 
