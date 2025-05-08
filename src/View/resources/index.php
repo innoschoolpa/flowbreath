@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../layouts/header.php'; ?>
 <?php
 // src/View/resources/index.php
 // 유튜브 ID 추출 함수 (shorts 지원)
@@ -196,4 +197,5 @@ ul.list-group.mb-4 {
     background: #f8f9fa;
     text-decoration: none;
 }
-</style> 
+</style>
+<?php require_once __DIR__ . '/../layouts/footer.php'; ?> 

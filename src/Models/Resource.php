@@ -195,7 +195,7 @@ class Resource extends Model {
     /**
      * 리소스 검색 (다국어, FULLTEXT)
      */
-    public function search($keyword, $language = null, $filters = []) {
+    public function searchFulltext($keyword, $language = null, $filters = []) {
         try {
             $lang = $language ?: Language::getInstance()->getCurrentLanguage();
             $def = Language::getInstance()->getDefaultLanguage();
@@ -230,7 +230,7 @@ class Resource extends Model {
             }
             return $resources;
         } catch (Exception $e) {
-            error_log("Error in Resource::search: " . $e->getMessage());
+            error_log("Error in Resource::searchFulltext: " . $e->getMessage());
             throw new Exception("리소스 검색 중 오류가 발생했습니다.");
         }
     }
@@ -991,5 +991,137 @@ class Resource extends Model {
 
         $stmt->execute();
         return $stmt->fetchColumn();
+    }
+
+    public static function getTypes() {
+        return [
+            'website' => '웹사이트',
+            'book' => '책',
+            'video' => '비디오',
+            'article' => '논문',
+            'podcast' => '팟캐스트',
+            'experience' => '개인 경험',
+            'other' => '기타'
+        ];
+    }
+
+    /**
+     * 리소스 검색 (컨트롤러에서 사용하는 파라미터 일치)
+     */
+    public function search($params = []) {
+        try {
+            $where = [];
+            $sqlParams = [];
+            $limit = isset($params['limit']) ? (int)$params['limit'] : 12;
+            $offset = isset($params['offset']) ? (int)$params['offset'] : 0;
+
+            if (!empty($params['keyword'])) {
+                $where[] = "(r.title LIKE ? OR r.description LIKE ?)";
+                $sqlParams[] = '%' . $params['keyword'] . '%';
+                $sqlParams[] = '%' . $params['keyword'] . '%';
+            }
+            if (!empty($params['type'])) {
+                $where[] = "r.type = ?";
+                $sqlParams[] = $params['type'];
+            }
+            if (isset($params['is_public']) && $params['is_public'] !== '') {
+                $where[] = "r.visibility = ?";
+                $sqlParams[] = $params['is_public'] == '1' ? 'public' : 'private';
+            }
+            if (!empty($params['tag_ids'])) {
+                $placeholders = str_repeat('?,', count($params['tag_ids']) - 1) . '?';
+                $where[] = "EXISTS (SELECT 1 FROM resource_tags rt WHERE rt.resource_id = r.id AND rt.tag_id IN ($placeholders))";
+                $sqlParams = array_merge($sqlParams, $params['tag_ids']);
+            }
+
+            $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+            
+            $orderBy = 'ORDER BY r.created_at DESC';
+            if (!empty($params['sort'])) {
+                switch ($params['sort']) {
+                    case 'created_asc': $orderBy = 'ORDER BY r.created_at ASC'; break;
+                    case 'title_asc': $orderBy = 'ORDER BY r.title ASC'; break;
+                    case 'views_desc': $orderBy = 'ORDER BY r.view_count DESC'; break;
+                    case 'rating_desc': $orderBy = 'ORDER BY (SELECT AVG(rating) FROM resource_ratings WHERE resource_id = r.id) DESC'; break;
+                    case 'relevance': 
+                        if (!empty($params['keyword'])) {
+                            $orderBy = 'ORDER BY MATCH(r.title, r.description) AGAINST (? IN BOOLEAN MODE) DESC';
+                            $sqlParams[] = $params['keyword'];
+                        }
+                        break;
+                }
+            }
+
+            $sql = "SELECT r.*, u.name as author_name,
+                    (SELECT AVG(rating) FROM resource_ratings WHERE resource_id = r.id) as rating
+                    FROM resources r
+                    LEFT JOIN users u ON r.user_id = u.id
+                    $whereClause
+                    $orderBy
+                    LIMIT ? OFFSET ?";
+            
+            $sqlParams[] = $limit;
+            $sqlParams[] = $offset;
+
+            $resources = $this->db->fetchAll($sql, $sqlParams);
+
+            // 태그 정보 추가
+            foreach ($resources as &$resource) {
+                $resource['tags'] = $this->getTags($resource['id']);
+            }
+
+            return $resources;
+        } catch (Exception $e) {
+            error_log("Error in Resource::search: " . $e->getMessage());
+            error_log("SQL: " . (isset($sql) ? $sql : 'unset'));
+            error_log("Params: " . print_r(isset($sqlParams) ? $sqlParams : [], true));
+            echo '<pre style="color:red;font-weight:bold;">MODEL ERROR: ';
+            var_dump($e);
+            echo "\nSQL: ", isset($sql) ? $sql : 'unset', "\nParams: ", print_r(isset($sqlParams) ? $sqlParams : [], true), "</pre>";
+            throw new Exception("리소스 검색 중 오류가 발생했습니다: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * 리소스 개수 반환 (컨트롤러에서 사용하는 파라미터 일치)
+     */
+    public function count($params = []) {
+        try {
+            $where = [];
+            $sqlParams = [];
+
+            if (!empty($params['keyword'])) {
+                $where[] = "(r.title LIKE ? OR r.description LIKE ?)";
+                $sqlParams[] = '%' . $params['keyword'] . '%';
+                $sqlParams[] = '%' . $params['keyword'] . '%';
+            }
+            if (!empty($params['type'])) {
+                $where[] = "r.type = ?";
+                $sqlParams[] = $params['type'];
+            }
+            if (isset($params['is_public']) && $params['is_public'] !== '') {
+                $where[] = "r.visibility = ?";
+                $sqlParams[] = $params['is_public'] == '1' ? 'public' : 'private';
+            }
+            if (!empty($params['tag_ids'])) {
+                $placeholders = str_repeat('?,', count($params['tag_ids']) - 1) . '?';
+                $where[] = "EXISTS (SELECT 1 FROM resource_tags rt WHERE rt.resource_id = r.id AND rt.tag_id IN ($placeholders))";
+                $sqlParams = array_merge($sqlParams, $params['tag_ids']);
+            }
+
+            $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+            $sql = "SELECT COUNT(DISTINCT r.id) as total FROM resources r $whereClause";
+            
+            $result = $this->db->fetch($sql, $sqlParams);
+            return $result ? (int)$result['total'] : 0;
+        } catch (Exception $e) {
+            error_log("Error in Resource::count: " . $e->getMessage());
+            error_log("SQL: " . (isset($sql) ? $sql : 'unset'));
+            error_log("Params: " . print_r(isset($sqlParams) ? $sqlParams : [], true));
+            echo '<pre style="color:red;font-weight:bold;">MODEL ERROR: ';
+            var_dump($e);
+            echo "\nSQL: ", isset($sql) ? $sql : 'unset', "\nParams: ", print_r(isset($sqlParams) ? $sqlParams : [], true), "</pre>";
+            throw new Exception("리소스 개수 조회 중 오류가 발생했습니다: " . $e->getMessage());
+        }
     }
 }

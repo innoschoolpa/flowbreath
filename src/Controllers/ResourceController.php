@@ -22,19 +22,63 @@ class ResourceController extends BaseController {
     }
 
     public function index(Request $request) {
+        error_log('ResourceController::index 진입');
+        $keyword = $request->get('keyword', '');
+        $selected_tags = $request->get('tags', []);
+        $sort = $request->get('sort', 'created_desc');
+        $type = $request->get('type', '');
+        $is_public = $request->get('is_public', null);
+        $page = max(1, (int)$request->get('page', 1));
+        $limit = 12;
+        $offset = ($page - 1) * $limit;
+
+        $params = [
+            'keyword' => $keyword,
+            'tag_ids' => $selected_tags,
+            'sort' => $sort,
+            'limit' => $limit,
+            'offset' => $offset,
+            'type' => $type,
+            'is_public' => $is_public,
+        ];
+
         try {
-            $resources = $this->resource->getAll();
-            $types = $this->resource->getTypes();
+            $resourceModel = new \App\Models\Resource();
+            $resources = $resourceModel->search($params);
+            $total_count = $resourceModel->count($params);
+            $total_pages = ceil($total_count / $limit);
+            $all_tags = $resourceModel->getAllTags();
             return $this->view('resources/list', [
                 'resources' => $resources,
-                'types' => $types,
-                'title' => '리소스 목록'
+                'all_tags' => $all_tags,
+                'selected_tags' => $selected_tags,
+                'keyword' => $keyword,
+                'sort' => $sort,
+                'type' => $type,
+                'is_public' => $is_public,
+                'current_page' => $page,
+                'total_pages' => $total_pages,
+                'user' => $this->user,
+                'error' => null,
+                'types' => \App\Models\Resource::getTypes(),
             ]);
         } catch (\Exception $e) {
-            return $this->view('errors/500', [
+            error_log("Error in ResourceController::index: " . $e->getMessage());
+            error_log($e->getTraceAsString());
+            return $this->view('resources/list', [
+                'resources' => [],
+                'all_tags' => [],
+                'selected_tags' => $selected_tags,
+                'keyword' => $keyword,
+                'sort' => $sort,
+                'type' => $type,
+                'is_public' => $is_public,
+                'current_page' => $page,
+                'total_pages' => 1,
+                'user' => $this->user,
                 'error' => $e->getMessage(),
-                'title' => '500 Internal Server Error'
-            ], 500);
+                'types' => \App\Models\Resource::getTypes(),
+            ]);
         }
     }
 
@@ -190,7 +234,11 @@ class ResourceController extends BaseController {
     }
 
     public function tags() {
-        require dirname(__DIR__) . '/View/resources/tags.php';
+        $tagModel = new \App\Models\Tag();
+        $tags = $tagModel->getPopularTags(1000); // 모든 태그와 리소스 개수
+        return $this->view('resources/tags', [
+            'tags' => $tags
+        ]);
     }
 
     private function validateResourceData(Request $request, $isUpdate = false) {

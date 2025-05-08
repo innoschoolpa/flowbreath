@@ -80,7 +80,8 @@ class Response
         extract($data);
         require $viewPath;
         $this->setContent(ob_get_clean());
-        $this->send();
+        // $this->send(); // 주석처리
+        return $this;
     }
 
     public function redirect($url, $statusCode = 302)
