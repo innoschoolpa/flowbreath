@@ -5,18 +5,112 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Core\Request;
 use App\Core\Response;
+use App\Core\Session;
 use App\Models\User;
+use App\Models\Resource;
 use App\Core\Validator;
 
 class ProfileController extends Controller
 {
-    private User $user;
+    private $user;
+    private $resource;
+    private $session;
 
     public function __construct(Request $request)
     {
         parent::__construct($request);
+        $this->session = new Session();
         $db = \App\Core\Database::getInstance();
         $this->user = new User($db);
+        $this->resource = new Resource($db);
+    }
+
+    /**
+     * 로그인 체크 헬퍼 메서드
+     */
+    private function checkAuth()
+    {
+        error_log("Session data in ProfileController: " . print_r($_SESSION, true));
+        
+        if (!isset($_SESSION['user_id'])) {
+            $_SESSION['error'] = '로그인이 필요한 서비스입니다.';
+            $_SESSION['redirect_after_login'] = '/profile';
+            header('Location: /login');
+            exit;
+        }
+        
+        $userId = (int)$_SESSION['user_id'];
+        error_log("Converted user_id to int: " . $userId);
+        return $userId;
+    }
+
+    public function index()
+    {
+        $userId = $this->checkAuth();
+        error_log("Fetching user profile for ID: " . $userId);
+        
+        $user = $this->user->findById($userId);
+        error_log("Found user data: " . ($user ? json_encode($user) : 'null'));
+
+        if (!$user) {
+            error_log("User not found in database for ID: " . $userId);
+            $_SESSION['error'] = '사용자 정보를 찾을 수 없습니다.';
+            header('Location: /login');
+            exit;
+        }
+
+        // 사용자의 리소스 목록 가져오기
+        $resources = $this->resource->findByUserId($userId);
+        
+        // 사용자의 통계 정보 계산
+        $stats = [
+            'total_resources' => count($resources),
+            'total_likes' => $this->resource->getTotalLikesByUserId($userId),
+            'total_views' => $this->resource->getTotalViewsByUserId($userId)
+        ];
+
+        return $this->view('profile/index', [
+            'user' => $user,
+            'resources' => $resources,
+            'stats' => $stats,
+            'title' => '프로필'
+        ]);
+    }
+
+    public function show($userId)
+    {
+        // 다른 사용자의 프로필을 볼 때는 로그인이 필수는 아님
+        $userId = (int)$userId; // URL 파라미터를 정수로 변환
+        $user = $this->user->findById($userId);
+
+        if (!$user) {
+            $_SESSION['error'] = '사용자를 찾을 수 없습니다.';
+            header('Location: /resources');
+            exit;
+        }
+
+        // 자신의 프로필을 보려고 할 때는 index로 리다이렉트
+        if (isset($_SESSION['user_id']) && (int)$_SESSION['user_id'] === $userId) {
+            header('Location: /profile');
+            exit;
+        }
+
+        // 사용자의 공개 리소스 목록 가져오기
+        $resources = $this->resource->findPublicByUserId($userId);
+        
+        // 사용자의 통계 정보 계산
+        $stats = [
+            'total_resources' => count($resources),
+            'total_likes' => $this->resource->getTotalLikesByUserId($userId),
+            'total_views' => $this->resource->getTotalViewsByUserId($userId)
+        ];
+
+        return $this->view('profile/user', [
+            'profile_user' => $user,
+            'resources' => $resources,
+            'stats' => $stats,
+            'title' => $user['name'] . '의 프로필'
+        ]);
     }
 
     public function showComplete(): Response

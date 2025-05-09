@@ -104,59 +104,69 @@ class Session
         $this->data['_last_activity'] = time();
     }
 
-    private function encrypt($data)
+    private function encrypt($value)
     {
-        $iv = random_bytes(16);
-        $encrypted = openssl_encrypt(
-            serialize($data),
-            'AES-256-CBC',
-            $this->encryptionKey,
-            0,
-            $iv
-        );
+        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('AES-256-CBC'));
+        $encrypted = openssl_encrypt(serialize($value), 'AES-256-CBC', $this->encryptionKey, 0, $iv);
         return base64_encode($iv . $encrypted);
     }
 
-    private function decrypt($data)
+    private function decrypt($value)
     {
-        $data = base64_decode($data);
-        $iv = substr($data, 0, 16);
-        $encrypted = substr($data, 16);
-        return unserialize(openssl_decrypt(
-            $encrypted,
-            'AES-256-CBC',
-            $this->encryptionKey,
-            0,
-            $iv
-        ));
+        try {
+            $data = base64_decode($value);
+            if ($data === false) {
+                error_log("Failed to base64 decode: " . $value);
+                return $value; // Return original value if not properly encoded
+            }
+
+            $ivLength = openssl_cipher_iv_length('AES-256-CBC');
+            $iv = substr($data, 0, $ivLength);
+            $encrypted = substr($data, $ivLength);
+
+            $decrypted = openssl_decrypt($encrypted, 'AES-256-CBC', $this->encryptionKey, 0, $iv);
+            if ($decrypted === false) {
+                error_log("Failed to decrypt: " . $value);
+                return $value; // Return original value if decryption fails
+            }
+
+            return unserialize($decrypted);
+        } catch (\Exception $e) {
+            error_log("Decryption error: " . $e->getMessage());
+            return $value; // Return original value if any error occurs
+        }
     }
 
     public function set($key, $value)
     {
-        $this->data[$key] = $this->encrypt($value);
+        if ($this->shouldEncrypt($key)) {
+            $value = $this->encrypt($value);
+        }
+        $_SESSION[$key] = $value;
     }
 
     public function get($key, $default = null)
     {
-        if (!isset($this->data[$key])) {
-            return $default;
+        $value = $_SESSION[$key] ?? $default;
+        if ($value !== null && $this->isEncrypted($value)) {
+            return $this->decrypt($value);
         }
-        return $this->decrypt($this->data[$key]);
+        return $value;
     }
 
     public function has($key)
     {
-        return isset($this->data[$key]);
+        return isset($_SESSION[$key]);
     }
 
     public function remove($key)
     {
-        unset($this->data[$key]);
+        unset($_SESSION[$key]);
     }
 
     public function clear()
     {
-        $this->data = [];
+        session_unset();
         session_destroy();
     }
 
@@ -226,5 +236,16 @@ class Session
         if ($this->isStarted()) {
             session_write_close();
         }
+    }
+
+    private function isEncrypted($value)
+    {
+        return is_string($value) && preg_match('/^[a-zA-Z0-9\/\+=]+$/', $value);
+    }
+
+    private function shouldEncrypt($key)
+    {
+        $sensitiveKeys = ['user_id', 'username', 'user_email', 'user_role', 'profile_image'];
+        return in_array($key, $sensitiveKeys);
     }
 } 

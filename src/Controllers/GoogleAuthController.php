@@ -136,8 +136,8 @@ class GoogleAuthController extends BaseController
             $this->session->set('user_avatar', $userData['avatar']);
             $this->session->set('is_google_user', true);
 
-            // Redirect to dashboard
-            header('Location: /dashboard');
+            // Redirect to resources
+            header('Location: /resources');
             exit;
 
         } catch (\Exception $e) {

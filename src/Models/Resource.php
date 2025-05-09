@@ -1124,4 +1124,38 @@ class Resource extends Model {
             throw new Exception("리소스 개수 조회 중 오류가 발생했습니다: " . $e->getMessage());
         }
     }
+
+    public function findByUserId($userId)
+    {
+        $sql = "SELECT * FROM resources WHERE user_id = :user_id ORDER BY created_at DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function findPublicByUserId($userId)
+    {
+        $sql = "SELECT * FROM resources WHERE user_id = :user_id AND is_public = 1 ORDER BY created_at DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getTotalLikesByUserId($userId)
+    {
+        $sql = "SELECT SUM(like_count) as total FROM resources WHERE user_id = :user_id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
+    }
+
+    public function getTotalViewsByUserId($userId)
+    {
+        $sql = "SELECT SUM(view_count) as total FROM resources WHERE user_id = :user_id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
+    }
 }

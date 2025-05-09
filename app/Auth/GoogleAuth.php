@@ -674,6 +674,20 @@ class GoogleAuth
                     throw new Exception('이미 사용 중인 이메일입니다.');
                 }
 
+                // Debug: Print user data before insertion
+                echo "<div style='background: #e3f2fd; padding: 15px; margin: 10px; border: 1px solid #90caf9; border-radius: 4px;'>";
+                echo "<h4 style='margin: 0 0 10px 0; color: #1976d2;'>📝 신규 사용자 데이터 (DB 추가 직전)</h4>";
+                echo "<pre style='background: #fff; padding: 10px; margin: 0; border: 1px solid #90caf9; border-radius: 4px;'>";
+                echo "이름: " . htmlspecialchars($name) . "\n";
+                echo "이메일: " . htmlspecialchars($email) . "\n";
+                echo "Google ID: " . htmlspecialchars($googleId) . "\n";
+                echo "프로필 이미지: " . ($profileImage ? htmlspecialchars($profileImage) : '없음') . "\n";
+                echo "역할: user\n";
+                echo "상태: active\n";
+                echo "생성 시간: " . date('Y-m-d H:i:s') . "\n";
+                echo "</pre>";
+                echo "</div>";
+
                 // Prepare insert statement
                 $sql = 'INSERT INTO users (
                             name, email, google_id, profile_image, 
@@ -936,7 +950,7 @@ function handleGoogleCallback()
         $result = $auth->handleCallback($_GET['code'], $_GET['state']);
 
         if ($result['success']) {
-            header('Location: /dashboard');
+            header('Location: /resources');
         } else {
             $_SESSION['error'] = $result['error'];
             if (isset($result['details'])) {

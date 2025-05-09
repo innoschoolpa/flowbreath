@@ -10,6 +10,8 @@ use App\Controllers\CommentController;
 use App\Controllers\LikeController;
 use App\Controllers\BatchController;
 use App\Controllers\AuthController;
+use App\Controllers\SettingsController;
+use App\Controllers\ProfileController;
 
 return function (Router $router) {
     // 홈 라우트
@@ -73,6 +75,16 @@ return function (Router $router) {
     $router->add('POST', '/batch/cleanup-orphaned-resources', [BatchController::class, 'cleanupOrphanedResources']);
     $router->add('POST', '/batch/cleanup-unused-tags', [BatchController::class, 'cleanupUnusedTags']);
     $router->add('POST', '/batch/merge-tags', [BatchController::class, 'mergeTags']);
+
+    // Settings routes
+    $router->add('GET', '/settings', [SettingsController::class, 'index']);
+    $router->add('POST', '/settings/update-profile', [SettingsController::class, 'updateProfile']);
+    $router->add('POST', '/settings/update-password', [SettingsController::class, 'updatePassword']);
+    $router->add('POST', '/settings/update-notifications', [SettingsController::class, 'updateNotifications']);
+
+    // Profile routes
+    $router->add('GET', '/profile', [ProfileController::class, 'index']);
+    $router->add('GET', '/profile/{id}', [ProfileController::class, 'show']);
 
     // 404 처리 라우트 (모든 경로에 대해)
     $router->add('GET', '*', [HomeController::class, 'notFound']);

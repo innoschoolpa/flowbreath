@@ -15,6 +15,7 @@ use PDOException;
 use Exception;
 use App\Models\BaseModel;
 use App\Core\Model;
+use App\Core\Database;
 
 /**
  * User 모델 클래스
@@ -28,8 +29,8 @@ class User extends Model {
      * 생성자
      * @param \App\Core\Database $db 데이터베이스 객체 주입
      */
-    public function __construct(\App\Core\Database $db) {
-        parent::__construct($db);
+    public function __construct($db = null) {
+        parent::__construct($db ?: Database::getInstance());
     }
 
     /**
@@ -49,20 +50,32 @@ class User extends Model {
 
     /**
      * 사용자 ID로 사용자 정보 조회
-     * @param int $userId 사용자 ID
+     * @param int $id 사용자 ID
      * @return array|null 사용자 정보 배열 또는 null
      */
-    public function findById(int $userId): ?array {
+    public function findById(int $id): ?array
+    {
         try {
-            error_log("Finding user by ID: " . $userId);
-            $sql = "SELECT * FROM users WHERE id = :id AND status = 'active'";
-            $result = $this->db->fetch($sql, ['id' => $userId]);
-            error_log("User found: " . ($result ? "yes" : "no"));
-            return $result;
-        } catch (PDOException $e) {
+            // 디버그 로그 추가
+            error_log("Finding user with ID: " . $id);
+            
+            $sql = "SELECT * FROM {$this->table} WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$id]);
+            
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // 디버그 로그 추가
+            error_log("Query result: " . ($result ? json_encode($result) : 'null'));
+            
+            return $result ?: null;
+        } catch (\PDOException $e) {
+            // 오류 로그 추가
             error_log("Error in findById: " . $e->getMessage());
+            error_log("SQL: " . $sql);
+            error_log("Parameters: " . print_r([$id], true));
             error_log("Stack trace: " . $e->getTraceAsString());
-            return null;
+            throw new \Exception('사용자를 찾는 중 오류가 발생했습니다: ' . $e->getMessage());
         }
     }
 
@@ -73,11 +86,13 @@ class User extends Model {
      */
     public function findByGoogleId(string $googleId): ?array {
         try {
-            $sql = "SELECT * FROM users WHERE google_id = :google_id AND status = 'active' LIMIT 1";
-            return $this->db->fetch($sql, ['google_id' => $googleId]);
-        } catch (PDOException $e) {
+            $sql = "SELECT * FROM users WHERE google_id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$googleId]);
+            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        } catch (\PDOException $e) {
             error_log("Error in findByGoogleId: " . $e->getMessage());
-            return null;
+            throw new \Exception('사용자를 찾는 중 오류가 발생했습니다.');
         }
     }
 
