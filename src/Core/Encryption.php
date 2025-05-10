@@ -14,6 +14,8 @@ class Encryption
         
         // 키가 32바이트(256비트)가 되도록 조정
         $this->key = hash('sha256', $this->key, true);
+        
+        error_log("Encryption initialized with key length: " . strlen($this->key));
     }
 
     /**
@@ -24,9 +26,18 @@ class Encryption
      */
     public function encrypt($data)
     {
-        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($this->cipher));
-        $encrypted = openssl_encrypt($data, $this->cipher, $this->key, 0, $iv);
-        return base64_encode($iv . $encrypted);
+        try {
+            $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($this->cipher));
+            $encrypted = openssl_encrypt($data, $this->cipher, $this->key, 0, $iv);
+            if ($encrypted === false) {
+                error_log("Encryption failed: " . openssl_error_string());
+                return false;
+            }
+            return base64_encode($iv . $encrypted);
+        } catch (\Exception $e) {
+            error_log("Encryption error: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -37,10 +48,39 @@ class Encryption
      */
     public function decrypt($data)
     {
-        $data = base64_decode($data);
-        $ivLength = openssl_cipher_iv_length($this->cipher);
-        $iv = substr($data, 0, $ivLength);
-        $encrypted = substr($data, $ivLength);
-        return openssl_decrypt($encrypted, $this->cipher, $this->key, 0, $iv);
+        try {
+            error_log("Attempting to decrypt data: " . substr($data, 0, 20) . "...");
+            
+            // Base64 디코딩
+            $decoded = base64_decode($data);
+            if ($decoded === false) {
+                error_log("Base64 decode failed");
+                return false;
+            }
+            
+            // IV 길이 확인
+            $ivLength = openssl_cipher_iv_length($this->cipher);
+            if (strlen($decoded) <= $ivLength) {
+                error_log("Decoded data too short");
+                return false;
+            }
+            
+            // IV와 암호화된 데이터 분리
+            $iv = substr($decoded, 0, $ivLength);
+            $encrypted = substr($decoded, $ivLength);
+            
+            // 복호화 시도
+            $decrypted = openssl_decrypt($encrypted, $this->cipher, $this->key, 0, $iv);
+            if ($decrypted === false) {
+                error_log("Decryption failed: " . openssl_error_string());
+                return false;
+            }
+            
+            error_log("Successfully decrypted data");
+            return $decrypted;
+        } catch (\Exception $e) {
+            error_log("Decryption error: " . $e->getMessage());
+            return false;
+        }
     }
 } 

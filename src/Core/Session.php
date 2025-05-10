@@ -139,19 +139,12 @@ class Session
 
     public function set($key, $value)
     {
-        if ($this->shouldEncrypt($key)) {
-            $value = $this->encrypt($value);
-        }
         $_SESSION[$key] = $value;
     }
 
     public function get($key, $default = null)
     {
-        $value = $_SESSION[$key] ?? $default;
-        if ($value !== null && $this->isEncrypted($value)) {
-            return $this->decrypt($value);
-        }
-        return $value;
+        return $_SESSION[$key] ?? $default;
     }
 
     public function has($key)
@@ -164,36 +157,19 @@ class Session
         unset($_SESSION[$key]);
     }
 
+    public function all()
+    {
+        return $_SESSION;
+    }
+
     public function clear()
     {
         session_unset();
-        session_destroy();
     }
 
-    public function all()
+    public function regenerate()
     {
-        return $this->data;
-    }
-
-    public function regenerate($deleteOldSession = true)
-    {
-        if ($deleteOldSession) {
-            $oldSessionId = session_id();
-            session_regenerate_id(true);
-            $this->cleanupOldSession($oldSessionId);
-        } else {
-            session_regenerate_id(false);
-        }
-        $this->data['_last_activity'] = time();
-    }
-
-    private function cleanupOldSession($oldSessionId)
-    {
-        $sessionPath = session_save_path();
-        $oldSessionFile = $sessionPath . '/' . $this->sessionPrefix . $oldSessionId;
-        if (file_exists($oldSessionFile)) {
-            unlink($oldSessionFile);
-        }
+        return session_regenerate_id(true);
     }
 
     public function flash($key, $value)

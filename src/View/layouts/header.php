@@ -116,26 +116,43 @@ if (session_status() === PHP_SESSION_NONE) {
                     $userModel = new \App\Models\User($db);
                     $userData = $userModel->findById((int)$_SESSION['user_id']);
                     
-                    // 사용자 데이터가 없거나 null인 경우 세션 데이터 사용
-                    $userAvatar = $userData['profile_image'] ?? $_SESSION['user_avatar'] ?? null;
-                    $userName = $userData['name'] ?? $_SESSION['user_name'] ?? '사용자';
-                    $userEmail = $userData['email'] ?? $_SESSION['user_email'] ?? '';
+                    // DB에서 가져온 사용자 정보 사용
+                    $userAvatar = $userData['profile_image'] ?? null;
+                    $userName = $userData['name'] ?? '사용자';
+                    $userEmail = $userData['email'] ?? '';
+                    $isValidAvatar = $userAvatar && filter_var($userAvatar, FILTER_VALIDATE_URL);
                     
-                    // 이메일 복호화 시도
-                    if (strlen($userEmail) > 50) { // 암호화된 이메일인지 확인
-                        try {
-                            require_once __DIR__ . '/../../Core/Encryption.php';
-                            $encryption = new \App\Core\Encryption();
+                    // 암호화된 데이터 복호화 시도
+                    try {
+                        require_once __DIR__ . '/../../Core/Encryption.php';
+                        $encryption = new \App\Core\Encryption();
+                        
+                        // 이름 복호화
+                        if (strlen($userName) > 50) {
+                            error_log("Attempting to decrypt name: " . substr($userName, 0, 20) . "...");
+                            $decryptedName = $encryption->decrypt($userName);
+                            if ($decryptedName) {
+                                error_log("Successfully decrypted name: " . $decryptedName);
+                                $userName = $decryptedName;
+                            } else {
+                                error_log("Failed to decrypt name");
+                            }
+                        }
+                        
+                        // 이메일 복호화
+                        if (strlen($userEmail) > 50) {
+                            error_log("Attempting to decrypt email: " . substr($userEmail, 0, 20) . "...");
                             $decryptedEmail = $encryption->decrypt($userEmail);
                             if ($decryptedEmail && filter_var($decryptedEmail, FILTER_VALIDATE_EMAIL)) {
+                                error_log("Successfully decrypted email: " . $decryptedEmail);
                                 $userEmail = $decryptedEmail;
+                            } else {
+                                error_log("Failed to decrypt email or invalid email format");
                             }
-                        } catch (\Exception $e) {
-                            error_log("Email decryption error: " . $e->getMessage());
                         }
+                    } catch (\Exception $e) {
+                        error_log("Data decryption error: " . $e->getMessage());
                     }
-                    
-                    $isValidAvatar = $userAvatar && filter_var($userAvatar, FILTER_VALIDATE_URL);
                     ?>
                     <li class="nav-item dropdown profile-dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
