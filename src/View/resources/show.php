@@ -69,15 +69,17 @@ $title = $title ?? '리소스 상세';
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h1 class="h3 mb-0"><?php echo htmlspecialchars($resource['title'] ?? ''); ?></h1>
-                    <div>
+                    <div class="d-flex gap-2">
+                        <a href="/resources" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-list"></i> 목록으로
+                        </a>
                         <?php if (isset($_SESSION['user_id']) && isset($resource['user_id']) && $_SESSION['user_id'] === $resource['user_id']): ?>
-                            <a href="/resources/<?php echo htmlspecialchars($resource['id']); ?>/edit" class="btn btn-primary">
+                            <a href="/resources/edit/<?php echo htmlspecialchars($resource['id']); ?>" class="btn btn-primary btn-sm">
                                 <i class="fas fa-edit"></i> 수정
                             </a>
-                            <form action="/resources/<?php echo htmlspecialchars($resource['id']); ?>" method="POST" class="d-inline" onsubmit="return confirm('정말로 이 리소스를 삭제하시겠습니까?');">
-                                <input type="hidden" name="_method" value="DELETE">
+                            <form action="/resources/delete/<?php echo htmlspecialchars($resource['id']); ?>" method="POST" class="d-inline" onsubmit="return confirm('정말로 이 리소스를 삭제하시겠습니까?');">
                                 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
-                                <button type="submit" class="btn btn-danger ms-1">
+                                <button type="submit" class="btn btn-danger btn-sm">
                                     <i class="fas fa-trash"></i> 삭제
                                 </button>
                             </form>
@@ -90,19 +92,14 @@ $title = $title ?? '리소스 상세';
                             <h5>상세 내용</h5>
                             <div class="card-text">
                                 <?php
-                                if (function_exists('is_html') && is_html($resource['content'])) {
-                                    echo $resource['content'];
-                                } else if (function_exists('markdown_to_html')) {
-                                    echo markdown_to_html($resource['content']);
-                                } else {
-                                    echo nl2br(htmlspecialchars($resource['content']));
-                                }
+                                // HTML 태그를 허용하면서 XSS 방지
+                                echo html_entity_decode($resource['content'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
                                 ?>
                             </div>
                         </div>
                         <?php if (!empty($resource['description'])): ?>
-                        <div class="alert alert-info mb-4" style="white-space:pre-line;">
-                            <strong>설명:</strong> <?= htmlspecialchars($resource['description']) ?>
+                        <div class="alert alert-info mb-4">
+                            <strong>설명:</strong> <?php echo html_entity_decode($resource['description'], ENT_QUOTES | ENT_HTML5, 'UTF-8'); ?>
                         </div>
                         <?php endif; ?>
                     <?php endif; ?>
@@ -139,9 +136,22 @@ $title = $title ?? '리소스 상세';
             </div>
 
             <div class="mt-4">
-                <a href="/resources" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> 목록으로
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="/resources" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> 목록으로
+                    </a>
+                    <?php if (isset($_SESSION['user_id']) && isset($resource['user_id']) && $_SESSION['user_id'] === $resource['user_id']): ?>
+                        <a href="/resources/edit/<?php echo htmlspecialchars($resource['id']); ?>" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> 수정
+                        </a>
+                        <form action="/resources/delete/<?php echo htmlspecialchars($resource['id']); ?>" method="POST" class="d-inline" onsubmit="return confirm('정말로 이 리소스를 삭제하시겠습니까?');">
+                            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> 삭제
+                            </button>
+                        </form>
+                    <?php endif; ?>
+                </div>
             </div>
         <?php else: ?>
             <div class="alert alert-danger">
