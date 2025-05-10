@@ -397,54 +397,63 @@ class Resource extends Model {
     /**
      * 리소스 생성
      */
-    public function create(array $data)
+    public function create(array $data): ?int
     {
         try {
             $this->db->beginTransaction();
 
             // 리소스 기본 정보 저장
             $sql = "INSERT INTO resources (
-                user_id, title, content, description, category, 
-                file_path, is_public, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+                user_id, title, content, description, file_path, visibility, status, slug, is_public, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
             $params = [
                 $data['user_id'],
                 $data['title'],
                 $data['content'],
                 $data['description'],
-                $data['category'],
                 $data['file_path'],
-                $data['is_public']
+                isset($data['is_public']) && $data['is_public'] ? 'public' : 'private',
+                'draft',
+                $data['slug'],
+                isset($data['is_public']) ? (int)$data['is_public'] : 0
             ];
 
+            error_log('[DEBUG] Resource INSERT SQL: ' . $sql);
+            error_log('[DEBUG] Resource INSERT Params: ' . json_encode($params));
             $this->db->query($sql, $params);
-            $resourceId = $this->db->lastInsertId();
+            $errorInfo = $this->db->getConnection()->errorInfo();
+            error_log('[DEBUG] Resource INSERT errorInfo: ' . json_encode($errorInfo));
 
             // 태그 처리
             if (!empty($data['tags'])) {
                 foreach ($data['tags'] as $tagName) {
-                    // 태그가 없으면 생성
-                    $tagSql = "INSERT IGNORE INTO tags (name, created_at) VALUES (?, NOW())";
-                    $this->db->query($tagSql, [$tagName]);
-                    
-                    // 태그 ID 조회
-                    $tagIdSql = "SELECT id FROM tags WHERE name = ?";
-                    $tagId = $this->db->query($tagIdSql, [$tagName])->fetch()['id'];
-
-                    // 리소스-태그 연결
-                    $relationSql = "INSERT INTO resource_tags (resource_id, tag_id) VALUES (?, ?)";
-                    $this->db->query($relationSql, [$resourceId, $tagId]);
+                    try {
+                        $tagSql = "INSERT IGNORE INTO tags (name, created_at) VALUES (?, NOW())";
+                        $this->db->query($tagSql, [$tagName]);
+                        $tagIdSql = "SELECT id FROM tags WHERE name = ?";
+                        $tagId = $this->db->query($tagIdSql, [$tagName])->fetch()['id'];
+                        $relationSql = "INSERT INTO resource_tags (resource_id, tag_id) VALUES (?, ?)";
+                        $this->db->query($relationSql, [$this->db->lastInsertId(), $tagId]);
+                    } catch (\Exception $e) {
+                        error_log("Tag insert error: " . $e->getMessage());
+                        // 태그 하나 실패해도 전체 트랜잭션은 유지
+                    }
                 }
             }
 
             $this->db->commit();
-
-            // 생성된 리소스 정보 반환
-            return $this->findById($resourceId);
-
+            $resourceId = $this->db->lastInsertId();
+            if (!$resourceId) {
+                error_log('[ERROR] Resource insert failed. Params: ' . json_encode($params));
+                throw new \Exception('리소스 DB 저장 실패');
+            }
+            return $resourceId ? (int)$resourceId : null;
         } catch (\Exception $e) {
-            $this->db->rollBack();
+            $pdo = $this->db->getConnection();
+            if (method_exists($pdo, 'inTransaction') && $pdo->inTransaction()) {
+                $this->db->rollBack();
+            }
             error_log("Error in Resource::create: " . $e->getMessage());
             throw $e;
         }

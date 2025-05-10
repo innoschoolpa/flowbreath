@@ -114,18 +114,20 @@ class ResourceController extends BaseController {
     }
 
     public function store(Request $request) {
+        error_log('[DEBUG] Entered ResourceController::store');
         try {
-            // 인증 체크
+            error_log('[DEBUG] Start: 인증 체크');
             $user = $this->auth->user();
+            error_log('[DEBUG] 인증 체크 완료');
+
             if (!$user) {
-                if ($request->wantsJson() || $request->isAjax()) {
-                    return $this->response->json(['error' => '로그인이 필요합니다.'], 401);
-                }
                 $_SESSION['error_message'] = '로그인이 필요합니다.';
                 return $this->response->redirect('/login');
             }
+            $userId = is_array($user) ? $user['id'] : $user->id;
 
             // 입력값 검증
+            error_log('[DEBUG] Start: 입력값 검증');
             $validator = new \App\Core\Validator();
             $validator->validate([
                 'title' => [
@@ -146,22 +148,30 @@ class ResourceController extends BaseController {
                     'message' => '설명은 10~500자 사이로 입력해주세요.'
                 ]
             ]);
+            error_log('[DEBUG] 입력값 검증 완료');
 
             if ($validator->hasErrors()) {
+                error_log('[DEBUG] 입력값 검증 에러: ' . json_encode($validator->getErrors()));
+                error_log('[DEBUG] wantsJson: ' . ($request->wantsJson() ? 'true' : 'false'));
+                error_log('[DEBUG] isAjax: ' . ($request->isAjax() ? 'true' : 'false'));
                 if ($request->wantsJson() || $request->isAjax()) {
+                    error_log('[DEBUG] Returning JSON response');
                     return $this->response->json(['error' => $validator->getErrors()], 422);
                 }
+                error_log('[DEBUG] Setting error message and redirecting');
                 $_SESSION['error_message'] = $validator->getFirstError();
                 return $this->response->redirect('/resources/create');
             }
 
             // 파일 업로드 처리
+            error_log('[DEBUG] Start: 파일 업로드 처리');
             $filePath = null;
             if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
                 $allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
                 $maxSize = 5 * 1024 * 1024; // 5MB
 
                 if (!in_array($_FILES['file']['type'], $allowedTypes)) {
+                    error_log('[DEBUG] 파일 타입 에러: ' . $_FILES['file']['type']);
                     if ($request->wantsJson() || $request->isAjax()) {
                         return $this->response->json(['error' => '지원하지 않는 파일 형식입니다.'], 422);
                     }
@@ -170,6 +180,7 @@ class ResourceController extends BaseController {
                 }
 
                 if ($_FILES['file']['size'] > $maxSize) {
+                    error_log('[DEBUG] 파일 크기 에러: ' . $_FILES['file']['size']);
                     if ($request->wantsJson() || $request->isAjax()) {
                         return $this->response->json(['error' => '파일 크기는 5MB를 초과할 수 없습니다.'], 422);
                     }
@@ -186,6 +197,7 @@ class ResourceController extends BaseController {
                 $filePath = '/uploads/resources/' . $fileName;
 
                 if (!move_uploaded_file($_FILES['file']['tmp_name'], $uploadDir . $fileName)) {
+                    error_log('[DEBUG] 파일 업로드 실패');
                     if ($request->wantsJson() || $request->isAjax()) {
                         return $this->response->json(['error' => '파일 업로드에 실패했습니다.'], 500);
                     }
@@ -193,34 +205,54 @@ class ResourceController extends BaseController {
                     return $this->response->redirect('/resources/create');
                 }
             }
+            error_log('[DEBUG] 파일 업로드 처리 완료');
 
             // 태그 처리
+            error_log('[DEBUG] Start: 태그 처리');
             $tags = [];
             if (!empty($_POST['tags'])) {
                 $tags = array_map('trim', explode(',', $_POST['tags']));
                 $tags = array_filter($tags);
             }
+            error_log('[DEBUG] 태그 처리 완료: ' . json_encode($tags));
 
             // 리소스 데이터 준비
-            $data = [
-                'user_id' => $user['id'],
+            error_log('[DEBUG] Start: 리소스 데이터 준비');
+            // slugify 함수 정의
+            function slugify($text) {
+                $text = preg_replace('~[^\\pL\ -\\d]+~u', '-', $text);
+                $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+                $text = preg_replace('~[^-\w]+~', '', $text);
+                $text = trim($text, '-');
+                $text = preg_replace('~-+~', '-', $text);
+                $text = strtolower($text);
+                return empty($text) ? 'n-a' : $text;
+            }
+            $slug = slugify($_POST['title']);
+            $resourceData = [
+                'user_id' => $userId,
                 'title' => $_POST['title'],
                 'content' => $_POST['content'],
                 'description' => $_POST['description'],
-                'category' => $_POST['category'] ?? null,
                 'file_path' => $filePath,
                 'tags' => $tags,
-                'is_public' => isset($_POST['is_public']) ? 1 : 0
+                'is_public' => isset($_POST['is_public']) ? 1 : 0,
+                'slug' => $slug
             ];
+            error_log('[DEBUG] 리소스 데이터 준비 완료: ' . json_encode($resourceData));
 
             // 리소스 생성
-            $resource = $this->resource->create($data);
+            error_log('[DEBUG] Start: 리소스 생성');
+            $resource = $this->resource->create($resourceData);
+            error_log('[DEBUG] 리소스 생성 결과: ' . json_encode($resource));
 
             if (!$resource) {
+                error_log('[DEBUG] 리소스 생성 실패');
                 throw new \Exception('리소스 생성에 실패했습니다.');
             }
 
             if ($request->wantsJson() || $request->isAjax()) {
+                error_log('[DEBUG] 리소스 생성 성공 - JSON 반환');
                 return $this->response->json([
                     'message' => '리소스가 성공적으로 생성되었습니다.',
                     'data' => ['id' => $resource['id']]
@@ -228,8 +260,11 @@ class ResourceController extends BaseController {
             }
 
             $_SESSION['success_message'] = '리소스가 성공적으로 생성되었습니다.';
+            error_log('[DEBUG] 리소스 생성 성공 - 리다이렉트');
             return $this->response->redirect('/resources/show/' . $resource['id']);
 
+            error_log('[DEBUG] End of try block in store');
+            return $this->response->json(['error' => 'Unknown error (try block fallthrough)'], 500);
         } catch (\Exception $e) {
             error_log("Error in ResourceController::store: " . $e->getMessage());
             if ($request->wantsJson() || $request->isAjax()) {
@@ -238,8 +273,7 @@ class ResourceController extends BaseController {
             $_SESSION['error_message'] = $e->getMessage();
             return $this->response->redirect('/resources/create');
         }
-        // 모든 경로에서 반환이 보장되지 않을 경우를 대비한 안전장치
-        return $this->response->json(['error' => 'Unknown error'], 500);
+        error_log('[DEBUG] End of store method');
     }
 
     public function update(Request $request, $id) {

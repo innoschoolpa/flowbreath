@@ -93,7 +93,8 @@ class Response
         $this->clearOutputBuffer();
         $this->setHeader('Location', $url);
         $this->setStatusCode($statusCode);
-        $this->send();
+        // $this->send(); // Remove immediate send
+        return $this;
     }
 
     public function error($message, $statusCode = 400)
