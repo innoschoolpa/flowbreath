@@ -20,6 +20,8 @@ class Request
 
     private function initialize()
     {
+        error_log('==== RAW $_POST ====' . var_export($_POST, true));
+        error_log('==== RAW $_FILES ====' . var_export($_FILES, true));
         $this->get = $this->sanitizeArray($_GET);
         $this->post = $this->sanitizeArray($_POST);
         $this->server = $this->sanitizeArray($_SERVER);
@@ -109,7 +111,17 @@ class Request
 
     public function getMethod()
     {
-        return strtoupper($this->server['REQUEST_METHOD'] ?? 'GET');
+        $method = strtoupper($this->server['REQUEST_METHOD'] ?? 'GET');
+        
+        // Method spoofing for PUT, DELETE, etc.
+        if ($method === 'POST' && isset($this->post['_method'])) {
+            $spoofedMethod = strtoupper($this->post['_method']);
+            if (in_array($spoofedMethod, ['PUT', 'DELETE', 'PATCH'])) {
+                return $spoofedMethod;
+            }
+        }
+        
+        return $method;
     }
 
     /**

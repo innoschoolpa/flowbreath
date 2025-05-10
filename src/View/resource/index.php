@@ -38,7 +38,11 @@
                                 <span class="badge bg-warning">비공개</span>
                             <?php endif; ?>
                         </h5>
-                        <p class="card-text"><?= htmlspecialchars($resource['summary']) ?></p>
+                        <p class="card-text">
+                            <a href="/resource/view/<?= $resource['id'] ?>" class="text-decoration-none text-body">
+                                <?= htmlspecialchars($resource['summary']) ?>
+                            </a>
+                        </p>
                         <div class="mb-2">
                             <?php if (!empty($resource['tags'])): ?>
                                 <?php foreach (explode(',', $resource['tags']) as $tag): ?>

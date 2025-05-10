@@ -301,23 +301,77 @@ class ResourceController extends BaseController {
         try {
             $user = $this->auth->user();
             if (!$user) {
-                return $this->response->json(['error' => '로그인이 필요합니다.'], 401);
+                if ($request->wantsJson() || $request->isAjax()) {
+                    return $this->response->json(['error' => '로그인이 필요합니다.'], 401);
+                }
+                $_SESSION['error_message'] = '로그인이 필요합니다.';
+                return $this->response->redirect('/login');
             }
             $resource = $this->resource->findById($id);
             if (!$resource) {
-                return $this->response->json(['error' => '리소스를 찾을 수 없습니다.'], 404);
+                if ($request->wantsJson() || $request->isAjax()) {
+                    return $this->response->json(['error' => '리소스를 찾을 수 없습니다.'], 404);
+                }
+                $_SESSION['error_message'] = '리소스를 찾을 수 없습니다.';
+                return $this->response->redirect('/resources');
             }
             if ($resource['user_id'] !== $user['id'] && !$user['is_admin']) {
-                return $this->response->json(['error' => '수정 권한이 없습니다.'], 403);
+                if ($request->wantsJson() || $request->isAjax()) {
+                    return $this->response->json(['error' => '수정 권한이 없습니다.'], 403);
+                }
+                $_SESSION['error_message'] = '수정 권한이 없습니다.';
+                return $this->response->redirect('/resources');
             }
             $data = $this->validateResourceData($request, true);
             if (isset($data['error'])) {
-                return $this->response->json(['error' => $data['error']], 422);
+                if ($request->wantsJson() || $request->isAjax()) {
+                    return $this->response->json(['error' => $data['error']], 422);
+                }
+                $_SESSION['error_message'] = $data['error'];
+                return $this->response->redirect("/resources/{$id}/edit");
             }
+            // 추가: 리소스 테이블 필드 병합
+            $tags = [];
+            if (!empty($_POST['tags'])) {
+                $tags = array_map('trim', explode(',', $_POST['tags']));
+                $tags = array_filter($tags);
+            }
+            function slugify($text) {
+                $text = preg_replace('~[^\pL\d]+~u', '-', $text);
+                $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+                $text = preg_replace('~[^-\w]+~', '', $text);
+                $text = trim($text, '-');
+                $text = preg_replace('~-+~', '-', $text);
+                $text = strtolower($text);
+                return empty($text) ? 'n-a' : $text;
+            }
+            $slug = slugify($_POST['title'] ?? $data['translations'][$_SESSION['lang'] ?? 'ko']['title']);
+            $status = $_POST['status'] ?? ($resource['status'] ?? 'draft');
+            $visibility = $_POST['visibility'] ?? ($resource['visibility'] ?? 'public');
+            $is_public = isset($_POST['is_public']) ? 1 : ($resource['is_public'] ?? 0);
+            $data = array_merge($data, [
+                'title' => $_POST['title'] ?? $data['translations'][$_SESSION['lang'] ?? 'ko']['title'],
+                'content' => html_entity_decode($_POST['content'] ?? $data['translations'][$_SESSION['lang'] ?? 'ko']['content'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                'description' => $_POST['description'] ?? $data['translations'][$_SESSION['lang'] ?? 'ko']['description'],
+                'status' => $status,
+                'visibility' => $visibility,
+                'is_public' => $is_public,
+                'slug' => $slug,
+                'tags' => $tags,
+                'language_code' => $_SESSION['lang'] ?? 'ko'
+            ]);
             $this->resource->update($id, $data);
-            return $this->response->json(['message' => '리소스가 수정되었습니다.']);
+            if ($request->wantsJson() || $request->isAjax()) {
+                return $this->response->json(['message' => '리소스가 수정되었습니다.']);
+            }
+            $_SESSION['success_message'] = '리소스가 수정되었습니다.';
+            return $this->response->redirect("/resources/view/{$id}");
         } catch (\Exception $e) {
-            return $this->response->json(['error' => $e->getMessage()], 500);
+            if ($request->wantsJson() || $request->isAjax()) {
+                return $this->response->json(['error' => $e->getMessage()], 500);
+            }
+            $_SESSION['error_message'] = $e->getMessage();
+            return $this->response->redirect("/resources/{$id}/edit");
         }
     }
 
@@ -461,10 +515,15 @@ class ResourceController extends BaseController {
         $lang = $_SESSION['lang'] ?? 'ko';
         $translations = [];
 
+        // POST 데이터 로그 출력 (디버깅용)
+        error_log('POST title: ' . var_export($request->getPost('title'), true));
+        error_log('POST content: ' . var_export($request->getPost('content'), true));
+        error_log('POST description: ' . var_export($request->getPost('description'), true));
+
         // 다국어 입력 처리
-        $title = trim($request->get('title'));
-        $content = trim($request->get('content'));
-        $description = trim($request->get('description'));
+        $title = trim($request->getPost('title') ?? '');
+        $content = trim($request->getPost('content') ?? '');
+        $description = trim($request->getPost('description') ?? '');
 
         if (empty($title)) {
             $errors[] = '제목은 필수입니다.';
@@ -488,5 +547,36 @@ class ResourceController extends BaseController {
 
         $data['translations'] = $translations;
         return $data;
+    }
+
+    /**
+     * 리소스 수정 폼
+     */
+    public function edit(Request $request, $id)
+    {
+        try {
+            $lang = $_SESSION['lang'] ?? 'ko';
+            $resource = $this->resource->findById($id, $lang);
+            if (!$resource) {
+                throw new \Exception("리소스를 찾을 수 없습니다.", 404);
+            }
+            // 태그, 관련 리소스 등 추가 데이터 필요시 불러오기
+            $tags = $this->resource->getTags($id);
+            $all_resources = $this->resource->getAll();
+            $current_related_ids = $this->resource->getResourceTagIds($id);
+            $csrf_token = $_SESSION['csrf_token'] ?? '';
+            return $this->view('resources/create', [
+                'resource' => $resource,
+                'tags' => $tags,
+                'all_resources' => $all_resources,
+                'current_related_ids' => $current_related_ids,
+                'csrf_token' => $csrf_token
+            ]);
+        } catch (\Exception $e) {
+            return $this->view('errors/500', [
+                'error' => $e->getMessage(),
+                'title' => '500 Internal Server Error'
+            ], 500);
+        }
     }
 } 

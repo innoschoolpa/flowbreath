@@ -18,7 +18,8 @@ class Resource extends Model {
     protected $table = 'resources';
     protected $fillable = [
         'user_id', 'url', 'visibility', 'status', 'view_count',
-        'like_count', 'comment_count', 'published_at'
+        'like_count', 'comment_count', 'published_at',
+        'title', 'content', 'description', 'file_path', 'slug', 'is_public'
     ];
 
     public function __construct() {

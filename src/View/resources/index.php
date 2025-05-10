@@ -64,9 +64,14 @@ if (!function_exists('is_youtube_url')) {
             <div class="col">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title mb-2"><?= htmlspecialchars($resource['title']) ?></h5>
+                        <h5 class="card-title mb-2">
+                            <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" class="text-decoration-none text-dark">
+                                <?= htmlspecialchars($resource['title']) ?>
+                            </a>
+                        </h5>
                         <span class="badge bg-secondary mb-2"><?= htmlspecialchars($resource['source_type'] ?? '') ?></span>
                         <p class="card-text flex-grow-1">
+                            <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" class="text-decoration-none text-body">
                             <?php
                             $preview = '';
                             if (!empty($resource['content'])) {
@@ -76,8 +81,8 @@ if (!function_exists('is_youtube_url')) {
                             }
                             echo htmlspecialchars($preview);
                             ?>
+                            </a>
                         </p>
-                        <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" class="btn btn-outline-primary mt-auto">자세히 보기</a>
                     </div>
                 </div>
             </div>

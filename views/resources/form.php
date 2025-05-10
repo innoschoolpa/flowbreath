@@ -12,8 +12,10 @@
             <h1><?= isset($resource) ? '리소스 수정' : '새 리소스 추가' ?></h1>
         </header>
 
-        <form action="<?= isset($resource) ? "/resources/update/{$resource['id']}" : '/resources/store' ?>" 
-              method="POST" class="resource-form">
+        <form action="<?= isset($resource) ? "/resources/{$resource['id']}" : '/resources/store' ?>" method="post">
+<?php if (isset($resource)): ?>
+  <input type="hidden" name="_method" value="PUT">
+<?php endif; ?>
             <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
 
             <div class="form-group">

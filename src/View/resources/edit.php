@@ -23,7 +23,13 @@ error_log("Usefulness: '" . $usefulness . "' (type: " . gettype($usefulness) . "
 // 디버깅을 위한 전체 데이터 출력
 error_log("Full resource data:");
 foreach ($resource as $key => $value) {
-    error_log("$key: " . (is_null($value) ? 'null' : "'" . $value . "'"));
+    $keyStr = is_array($key) ? json_encode($key, JSON_UNESCAPED_UNICODE) : $key;
+    if (is_array($value)) {
+        $valueStr = json_encode($value, JSON_UNESCAPED_UNICODE);
+    } else {
+        $valueStr = is_null($value) ? 'null' : "'" . $value . "'";
+    }
+    error_log("$keyStr: $valueStr");
 }
 
 // 라디오 버튼 체크 함수
@@ -44,8 +50,34 @@ function isChecked($currentValue, $optionValue) {
         </div>
     <?php endif; ?>
 
-    <form action="/resources/update/<?php echo $resource['resource_id']; ?>" method="POST" class="needs-validation" novalidate>
+    <form action="/resources/<?php echo $resource['resource_id']; ?>" method="POST" class="needs-validation" novalidate>
+        <input type="hidden" name="_method" value="PUT">
         <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+        <div class="d-flex justify-content-end mb-3">
+            <button type="submit" class="btn btn-primary me-2">저장</button>
+            <a href="/resources/view/<?php echo $resource['resource_id']; ?>" class="btn btn-secondary">취소</a>
+        </div>
+        <div class="mb-3">
+            <label for="language_code" class="form-label">언어</label>
+            <select class="form-select" id="language_code" name="language_code">
+                <option value="ko" <?= ($resource['language_code'] ?? 'ko') === 'ko' ? 'selected' : '' ?>>한국어</option>
+                <option value="en" <?= ($resource['language_code'] ?? '') === 'en' ? 'selected' : '' ?>>English</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="status" class="form-label">상태</label>
+            <select class="form-select" id="status" name="status">
+                <option value="draft" <?= ($resource['status'] ?? 'draft') === 'draft' ? 'selected' : '' ?>>임시저장</option>
+                <option value="published" <?= ($resource['status'] ?? '') === 'published' ? 'selected' : '' ?>>발행</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="visibility" class="form-label">공개 범위</label>
+            <select class="form-select" id="visibility" name="visibility">
+                <option value="public" <?= ($resource['visibility'] ?? 'public') === 'public' ? 'selected' : '' ?>>공개</option>
+                <option value="private" <?= ($resource['visibility'] ?? '') === 'private' ? 'selected' : '' ?>>비공개</option>
+            </select>
+        </div>
         <div class="mb-3">
             <label for="title" class="form-label">제목</label>
             <input type="text" class="form-control" id="title" name="title" value="<?php echo htmlspecialchars($resource['title'] ?? ''); ?>" required>
@@ -249,9 +281,9 @@ function isChecked($currentValue, $optionValue) {
             </div>
         </div>
 
-        <div class="d-flex justify-content-between">
-            <a href="/resources/show/<?php echo $resource['resource_id']; ?>" class="btn btn-secondary">취소</a>
-            <button type="submit" class="btn btn-primary">수정</button>
+        <div class="d-flex justify-content-end mt-4">
+            <button type="submit" class="btn btn-primary me-2">저장</button>
+            <a href="/resources/view/<?php echo $resource['resource_id']; ?>" class="btn btn-secondary">취소</a>
         </div>
     </form>
 </div>

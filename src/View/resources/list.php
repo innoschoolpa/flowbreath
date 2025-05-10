@@ -54,9 +54,9 @@ body { background: #f7fcfc; }
   box-shadow: 0 2px 16px #007bff11;
   transition: box-shadow 0.2s, transform 0.2s;
   background: #fff;
-  margin-bottom: 1.5rem;
-  padding: 1.2rem 1.3rem 1.1rem 1.3rem;
-  min-height: 210px;
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.65rem 0.55rem 0.65rem;
+  min-height: 100px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -78,12 +78,13 @@ body { background: #f7fcfc; }
 .resource-card .card-text {
   min-height: 2.5em;
   color: #444;
-  margin-bottom: 0.7em;
+  margin-bottom: 0;
 }
 .resource-meta {
   color: #888;
   font-size: 0.97em;
-  margin-bottom: 0.2em;
+  margin-bottom: 0;
+  margin-top: 0;
 }
 .resource-type {
   font-size: 0.92em;
@@ -181,10 +182,18 @@ body { background: #f7fcfc; }
                 <span class="badge bg-secondary me-1 mb-1">#<?= e(is_array($tag) ? $tag['name'] : $tag) ?></span>
               <?php endforeach; ?>
             </div>
-            <h5 class="card-title mb-2"><?= e($resource['title']) ?></h5>
-            <p class="card-text flex-grow-1 mb-2"><?= e(mb_strimwidth(strip_tags($resource['content'] ?? ''), 0, 80, '...')) ?></p>
+            <h5 class="card-title mb-2">
+                <a href="/resources/view/<?= e($resource['id']) ?>" class="text-decoration-none text-dark">
+                    <?= e($resource['title']) ?>
+                </a>
+            </h5>
+            <p class="card-text flex-grow-1 mb-2">
+                <a href="/resources/view/<?= e($resource['id']) ?>" class="text-decoration-none text-body">
+                    <?= e(mb_strimwidth(strip_tags($resource['content'] ?? ''), 0, 80, '...')) ?>
+                </a>
+            </p>
           </div>
-          <div class="resource-meta mb-2 mt-2">
+          <div class="resource-meta mb-1 mt-1">
             <span>작성자: <?= e($resource['author_name'] ?? '익명') ?></span>
             <span class="mx-2">|</span>
             <span>작성일: <?= e(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?></span>
@@ -197,7 +206,6 @@ body { background: #f7fcfc; }
               <span>평점: <?= number_format($resource['rating'], 1) ?></span>
             <?php endif; ?>
           </div>
-          <a href="/resources/view/<?= e($resource['id']) ?>" class="btn btn-outline-primary btn-sm mt-auto">자세히 보기</a>
         </div>
       </div>
     <?php endforeach; ?>
