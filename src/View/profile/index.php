@@ -20,17 +20,24 @@ $user = [
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body text-center">
-                    <?php if (isset($user['profile_image']) && $user['profile_image']): ?>
-                        <img src="<?= htmlspecialchars($user['profile_image']) ?>" alt="Profile" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
-                    <?php else: ?>
-                        <i class="fa fa-user-circle mb-3" style="font-size: 150px; color: #6c757d;"></i>
-                    <?php endif; ?>
+                    <div class="position-relative d-inline-block mb-3">
+                        <?php if (isset($user['profile_image']) && $user['profile_image']): ?>
+                            <img src="<?= htmlspecialchars($user['profile_image']) ?>" alt="Profile" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                        <?php else: ?>
+                            <i class="fa fa-user-circle" style="font-size: 150px; color: #6c757d;"></i>
+                        <?php endif; ?>
+                        <button type="button" class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle" data-bs-toggle="modal" data-bs-target="#profileImageModal">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
                     
                     <h4 class="mb-1"><?= htmlspecialchars($user['name']) ?></h4>
                     <p class="text-muted mb-3"><?= htmlspecialchars($user['email']) ?></p>
                     
                     <?php if (isset($user['bio']) && $user['bio']): ?>
                         <p class="mb-3"><?= nl2br(htmlspecialchars($user['bio'])) ?></p>
+                    <?php else: ?>
+                        <p class="text-muted mb-3">자기소개를 작성해주세요.</p>
                     <?php endif; ?>
 
                     <!-- 프로필 완성도 -->
@@ -83,19 +90,27 @@ $user = [
                     </div>
 
                     <!-- 소셜 미디어 링크 -->
-                    <?php if (!empty($user['social_links'])): ?>
-                        <div class="social-links mb-3">
+                    <div class="social-links mb-3">
+                        <button type="button" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#socialLinksModal">
+                            <i class="fas fa-plus"></i> 소셜 링크 추가
+                        </button>
+                        <?php if (!empty($user['social_links'])): ?>
                             <?php foreach (json_decode($user['social_links'], true) as $platform => $url): ?>
                                 <a href="<?= htmlspecialchars($url) ?>" target="_blank" class="btn btn-outline-secondary btn-sm me-2">
                                     <i class="fab fa-<?= strtolower($platform) ?>"></i>
                                 </a>
                             <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
 
-                    <a href="/settings" class="btn btn-outline-primary">
-                        <i class="fa fa-cog me-2"></i>설정
-                    </a>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#profileEditModal">
+                            <i class="fas fa-edit me-2"></i>프로필 수정
+                        </button>
+                        <a href="/settings" class="btn btn-outline-secondary">
+                            <i class="fas fa-cog me-2"></i>계정 설정
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -184,16 +199,16 @@ $user = [
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="card-title mb-0">내 리소스</h5>
                         <a href="/resources/create" class="btn btn-primary">
-                            <i class="fa fa-plus me-2"></i>새 리소스
+                            <i class="fas fa-plus me-2"></i>새 리소스
                         </a>
                     </div>
 
                     <?php if (empty($resources)): ?>
                         <div class="text-center py-5">
-                            <i class="fa fa-folder-open mb-3" style="font-size: 48px; color: #6c757d;"></i>
+                            <i class="fas fa-folder-open mb-3" style="font-size: 48px; color: #6c757d;"></i>
                             <p class="text-muted">아직 등록한 리소스가 없습니다.</p>
                             <a href="/resources/create" class="btn btn-primary mt-3">
-                                <i class="fa fa-plus me-2"></i>첫 리소스 등록하기
+                                <i class="fas fa-plus me-2"></i>첫 리소스 등록하기
                             </a>
                         </div>
                     <?php else: ?>
@@ -224,11 +239,11 @@ $user = [
                                             <td>
                                                 <div class="btn-group">
                                                     <a href="/resources/<?= $resource['id'] ?>/edit" class="btn btn-sm btn-outline-primary">
-                                                        <i class="fa fa-edit"></i>
+                                                        <i class="fas fa-edit"></i>
                                                     </a>
                                                     <button type="button" class="btn btn-sm btn-outline-danger" 
                                                             onclick="deleteResource(<?= $resource['id'] ?>)">
-                                                        <i class="fa fa-trash"></i>
+                                                        <i class="fas fa-trash"></i>
                                                     </button>
                                                 </div>
                                             </td>
@@ -244,7 +259,175 @@ $user = [
     </div>
 </div>
 
+<!-- 프로필 이미지 수정 모달 -->
+<div class="modal fade" id="profileImageModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">프로필 이미지 변경</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="profileImageForm" action="/profile/update-image" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="profileImage" class="form-label">이미지 선택</label>
+                        <input type="file" class="form-control" id="profileImage" name="profile_image" accept="image/*">
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">변경하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 프로필 수정 모달 -->
+<div class="modal fade" id="profileEditModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">프로필 수정</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="profileEditForm" action="/profile/update" method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">이름</label>
+                        <input type="text" class="form-control" id="name" name="name" value="<?= htmlspecialchars($user['name']) ?>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">자기소개</label>
+                        <textarea class="form-control" id="bio" name="bio" rows="3"><?= htmlspecialchars($user['bio']) ?></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">저장하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 소셜 링크 추가 모달 -->
+<div class="modal fade" id="socialLinksModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">소셜 링크 추가</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="socialLinksForm" action="/profile/update-social" method="POST">
+                    <div class="mb-3">
+                        <label for="platform" class="form-label">플랫폼</label>
+                        <select class="form-select" id="platform" name="platform" required>
+                            <option value="">선택하세요</option>
+                            <option value="github">GitHub</option>
+                            <option value="twitter">Twitter</option>
+                            <option value="linkedin">LinkedIn</option>
+                            <option value="instagram">Instagram</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="url" class="form-label">URL</label>
+                        <input type="url" class="form-control" id="url" name="url" required>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">추가하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+// 프로필 수정 폼 제출
+document.getElementById('profileEditForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    fetch('/profile/update', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.message || '프로필 업데이트에 실패했습니다.');
+        }
+    })
+    .catch(error => {
+        alert('오류가 발생했습니다.');
+    });
+});
+
+// 프로필 이미지 업로드
+document.getElementById('profileImageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    fetch('/profile/update-image', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.message || '이미지 업로드에 실패했습니다.');
+        }
+    })
+    .catch(error => {
+        alert('오류가 발생했습니다.');
+    });
+});
+
+// 소셜 링크 추가
+document.getElementById('socialLinksForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    fetch('/profile/update-social', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.message || '소셜 링크 추가에 실패했습니다.');
+        }
+    })
+    .catch(error => {
+        alert('오류가 발생했습니다.');
+    });
+});
+
+// 프로필 이미지 미리보기
+document.getElementById('profileImage').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.querySelector('.profile-image-preview');
+            if (preview) {
+                preview.src = e.target.result;
+            }
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+// 리소스 삭제
 function deleteResource(id) {
     if (confirm('정말로 이 리소스를 삭제하시겠습니까?')) {
         fetch(`/resources/${id}/delete`, {

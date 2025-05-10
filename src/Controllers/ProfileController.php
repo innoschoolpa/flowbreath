@@ -9,12 +9,14 @@ use App\Core\Session;
 use App\Models\User;
 use App\Models\Resource;
 use App\Core\Validator;
+use App\Core\Auth;
 
 class ProfileController extends Controller
 {
     private $user;
     private $resource;
     private $session;
+    private $auth;
 
     public function __construct(Request $request)
     {
@@ -23,6 +25,7 @@ class ProfileController extends Controller
         $db = \App\Core\Database::getInstance();
         $this->user = new User($db);
         $this->resource = new Resource($db);
+        $this->auth = new Auth();
     }
 
     /**
@@ -350,6 +353,145 @@ class ProfileController extends Controller
         } catch (\Exception $e) {
             error_log("Profile image upload error: " . $e->getMessage());
             return $this->json(['error' => '이미지 업로드 중 오류가 발생했습니다.'], 500);
+        }
+    }
+
+    public function update()
+    {
+        if (!$this->auth->check()) {
+            return (new Response())->redirect('/login');
+        }
+
+        $userId = $_SESSION['user_id'];
+        $name = $this->request->getPost('name');
+        $bio = $this->request->getPost('bio');
+
+        try {
+            $this->user->update($userId, [
+                'name' => $name,
+                'bio' => $bio
+            ]);
+
+            // 세션 업데이트
+            $_SESSION['user_name'] = $name;
+            $_SESSION['user_bio'] = $bio;
+
+            return (new Response())->json([
+                'success' => true,
+                'message' => '프로필이 성공적으로 업데이트되었습니다.'
+            ]);
+        } catch (\Exception $e) {
+            error_log("Profile update error: " . $e->getMessage());
+            return (new Response())->json([
+                'success' => false,
+                'message' => '프로필 업데이트 중 오류가 발생했습니다.'
+            ], 500);
+        }
+    }
+
+    public function updateImage()
+    {
+        if (!$this->auth->check()) {
+            return (new Response())->redirect('/login');
+        }
+
+        $userId = $_SESSION['user_id'];
+        $file = $this->request->getFile('profile_image');
+
+        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+            return (new Response())->json([
+                'success' => false,
+                'message' => '이미지 업로드에 실패했습니다.'
+            ], 400);
+        }
+
+        try {
+            // 이미지 유효성 검사
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (!in_array($file['type'], $allowedTypes)) {
+                throw new \Exception('지원하지 않는 이미지 형식입니다.');
+            }
+
+            // 이미지 크기 제한 (5MB)
+            if ($file['size'] > 5 * 1024 * 1024) {
+                throw new \Exception('이미지 크기는 5MB를 초과할 수 없습니다.');
+            }
+
+            // 이미지 저장
+            $uploadDir = __DIR__ . '/../../public/uploads/profiles/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filename = uniqid('profile_') . '.' . $extension;
+            $filepath = $uploadDir . $filename;
+
+            if (!move_uploaded_file($file['tmp_name'], $filepath)) {
+                throw new \Exception('이미지 저장에 실패했습니다.');
+            }
+
+            // DB 업데이트
+            $imageUrl = '/uploads/profiles/' . $filename;
+            $this->user->update($userId, [
+                'profile_image' => $imageUrl
+            ]);
+
+            // 세션 업데이트
+            $_SESSION['user_avatar'] = $imageUrl;
+
+            return (new Response())->json([
+                'success' => true,
+                'message' => '프로필 이미지가 성공적으로 업데이트되었습니다.',
+                'imageUrl' => $imageUrl
+            ]);
+        } catch (\Exception $e) {
+            error_log("Profile image update error: " . $e->getMessage());
+            return (new Response())->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateSocial()
+    {
+        if (!$this->auth->check()) {
+            return (new Response())->redirect('/login');
+        }
+
+        $userId = $_SESSION['user_id'];
+        $platform = $this->request->getPost('platform');
+        $url = $this->request->getPost('url');
+
+        try {
+            // URL 유효성 검사
+            if (!filter_var($url, FILTER_VALIDATE_URL)) {
+                throw new \Exception('유효하지 않은 URL입니다.');
+            }
+
+            // 현재 소셜 링크 가져오기
+            $currentLinks = json_decode($_SESSION['user_social_links'] ?? '{}', true);
+            $currentLinks[$platform] = $url;
+
+            // DB 업데이트
+            $this->user->update($userId, [
+                'social_links' => json_encode($currentLinks)
+            ]);
+
+            // 세션 업데이트
+            $_SESSION['user_social_links'] = json_encode($currentLinks);
+
+            return (new Response())->json([
+                'success' => true,
+                'message' => '소셜 링크가 성공적으로 업데이트되었습니다.'
+            ]);
+        } catch (\Exception $e) {
+            error_log("Social links update error: " . $e->getMessage());
+            return (new Response())->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 } 

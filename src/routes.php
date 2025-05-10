@@ -87,6 +87,11 @@ return function (Router $router) {
     $router->add('GET', '/profile', [ProfileController::class, 'index']);
     $router->add('GET', '/profile/{id}', [ProfileController::class, 'show']);
 
+    // 프로필 업데이트 라우트
+    $router->add('POST', '/profile/update', ['App\\Controllers\\ProfileController', 'update']);
+    $router->add('POST', '/profile/update-image', ['App\\Controllers\\ProfileController', 'updateImage']);
+    $router->add('POST', '/profile/update-social', ['App\\Controllers\\ProfileController', 'updateSocial']);
+
     // 404 처리 라우트 (모든 경로에 대해)
     $router->add('GET', '*', [HomeController::class, 'notFound']);
 }; 
