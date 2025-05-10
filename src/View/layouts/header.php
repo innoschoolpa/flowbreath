@@ -108,13 +108,37 @@ if (session_status() === PHP_SESSION_NONE) {
                     </div>
                 </li>
                 <?php if (isset($_SESSION['user_id'])): ?>
+                    <?php
+                    // DB에서 최신 사용자 정보 불러오기
+                    require_once __DIR__ . '/../../Models/User.php';
+                    require_once __DIR__ . '/../../Core/Database.php';
+                    $db = \App\Core\Database::getInstance();
+                    $userModel = new \App\Models\User($db);
+                    $userData = $userModel->findById((int)$_SESSION['user_id']);
+                    
+                    // 사용자 데이터가 없거나 null인 경우 세션 데이터 사용
+                    $userAvatar = $userData['profile_image'] ?? $_SESSION['user_avatar'] ?? null;
+                    $userName = $userData['name'] ?? $_SESSION['user_name'] ?? '사용자';
+                    $userEmail = $userData['email'] ?? $_SESSION['user_email'] ?? '';
+                    
+                    // 이메일 복호화 시도
+                    if (strlen($userEmail) > 50) { // 암호화된 이메일인지 확인
+                        try {
+                            require_once __DIR__ . '/../../Core/Encryption.php';
+                            $encryption = new \App\Core\Encryption();
+                            $decryptedEmail = $encryption->decrypt($userEmail);
+                            if ($decryptedEmail && filter_var($decryptedEmail, FILTER_VALIDATE_EMAIL)) {
+                                $userEmail = $decryptedEmail;
+                            }
+                        } catch (\Exception $e) {
+                            error_log("Email decryption error: " . $e->getMessage());
+                        }
+                    }
+                    
+                    $isValidAvatar = $userAvatar && filter_var($userAvatar, FILTER_VALIDATE_URL);
+                    ?>
                     <li class="nav-item dropdown profile-dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <?php
-                            $userAvatar = $_SESSION['user_avatar'] ?? null;
-                            $userName = $_SESSION['user_name'] ?? '사용자';
-                            $isValidAvatar = $userAvatar && filter_var($userAvatar, FILTER_VALIDATE_URL);
-                            ?>
                             <div class="profile-image-container">
                                 <?php if ($isValidAvatar): ?>
                                     <img src="<?= htmlspecialchars($userAvatar) ?>" 
@@ -131,9 +155,7 @@ if (session_status() === PHP_SESSION_NONE) {
                             <li>
                                 <div class="dropdown-header">
                                     <strong class="d-block"><?= htmlspecialchars($userName) ?></strong>
-                                    <?php if (isset($_SESSION['user_email'])): ?>
-                                        <span class="text-muted small user-email"><?= htmlspecialchars($_SESSION['user_email']) ?></span>
-                                    <?php endif; ?>
+                                    <span class="text-muted small user-email"><?= htmlspecialchars($userEmail) ?></span>
                                 </div>
                             </li>
                             <li><hr class="dropdown-divider"></li>

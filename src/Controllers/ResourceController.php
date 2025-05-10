@@ -183,13 +183,12 @@ class ResourceController extends BaseController {
         }
     }
 
-    public function search() {
-        // Request 객체가 없으므로 직접 $_GET 사용
-        $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
-        $tagIds = isset($_GET['tags']) ? (array)$_GET['tags'] : [];
-        $sort = isset($_GET['sort']) ? $_GET['sort'] : 'created_desc';
-        $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
-        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+    public function search(Request $request) {
+        $keyword = $request->get('keyword', '');
+        $tagIds = $request->get('tags', []);
+        $sort = $request->get('sort', 'created_desc');
+        $filter = $request->get('filter', 'all');
+        $page = max(1, (int)$request->get('page', 1));
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
@@ -202,35 +201,69 @@ class ResourceController extends BaseController {
             'offset' => $offset
         ];
 
-        $resourceModel = new \App\Models\Resource();
-        $resources = $resourceModel->search($params);
-        $total_count = count($resources); // 실제로는 전체 개수 쿼리 필요
-        $total_pages = ceil($total_count / $limit);
-        $current_page = $page;
+        try {
+            $resourceModel = new \App\Models\Resource();
+            $resources = $resourceModel->search($params);
+            $total_count = $resourceModel->count($params);
+            $total_pages = ceil($total_count / $limit);
 
-        // 태그 목록 준비
-        $tagModel = new \App\Models\Tag();
-        $all_tags = $tagModel->getAllTags();
-        $selected_tag_ids = $tagIds;
+            $tagModel = new \App\Models\Tag();
+            $all_tags = $tagModel->getAllTags();
 
-        // 뷰에서 사용할 변수 추출
-        extract([
-            'resources' => $resources,
-            'all_tags' => $all_tags,
-            'keyword' => $keyword,
-            'selected_tag_ids' => $selected_tag_ids,
-            'sort' => $sort,
-            'filter' => $filter,
-            'total_count' => $total_count,
-            'total_pages' => $total_pages,
-            'current_page' => $current_page
-        ]);
-
-        require __DIR__ . '/../View/resource/search.php';
+            return $this->view('resources/search', [
+                'resources' => $resources,
+                'all_tags' => $all_tags,
+                'keyword' => $keyword,
+                'selected_tag_ids' => $tagIds,
+                'sort' => $sort,
+                'filter' => $filter,
+                'total_count' => $total_count,
+                'total_pages' => $total_pages,
+                'current_page' => $page
+            ]);
+        } catch (\Exception $e) {
+            error_log("Error in ResourceController::search: " . $e->getMessage());
+            return $this->view('resources/search', [
+                'resources' => [],
+                'all_tags' => [],
+                'keyword' => $keyword,
+                'selected_tag_ids' => $tagIds,
+                'sort' => $sort,
+                'filter' => $filter,
+                'total_count' => 0,
+                'total_pages' => 1,
+                'current_page' => $page,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     public function toggleVisibility(Request $request, $id) {
-        // ... existing code ...
+        try {
+            $user = $this->auth->user();
+            if (!$user) {
+                return $this->response->json(['error' => '로그인이 필요합니다.'], 401);
+            }
+
+            $resource = $this->resource->findById($id);
+            if (!$resource) {
+                return $this->response->json(['error' => '리소스를 찾을 수 없습니다.'], 404);
+            }
+
+            if ($resource['user_id'] !== $user['id'] && !$user['is_admin']) {
+                return $this->response->json(['error' => '권한이 없습니다.'], 403);
+            }
+
+            $isPublic = !$resource['is_public'];
+            $this->resource->update($id, ['is_public' => $isPublic]);
+
+            return $this->response->json([
+                'message' => $isPublic ? '리소스가 공개되었습니다.' : '리소스가 비공개되었습니다.',
+                'is_public' => $isPublic
+            ]);
+        } catch (\Exception $e) {
+            return $this->response->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function tags() {
@@ -251,9 +284,7 @@ class ResourceController extends BaseController {
         if (!$user) {
             return $this->response->redirect('/login');
         }
-        $response = $this->view('resources/create');
-        error_log('create() 반환 타입: ' . (is_object($response) ? get_class($response) : gettype($response)));
-        return $response;
+        return $this->view('resources/create');
     }
 
     private function validateResourceData(Request $request, $isUpdate = false) {
@@ -262,50 +293,32 @@ class ResourceController extends BaseController {
         $lang = $_SESSION['lang'] ?? 'ko';
         $translations = [];
 
-        // 다국어 입력 처리 (여기서는 기본적으로 'ko'만, 확장 가능)
-            $title = trim($request->get('title'));
+        // 다국어 입력 처리
+        $title = trim($request->get('title'));
         $content = trim($request->get('content'));
         $description = trim($request->get('description'));
-            if (empty($title)) {
-                $errors[] = '제목은 필수입니다.';
+
+        if (empty($title)) {
+            $errors[] = '제목은 필수입니다.';
         }
-            if (empty($content)) {
-                $errors[] = '내용은 필수입니다.';
+        if (empty($content)) {
+            $errors[] = '내용은 필수입니다.';
         }
-            if (empty($description)) {
-                $errors[] = '설명은 필수입니다.';
-            }
+        if (empty($description)) {
+            $errors[] = '설명은 필수입니다.';
+        }
+
         $translations[$lang] = [
             'title' => $title,
             'content' => $content,
             'description' => $description
         ];
-        $data['translations'] = $translations;
 
-        if ($request->has('visibility')) {
-            $visibility = $request->get('visibility');
-            if (!in_array($visibility, ['public', 'private'])) {
-                $errors[] = '공개 여부는 public 또는 private만 가능합니다.';
-            }
-            $data['visibility'] = $visibility;
-        }
-        if ($request->has('status')) {
-            $status = $request->get('status');
-            if (!in_array($status, ['draft', 'published'])) {
-                $errors[] = '상태는 draft 또는 published만 가능합니다.';
-            }
-            $data['status'] = $status;
-        }
-        if ($request->has('tags')) {
-            $tags = $request->get('tags');
-            if (!is_array($tags)) {
-                $errors[] = '태그는 배열 형식이어야 합니다.';
-            }
-            $data['tags'] = $tags;
-        }
         if (!empty($errors)) {
-            return ['error' => implode(' ', $errors)];
+            return ['error' => implode(', ', $errors)];
         }
+
+        $data['translations'] = $translations;
         return $data;
     }
 } 

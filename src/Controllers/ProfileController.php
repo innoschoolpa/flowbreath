@@ -358,34 +358,54 @@ class ProfileController extends Controller
 
     public function update()
     {
-        if (!$this->auth->check()) {
-            return (new Response())->redirect('/login');
+        if (!isset($_SESSION['user_id'])) {
+            $_SESSION['error'] = '로그인이 필요합니다.';
+            header('Location: /login');
+            exit;
+        }
+
+        // CSRF 토큰 검증
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== ($_SESSION['csrf_token'] ?? '')) {
+            $_SESSION['error'] = '잘못된 요청입니다.';
+            header('Location: /profile');
+            exit;
         }
 
         $userId = (int)$_SESSION['user_id'];
-        $name = $this->request->getPost('name');
-        $bio = $this->request->getPost('bio');
+        $name = trim($_POST['name'] ?? '');
+        $bio = trim($_POST['bio'] ?? '');
+
+        // 입력값 검증
+        if (empty($name)) {
+            $_SESSION['error'] = '이름은 필수 입력 항목입니다.';
+            header('Location: /profile');
+            exit;
+        }
 
         try {
-            $this->user->update($userId, [
+            // 사용자 정보 업데이트
+            $updateData = [
                 'name' => $name,
                 'bio' => $bio
-            ]);
+            ];
 
-            // 세션 업데이트
-            $_SESSION['user_name'] = $name;
-            $_SESSION['user_bio'] = $bio;
+            $updatedUser = $this->user->update($userId, $updateData);
+            if (!$updatedUser) {
+                throw new \Exception('프로필 업데이트에 실패했습니다.');
+            }
 
-            return (new Response())->json([
-                'success' => true,
-                'message' => '프로필이 성공적으로 업데이트되었습니다.'
-            ]);
+            // 세션 정보 업데이트
+            $_SESSION['user_name'] = $updatedUser['name'];
+            $_SESSION['user_bio'] = $updatedUser['bio'];
+
+            $_SESSION['success'] = '프로필이 성공적으로 업데이트되었습니다.';
+            header('Location: /profile');
+            exit;
         } catch (\Exception $e) {
             error_log("Profile update error: " . $e->getMessage());
-            return (new Response())->json([
-                'success' => false,
-                'message' => '프로필 업데이트 중 오류가 발생했습니다.'
-            ], 500);
+            $_SESSION['error'] = '프로필 업데이트 중 오류가 발생했습니다.';
+            header('Location: /profile');
+            exit;
         }
     }
 

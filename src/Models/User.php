@@ -115,22 +115,11 @@ class User extends Model {
 
     /**
      * 새로운 사용자 생성 (회원가입 또는 Google 최초 로그인 시)
-     * @param string $name 사용자 이름
-     * @param string $email 이메일 주소
-     * @param string|null $password 비밀번호 (Google 가입 시 null 가능)
-     * @param string $role 사용자 역할 (기본값 'user')
-     * @param string|null $googleId Google ID (Google 가입 시 제공)
-     * @param string|null $profileImage 프로필 이미지 URL
+     * @param array $data 사용자 데이터
      * @return int|false 생성된 사용자의 ID 또는 실패 시 false
      */
-    public function createUser(
-        string $name,
-        string $email,
-        ?string $password = null,
-        string $role = 'user',
-        ?string $googleId = null,
-        ?string $profileImage = null
-    ): int|false {
+    public function createUser(array $data): int|false
+    {
         try {
             echo "\n=== Starting User Creation Process ===\n";
             
@@ -141,9 +130,9 @@ class User extends Model {
             }
 
             echo "Creating user with:\n";
-            echo "- Name: " . $name . "\n";
-            echo "- Email: " . $email . "\n";
-            echo "- Google ID: " . ($googleId ?? 'none') . "\n";
+            echo "- Name: " . $data['name'] . "\n";
+            echo "- Email: " . $data['email'] . "\n";
+            echo "- Google ID: " . ($data['google_id'] ?? 'none') . "\n";
             
             // Start transaction
             echo "Starting database transaction...\n";
@@ -152,7 +141,7 @@ class User extends Model {
             try {
                 // Check if email already exists
                 echo "Checking for existing email...\n";
-                $existingUser = $this->findByEmail($email);
+                $existingUser = $this->findByEmail($data['email']);
                 if ($existingUser) {
                     echo "Email already exists in the system.\n";
                     $this->db->rollBack();
@@ -161,9 +150,9 @@ class User extends Model {
                 echo "Email is available.\n";
 
                 // Check if Google ID already exists
-                if ($googleId) {
+                if (!empty($data['google_id'])) {
                     echo "Checking for existing Google ID...\n";
-                    $existingGoogleUser = $this->findByGoogleId($googleId);
+                    $existingGoogleUser = $this->findByGoogleId($data['google_id']);
                     if ($existingGoogleUser) {
                         echo "Google ID already exists in the system.\n";
                         $this->db->rollBack();
@@ -175,15 +164,15 @@ class User extends Model {
                 // Prepare user data
                 echo "Preparing user data...\n";
                 $currentTime = date('Y-m-d H:i:s');
-                $data = [
-                    'name' => $name,
-                    'email' => $email,
-                    'password' => $password ? password_hash($password, PASSWORD_DEFAULT) : null,
-                    'role' => $role,
-                    'google_id' => $googleId,
-                    'profile_image' => $profileImage,
-                    'status' => 'active',
-                    'email_verified_at' => $googleId ? $currentTime : null,
+                $userData = [
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'password' => isset($data['password']) ? password_hash($data['password'], PASSWORD_DEFAULT) : null,
+                    'role' => $data['role'] ?? 'user',
+                    'google_id' => $data['google_id'] ?? null,
+                    'profile_image' => $data['avatar'] ?? null,
+                    'status' => $data['status'] ?? 'active',
+                    'email_verified_at' => !empty($data['google_id']) ? $currentTime : null,
                     'created_at' => $currentTime,
                     'updated_at' => $currentTime,
                     'last_login_at' => $currentTime,
@@ -191,28 +180,25 @@ class User extends Model {
                     'failed_login_attempts' => 0,
                     'locked_until' => null,
                     'bio' => null,
-                    'last_password_change' => $password ? $currentTime : null
+                    'last_password_change' => isset($data['password']) ? $currentTime : null
                 ];
 
-                // First, try to insert without profile_image
-                $insertData = $data;
-                unset($insertData['profile_image']); // Remove profile_image temporarily
-
+                // Insert user data
                 echo "Inserting user data into database...\n";
                 $sql = "INSERT INTO users (
                     name, email, password, role, google_id, status,
                     email_verified_at, created_at, updated_at, last_login_at,
                     login_count, failed_login_attempts, locked_until,
-                    bio, last_password_change
+                    bio, last_password_change, profile_image
                 ) VALUES (
                     :name, :email, :password, :role, :google_id, :status,
                     :email_verified_at, :created_at, :updated_at, :last_login_at,
                     :login_count, :failed_login_attempts, :locked_until,
-                    :bio, :last_password_change
+                    :bio, :last_password_change, :profile_image
                 )";
                 
-                echo "Executing SQL with data: " . json_encode($insertData) . "\n";
-                $result = $this->db->query($sql, $insertData);
+                echo "Executing SQL with data: " . json_encode($userData) . "\n";
+                $result = $this->db->query($sql, $userData);
                 if (!$result) {
                     echo "Failed to insert user data.\n";
                     $this->db->rollBack();
@@ -226,22 +212,6 @@ class User extends Model {
                     return false;
                 }
                 echo "User created with ID: " . $userId . "\n";
-
-                // If profile image exists, update it separately
-                if ($profileImage) {
-                    echo "Updating profile image...\n";
-                    $updateSql = "UPDATE users SET profile_image = :profile_image WHERE id = :id";
-                    $updateResult = $this->db->query($updateSql, [
-                        'profile_image' => $profileImage,
-                        'id' => $userId
-                    ]);
-                    
-                    if (!$updateResult) {
-                        echo "Warning: Failed to update profile image.\n";
-                    } else {
-                        echo "Profile image updated successfully.\n";
-                    }
-                }
 
                 // Commit transaction
                 echo "Committing transaction...\n";
@@ -492,18 +462,49 @@ class User extends Model {
 
     /**
      * 사용자 정보 업데이트
+     * @param int $id 사용자 ID
+     * @param array $data 업데이트할 데이터
+     * @return array|null 업데이트된 사용자 정보 또는 null
      */
-    public function update(int $id, array $data): ?array {
+    public function update(int $id, array $data): ?array
+    {
         try {
-            // 비밀번호가 있는 경우에만 해시화
-            if (isset($data['password'])) {
-                $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+            // 업데이트할 필드와 값 준비
+            $fields = [];
+            $values = [];
+            
+            foreach ($data as $key => $value) {
+                if (in_array($key, $this->fillable)) {
+                    $fields[] = "`$key` = :$key";
+                    $values[$key] = $value;
+                }
             }
-            $this->db->update($this->table, $data, 'id = :id', ['id' => $id]);
+            
+            if (empty($fields)) {
+                return null;
+            }
+            
+            // updated_at 필드 추가
+            $fields[] = "`updated_at` = CURRENT_TIMESTAMP";
+            
+            // SQL 쿼리 생성
+            $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = :id";
+            $values['id'] = $id;
+            
+            // 쿼리 실행
+            $stmt = $this->db->prepare($sql);
+            $result = $stmt->execute($values);
+            
+            if (!$result) {
+                error_log("Error updating user: " . json_encode($stmt->errorInfo()));
+                return null;
+            }
+            
+            // 업데이트된 사용자 정보 조회
             return $this->findById($id);
-        } catch (PDOException $e) {
-            error_log("Error in update: " . $e->getMessage());
-            throw new Exception("사용자 정보 업데이트 중 오류가 발생했습니다.");
+        } catch (\PDOException $e) {
+            error_log("Database error in User::update: " . $e->getMessage());
+            return null;
         }
     }
 

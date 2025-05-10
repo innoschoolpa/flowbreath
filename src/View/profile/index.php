@@ -318,6 +318,7 @@ $resources = [];
             </div>
             <div class="modal-body">
                 <form id="profileEditForm" action="/profile/update" method="POST">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                     <div class="mb-3">
                         <label for="name" class="form-label">이름</label>
                         <input type="text" class="form-control" id="name" name="name" value="<?= htmlspecialchars($user['name']) ?>" required>

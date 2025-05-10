@@ -8,8 +8,9 @@ use App\Core\Config;
 use App\Core\Logger;
 use App\Core\Database;
 use App\Core\Request;
-use Google_Client;
-use Google_Service_Oauth2;
+use Google\Client as GoogleClient;
+use Google\Service\Oauth2 as GoogleOauth2;
+use Google\Service\Oauth2\Userinfo as GoogleUserinfo;
 
 class GoogleAuthController extends BaseController
 {
@@ -32,7 +33,7 @@ class GoogleAuthController extends BaseController
     private function initializeGoogleClient()
     {
         try {
-            $this->client = new Google_Client();
+            $this->client = new GoogleClient();
             $this->client->setClientId(Config::get('google.client_id'));
             $this->client->setClientSecret(Config::get('google.client_secret'));
             $this->client->setRedirectUri(Config::get('google.redirect_uri'));
@@ -120,7 +121,7 @@ class GoogleAuthController extends BaseController
             $this->client->setAccessToken($token);
 
             // Get user info from Google
-            $oauth2 = new Google_Service_Oauth2($this->client);
+            $oauth2 = new GoogleOauth2($this->client);
             $userInfo = $oauth2->userinfo->get();
 
             // 마지막 로그인 이메일 저장
@@ -147,22 +148,34 @@ class GoogleAuthController extends BaseController
             $existingUser = $this->userModel->findByEmail($userData['email']);
             
             if ($existingUser) {
-                // Update last login time
-                $this->userModel->updateLastLogin($existingUser['id']);
+                // Update user information with latest Google data
+                $updateData = [
+                    'name' => $userData['name'],
+                    'google_id' => $userData['google_id'],
+                    'profile_image' => $userData['avatar'],
+                    'last_login' => date('Y-m-d H:i:s'),
+                    'email_verified_at' => date('Y-m-d H:i:s')
+                ];
                 
-                // Set session for existing user
-                $this->session->set('user_id', $existingUser['id']);
-                $this->session->set('user_name', $existingUser['name']);
-                $this->session->set('user_email', $existingUser['email']);
-                $this->session->set('user_avatar', $existingUser['avatar'] ?? $existingUser['profile_image'] ?? null);
+                // Update user in database and get updated user data
+                $updatedUser = $this->userModel->update($existingUser['id'], $updateData);
+                if (!$updatedUser) {
+                    throw new \Exception('Failed to update user data');
+                }
+                
+                // Set session with fresh user data
+                $this->session->set('user_id', $updatedUser['id']);
+                $this->session->set('user_name', $updatedUser['name']);
+                $this->session->set('user_email', $updatedUser['email']);
+                $this->session->set('user_avatar', $updatedUser['profile_image']);
                 $this->session->set('is_google_user', true);
                 $this->session->set('user_status', 'active');
 
                 // Log successful login
                 $this->logger->info('Google login successful', [
-                    'user_id' => $existingUser['id'],
-                    'email' => $existingUser['email'],
-                    'google_id' => $existingUser['google_id']
+                    'user_id' => $updatedUser['id'],
+                    'email' => $updatedUser['email'],
+                    'google_id' => $updatedUser['google_id']
                 ]);
 
                 // 즉시 리소스 페이지로 리다이렉트
@@ -170,7 +183,7 @@ class GoogleAuthController extends BaseController
                 exit;
             } else {
                 // Create new user
-                $userId = $this->userModel->createUser($this->db, [
+                $userId = $this->userModel->createUser([
                     'email' => $userData['email'],
                     'name' => $userData['name'],
                     'google_id' => $userData['google_id'],
