@@ -245,6 +245,17 @@ class ResourceController extends BaseController {
         ]);
     }
 
+    public function create(Request $request)
+    {
+        $user = $this->auth->user();
+        if (!$user) {
+            return $this->response->redirect('/login');
+        }
+        $response = $this->view('resources/create');
+        error_log('create() 반환 타입: ' . (is_object($response) ? get_class($response) : gettype($response)));
+        return $response;
+    }
+
     private function validateResourceData(Request $request, $isUpdate = false) {
         $data = [];
         $errors = [];

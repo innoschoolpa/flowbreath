@@ -94,6 +94,9 @@ class Router
                 throw new \Exception("Method {$method} not found in controller {$class}", 500);
             }
 
+            // Log which controller and method are being dispatched to
+            error_log("[ROUTER] Dispatching to: {$class}::{$method}");
+
             // Get method parameters using reflection
             $reflection = new \ReflectionMethod($controller, $method);
             $methodParams = $reflection->getParameters();

@@ -209,8 +209,12 @@ class AuthController extends Controller
             $this->session->regenerate();
 
             // 세션에 사용자 정보 저장
+            $name = $user['name'] ?? '';
+            if (!preg_match('/^[a-zA-Z가-힣0-9 _-]{2,50}$/u', $name)) {
+                $name = '사용자';
+            }
             $this->session->set('user_id', $user['id']);
-            $this->session->set('user_name', $user['name']);
+            $this->session->set('user_name', $name);
             $this->session->set('user_email', $user['email']);
             $this->session->set('user_avatar', $user['profile_image'] ?? null);
             $this->session->set('is_admin', $user['is_admin'] ?? false);
@@ -320,8 +324,12 @@ class AuthController extends Controller
             $this->session->regenerate();
             
             // 세션에 사용자 정보 저장
+            $name = $user['name'] ?? '';
+            if (!preg_match('/^[a-zA-Z가-힣0-9 _-]{2,50}$/u', $name)) {
+                $name = '사용자';
+            }
             $this->session->set('user_id', $user['id']);
-            $this->session->set('user_name', $user['name']);
+            $this->session->set('user_name', $name);
             $this->session->set('user_email', $user['email']);
             $this->session->set('user_avatar', $user['profile_image'] ?? null);
             $this->session->set('is_admin', $user['is_admin'] ?? false);
@@ -408,6 +416,10 @@ class AuthController extends Controller
             }
 
             // 세션 정보 업데이트
+            $name = $name ?? '';
+            if (!preg_match('/^[a-zA-Z가-힣0-9 _-]{2,50}$/u', $name)) {
+                $name = '사용자';
+            }
             $this->session->set('user_name', $name);
 
             return $this->json([
@@ -483,6 +495,10 @@ class AuthController extends Controller
             }
 
             // 세션 정보 업데이트
+            $name = $name ?? '';
+            if (!preg_match('/^[a-zA-Z가-힣0-9 _-]{2,50}$/u', $name)) {
+                $name = '사용자';
+            }
             $this->session->set('user_name', $name);
 
             return $this->json([

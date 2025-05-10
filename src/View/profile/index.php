@@ -217,11 +217,7 @@ $user = [
                                                 </a>
                                             </td>
                                             <td>
-                                                <?php if ($resource['is_public']): ?>
-                                                    <span class="badge bg-success">공개</span>
-                                                <?php else: ?>
-                                                    <span class="badge bg-secondary">비공개</span>
-                                                <?php endif; ?>
+                                                <?= isset($resource['is_public']) && $resource['is_public'] ? '공개' : '비공개' ?>
                                             </td>
                                             <td><?= number_format($resource['view_count']) ?></td>
                                             <td><?= date('Y-m-d', strtotime($resource['created_at'])) ?></td>

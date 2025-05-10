@@ -55,7 +55,7 @@ class Auth {
     public function login(array $user) {
         // name 필드 유효성 검사
         if (!isset($user['name']) || !preg_match('/^[a-zA-Z가-힣0-9 _-]{2,50}$/u', $user['name'])) {
-            $user['name'] = '사용자'; // fallback 또는 예외처리 가능
+            $user['name'] = '사용자';
         }
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['name'];

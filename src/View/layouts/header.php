@@ -1,5 +1,7 @@
 <?php
-// src/View/layout/header.php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 ?>
 <!DOCTYPE html>
 <html lang="<?= $_SESSION['lang'] ?? 'ko' ?>">

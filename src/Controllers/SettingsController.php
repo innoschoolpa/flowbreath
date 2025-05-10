@@ -100,6 +100,10 @@ class SettingsController extends Controller
             }
 
             // 세션 정보 업데이트
+            $name = $name ?? '';
+            if (!preg_match('/^[a-zA-Z가-힣0-9 _-]{2,50}$/u', $name)) {
+                $name = '사용자';
+            }
             $_SESSION['user_name'] = $name;
             if ($profileImage) {
                 $_SESSION['user_avatar'] = $profileImage;

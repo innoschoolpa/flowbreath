@@ -1,4 +1,6 @@
 <?php
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/logs/app.log');
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -50,6 +52,8 @@ try {
         throw new \Exception('Invalid response type', 500);
     }
 } catch (\Exception $e) {
+    error_log('[FATAL] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    error_log($e->getTraceAsString());
     // 에러 처리
     $response = new Response();
     $response->setContentType('text/html; charset=UTF-8');
@@ -139,8 +143,15 @@ $tagModel = new \App\Models\Tag();
 $popularTags = $tagModel->getPopularTags(8);
 
 // 로그인 상태
-$isLoggedIn = isset($_SESSION['user']);
-$user = $isLoggedIn ? $_SESSION['user'] : null;
+$isLoggedIn = isset($_SESSION['user_id']);
+$user = $isLoggedIn ? [
+    'id' => $_SESSION['user_id'],
+    'name' => $_SESSION['user_name'] ?? '',
+    'email' => $_SESSION['user_email'] ?? '',
+    'profile_image' => $_SESSION['user_avatar'] ?? null,
+    'bio' => $_SESSION['user_bio'] ?? '',
+    'social_links' => $_SESSION['user_social_links'] ?? ''
+] : null;
 
 // 검색 처리
 $searchQuery = isset($_GET['q']) ? trim($_GET['q']) : '';
@@ -153,145 +164,75 @@ if ($searchQuery !== '') {
         $searchResults = [];
     }
 }
+
+// 공통 헤더 포함
+require_once PROJECT_ROOT . '/src/View/layouts/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="<?= isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko' ?>">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $language->get('common.site_name') ?> - <?= $language->get('home.hero.title') ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body { background: #f8f9fa; }
-        .navbar { background: #2d3e50; }
-        .navbar-brand { font-weight: bold; letter-spacing: 1px; }
-        .hero-section { background: linear-gradient(135deg, #3498db, #0056b3); color: #fff; padding: 3rem 0 2rem 0; text-align: center; }
-        .search-box { max-width: 500px; margin: 2rem auto 0 auto; }
-        .card-resource { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: box-shadow 0.2s; }
-        .card-resource:hover { box-shadow: 0 4px 16px rgba(52,152,219,0.15); }
-        .tag-badge { background: #3498db; color: #fff; border-radius: 20px; padding: 0.3em 1em; margin: 0.1em; font-size: 0.95em; }
-        .popular-tags .tag-badge { background: #0056b3; }
-        .resource-meta { color: #888; font-size: 0.95em; }
-        .footer { background: #2d3e50; color: #fff; padding: 2rem 0; margin-top: 3rem; }
-    </style>
-</head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
-        <a class="navbar-brand" href="/">FlowBreath.io</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="/resources"><?= $language->get('resources.title') ?></a></li>
-                <li class="nav-item"><a class="nav-link" href="/tags"><?= $language->get('resources.tags') ?></a></li>
-                <li class="nav-item"><a class="nav-link" href="/api/docs">API 안내</a></li>
-            </ul>
-            <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item">
-                    <a href="/language/switch/ko" class="btn btn-outline-light btn-sm me-2 <?php if(isset($_SESSION['lang']) && $_SESSION['lang']==='ko') echo 'active'; ?>">한국어</a>
-                </li>
-                <li class="nav-item me-3">
-                    <a href="/language/switch/en" class="btn btn-outline-light btn-sm <?php if(isset($_SESSION['lang']) && $_SESSION['lang']==='en') echo 'active'; ?>">English</a>
-                </li>
-                <?php if ($isLoggedIn): ?>
-                    <li class="nav-item"><a class="nav-link" href="/profile"><i class="fa fa-user"></i> <?= $language->get('common.profile') ?></a></li>
-                    <li class="nav-item ms-2"><a class="btn btn-outline-light" href="/logout"><?= $language->get('common.logout') ?></a></li>
-                <?php else: ?>
-                    <li class="nav-item ms-2"><a class="btn btn-primary me-2" href="/login"><?= $language->get('common.login') ?></a></li>
-                    <li class="nav-item ms-3"><a class="btn btn-outline-primary" href="/register"><?= $language->get('common.register') ?></a></li>
-                <?php endif; ?>
-            </ul>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto text-center">
+            <h1 class="display-4 mb-4">호흡을 위한 최고의 자료, FlowBreath.io</h1>
+            <p class="lead mb-5">호흡 건강, 운동, 명상, 치료 등 다양한 호흡 자료를 쉽고 빠르게 찾아보세요.</p>
+            
+            <!-- 검색 폼 -->
+            <form action="/search" method="GET" class="mb-5">
+                <div class="input-group input-group-lg">
+                    <input type="text" name="q" class="form-control" placeholder="검색어를 입력하세요...">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i> 검색
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-</nav>
 
-<section class="hero-section">
-    <div class="container">
-        <h1 class="display-5 fw-bold mb-3"><?= $language->get('home.hero.title') ?></h1>
-        <p class="lead mb-4"><?= $language->get('home.hero.subtitle') ?></p>
-        <form class="search-box" method="get" action="/">
-            <div class="input-group input-group-lg">
-                <input type="text" class="form-control" name="q" placeholder="<?= $language->get('home.hero.search_placeholder') ?>" value="<?= htmlspecialchars($searchQuery) ?>">
-                <button class="btn btn-warning" type="submit"><i class="fa fa-search"></i> <?= $language->get('common.search') ?></button>
+    <!-- 최근 등록된 호흡 자료 -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>최근 등록된 호흡 자료</h2>
+                <a href="/resources" class="btn btn-outline-primary">전체 보기</a>
             </div>
-        </form>
+            
+            <div class="row">
+                <?php foreach ($recentResources as $resource): ?>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><?= htmlspecialchars($resource['title']) ?></h5>
+                            <p class="card-text text-muted">
+                                <?= htmlspecialchars($resource['author_name'] ?? '익명') ?> · 
+                                <?= date('Y-m-d', strtotime($resource['created_at'])) ?>
+                            </p>
+                            <p class="card-text">
+                                <?= htmlspecialchars(mb_substr($resource['description'], 0, 100)) ?>...
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-primary"><?= htmlspecialchars($resource['type']) ?></span>
+                                <a href="/resources/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm">자세히 보기</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
     </div>
-</section>
 
-<div class="container mt-5">
-    <?php if ($searchQuery !== ''): ?>
-        <h4 class="mb-4">
-            '<?= htmlspecialchars($searchQuery) ?>' <?= $language->get('common.search') ?>
-        </h4>
-        <div class="row">
-            <?php if (empty($searchResults)): ?>
-                <div class="col-12"><div class="alert alert-warning"><?= $language->get('home.recent_resources.no_results') ?></div></div>
-            <?php else: foreach ($searchResults as $resource): ?>
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card card-resource h-100">
-                        <div class="card-body">
-                            <h5 class="card-title mb-2"><?= htmlspecialchars($resource['title']) ?></h5>
-                            <div class="resource-meta mb-2">
-                                <i class="fa fa-user"></i> <?= htmlspecialchars($resource['user_name'] ?? $language->get('common.anonymous')) ?> ·
-                                <i class="fa fa-calendar"></i> <?= htmlspecialchars(substr($resource['created_at'],0,10)) ?>
-                            </div>
-                            <p class="card-text mb-2"><?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']),0,80,'...')) ?></p>
-                            <div class="mb-2">
-                                <?php foreach (($resource['tags'] ?? []) as $tag): ?>
-                                    <span class="tag-badge">#<?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
-                                <?php endforeach; ?>
-                            </div>
-                            <a href="/resources/view/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm"><?= $language->get('common.read_more') ?></a>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; endif; ?>
+    <!-- 인기 태그 -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="mb-4">인기 태그</h2>
+            <div class="d-flex flex-wrap gap-2">
+                <?php foreach ($popularTags as $tag): ?>
+                <a href="/tags/<?= urlencode($tag['name']) ?>" class="btn btn-outline-secondary">
+                    #<?= htmlspecialchars($tag['name']) ?>
+                </a>
+                <?php endforeach; ?>
+            </div>
         </div>
-    <?php else: ?>
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="mb-0"><?= $language->get('home.recent_resources.title') ?></h4>
-            <a href="/resources" class="btn btn-link"><?= $language->get('common.view_all') ?> <i class="fa fa-arrow-right"></i></a>
-        </div>
-        <div class="row">
-            <?php foreach ($recentResources as $resource): ?>
-                <div class="col-md-6 col-lg-6 mb-4">
-                    <div class="card card-resource h-100">
-                        <div class="card-body">
-                            <h5 class="card-title mb-2"><?= htmlspecialchars($resource['title']) ?></h5>
-                            <div class="resource-meta mb-2">
-                                <i class="fa fa-user"></i> <?= htmlspecialchars($resource['user_name'] ?? $language->get('common.anonymous')) ?> ·
-                                <i class="fa fa-calendar"></i> <?= htmlspecialchars(substr($resource['created_at'],0,10)) ?>
-                            </div>
-                            <p class="card-text mb-2"><?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']),0,120,'...')) ?></p>
-                            <div class="mb-2">
-                                <?php foreach (($resource['tags'] ?? []) as $tag): ?>
-                                    <span class="tag-badge">#<?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
-                                <?php endforeach; ?>
-                            </div>
-                            <a href="/resources/view/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm"><?= $language->get('common.read_more') ?></a>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-        <div class="popular-tags mt-5">
-            <h5 class="mb-3"><?= $language->get('home.popular_tags.title') ?></h5>
-            <?php foreach ($popularTags as $tag): ?>
-                <a href="/tags/view/<?= $tag['id'] ?>" class="tag-badge">#<?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></a>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
+    </div>
 </div>
 
-<footer class="footer mt-5">
-    <div class="container text-center">
-        <div class="mb-2"><?= $language->get('footer.copyright', ['year' => date('Y')]) ?></div>
-        <div><?= $language->get('footer.description') ?></div>
-    </div>
-</footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php require_once PROJECT_ROOT . '/src/View/layouts/footer.php'; ?>

@@ -395,53 +395,26 @@ class Resource extends Model {
     }
 
     /**
-     * 새로운 리소스 생성
-     * 
-     * @param array $data
-     * @return int|null 생성된 리소스의 ID 또는 실패 시 null
+     * 리소스 생성
      */
     public function create(array $data): ?int
     {
-        try {
-            $this->db->beginTransaction();
-
-            // 필수 필드 검증
-            $requiredFields = ['title', 'content', 'user_id'];
-            foreach ($requiredFields as $field) {
-                if (!isset($data[$field]) || empty($data[$field])) {
-                    throw new \Exception("Required field '{$field}' is missing or empty");
-                }
-            }
-
-            // 현재 시간 추가
-            $data['created_at'] = $data['updated_at'] = date('Y-m-d H:i:s');
-
-            // 데이터 삽입
-            $fields = array_keys($data);
-            $values = array_values($data);
-            $placeholders = array_fill(0, count($fields), '?');
-
-            $sql = sprintf(
-                "INSERT INTO %s (%s) VALUES (%s)",
-                $this->table,
-                implode(', ', $fields),
-                implode(', ', $placeholders)
-            );
-
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($values);
-            
-            $resourceId = (int)$this->db->lastInsertId();
-            
-            $this->db->commit();
-            return $resourceId;
-
-        } catch (\Exception $e) {
-            $this->db->rollBack();
-            error_log("Failed to create resource: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
-            return null;
+        $sql = "INSERT INTO resources (user_id, title, content, category, tags, file_path, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $this->db->prepare($sql);
+        $result = $stmt->execute([
+            $data['user_id'],
+            $data['title'],
+            $data['content'],
+            $data['category'],
+            $data['tags'],
+            $data['file_path'],
+            $data['created_at'],
+            $data['updated_at']
+        ]);
+        if ($result) {
+            return (int)$this->db->lastInsertId();
         }
+        return null;
     }
 
     /**

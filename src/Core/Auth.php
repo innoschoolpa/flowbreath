@@ -25,6 +25,10 @@ class Auth
 
     public function login($user)
     {
+        // 이름 유효성 검사 및 기본값 처리
+        if (!isset($user['name']) || !preg_match('/^[a-zA-Z가-힣0-9 _-]{2,50}$/u', $user['name'])) {
+            $user['name'] = '사용자';
+        }
         $this->user = $user;
         $this->session->set('user_id', $user['id']);
         $this->session->set('user_name', $user['name']);
