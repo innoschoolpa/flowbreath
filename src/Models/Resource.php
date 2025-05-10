@@ -403,9 +403,10 @@ class Resource extends Model {
             $this->db->beginTransaction();
 
             // 리소스 기본 정보 저장
+            $publishedAt = (isset($data['status']) && $data['status'] === 'published') ? date('Y-m-d H:i:s') : null;
             $sql = "INSERT INTO resources (
-                user_id, title, content, description, file_path, visibility, status, slug, is_public, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+                user_id, title, content, description, file_path, visibility, status, slug, is_public, published_at, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
             $params = [
                 $data['user_id'],
@@ -413,10 +414,11 @@ class Resource extends Model {
                 $data['content'],
                 $data['description'],
                 $data['file_path'],
-                isset($data['is_public']) && $data['is_public'] ? 'public' : 'private',
-                'draft',
+                $data['visibility'] ?? 'public',
+                $data['status'] ?? 'draft',
                 $data['slug'],
-                isset($data['is_public']) ? (int)$data['is_public'] : 0
+                isset($data['is_public']) ? (int)$data['is_public'] : 0,
+                $publishedAt
             ];
 
             error_log('[DEBUG] Resource INSERT SQL: ' . $sql);
@@ -476,10 +478,28 @@ class Resource extends Model {
             // 기본 정보 업데이트 (title, content, description 제거)
             $updateFields = [];
             $params = [];
-            foreach ($this->fillable as $field) {
+            foreach (
+                $this->fillable as $field
+            ) {
                 if (isset($data[$field])) {
                     $updateFields[] = "$field = ?";
                     $params[] = $data[$field];
+                }
+            }
+            // status 변경에 따라 published_at 처리
+            $currentStatus = null;
+            $stmt = $this->db->prepare("SELECT status FROM resources WHERE id = ?");
+            $stmt->execute([$id]);
+            if ($row = $stmt->fetch()) {
+                $currentStatus = $row['status'];
+            }
+            if (isset($data['status'])) {
+                if ($currentStatus === 'draft' && $data['status'] === 'published') {
+                    $updateFields[] = "published_at = ?";
+                    $params[] = date('Y-m-d H:i:s');
+                } elseif ($currentStatus === 'published' && $data['status'] === 'draft') {
+                    $updateFields[] = "published_at = ?";
+                    $params[] = null;
                 }
             }
             if ($updateFields) {

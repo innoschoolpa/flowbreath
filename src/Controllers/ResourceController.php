@@ -220,7 +220,7 @@ class ResourceController extends BaseController {
             error_log('[DEBUG] Start: 리소스 데이터 준비');
             // slugify 함수 정의
             function slugify($text) {
-                $text = preg_replace('~[^\\pL\ -\\d]+~u', '-', $text);
+                $text = preg_replace('~[^\\pL\\d]+~u', '-', $text);
                 $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
                 $text = preg_replace('~[^-\w]+~', '', $text);
                 $text = trim($text, '-');
@@ -229,6 +229,9 @@ class ResourceController extends BaseController {
                 return empty($text) ? 'n-a' : $text;
             }
             $slug = slugify($_POST['title']);
+            $status = $_POST['status'] ?? 'draft';
+            $visibility = $_POST['visibility'] ?? 'public';
+            $languageCode = $_POST['language_code'] ?? 'ko';
             $resourceData = [
                 'user_id' => $userId,
                 'title' => $_POST['title'],
@@ -237,16 +240,32 @@ class ResourceController extends BaseController {
                 'file_path' => $filePath,
                 'tags' => $tags,
                 'is_public' => isset($_POST['is_public']) ? 1 : 0,
-                'slug' => $slug
+                'slug' => $slug,
+                'status' => $status,
+                'visibility' => $visibility,
+                'language_code' => $languageCode
             ];
             error_log('[DEBUG] 리소스 데이터 준비 완료: ' . json_encode($resourceData));
 
             // 리소스 생성
             error_log('[DEBUG] Start: 리소스 생성');
-            $resource = $this->resource->create($resourceData);
-            error_log('[DEBUG] 리소스 생성 결과: ' . json_encode($resource));
+            $resourceId = $this->resource->create($resourceData);
+            error_log('[DEBUG] 리소스 생성 결과: ' . json_encode($resourceId));
 
-            if (!$resource) {
+            // 번역 테이블에 데이터 저장
+            if ($resourceId) {
+                $db = \App\Core\Database::getInstance();
+                $sql = "INSERT INTO resource_translations (resource_id, language_code, title, content, description) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = VALUES(title), content = VALUES(content), description = VALUES(description)";
+                $db->query($sql, [
+                    $resourceId,
+                    $languageCode,
+                    $_POST['title'],
+                    $_POST['content'],
+                    $_POST['description']
+                ]);
+            }
+
+            if (!$resourceId) {
                 error_log('[DEBUG] 리소스 생성 실패');
                 throw new \Exception('리소스 생성에 실패했습니다.');
             }
@@ -255,12 +274,12 @@ class ResourceController extends BaseController {
                 error_log('[DEBUG] 리소스 생성 성공 - JSON 반환');
                 return $this->response->json([
                     'message' => '리소스가 성공적으로 생성되었습니다.',
-                    'data' => ['id' => $resource['id']]
+                    'data' => ['id' => $resourceId]
                 ], 201);
             }
 
-            if (!empty($resource['id'])) {
-                return $this->response->redirect('/resources/view/' . $resource['id']);
+            if (!empty($resourceId)) {
+                return $this->response->redirect('/resources/view/' . $resourceId);
             } else {
                 return $this->response->redirect('/resources');
             }

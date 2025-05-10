@@ -26,6 +26,27 @@
             <textarea class="form-control" id="description" name="description" rows="3"></textarea>
         </div>
         <div class="mb-3">
+            <label for="status" class="form-label">상태</label>
+            <select class="form-control" id="status" name="status">
+                <option value="draft">임시저장</option>
+                <option value="published">발행</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="visibility" class="form-label">공개 범위</label>
+            <select class="form-control" id="visibility" name="visibility">
+                <option value="public">공개</option>
+                <option value="private">비공개</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="language_code" class="form-label">언어</label>
+            <select class="form-control" id="language_code" name="language_code">
+                <option value="ko">한국어</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+        <div class="mb-3">
             <label for="category" class="form-label">카테고리</label>
             <input type="text" class="form-control" id="category" name="category" maxlength="50">
         </div>

@@ -40,6 +40,14 @@
             </div>
 
             <div class="form-group">
+                <label for="status">상태</label>
+                <select id="status" name="status">
+                    <option value="draft" <?= ($resource['status'] ?? 'draft') === 'draft' ? 'selected' : '' ?>>임시저장</option>
+                    <option value="published" <?= ($resource['status'] ?? 'draft') === 'published' ? 'selected' : '' ?>>발행</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="summary">요약</label>
                 <textarea id="summary" name="summary" rows="4"><?= htmlspecialchars($resource['summary'] ?? '') ?></textarea>
             </div>
