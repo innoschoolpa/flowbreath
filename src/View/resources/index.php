@@ -77,7 +77,7 @@ if (!function_exists('is_youtube_url')) {
                             echo htmlspecialchars($preview);
                             ?>
                         </p>
-                        <a href="/resources/show/<?= htmlspecialchars($resource['id']) ?>" class="btn btn-outline-primary mt-auto">자세히 보기</a>
+                        <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" class="btn btn-outline-primary mt-auto">자세히 보기</a>
                     </div>
                 </div>
             </div>

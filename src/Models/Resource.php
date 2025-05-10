@@ -445,10 +445,18 @@ class Resource extends Model {
             $this->db->commit();
             $resourceId = $this->db->lastInsertId();
             if (!$resourceId) {
+                // 실제로 데이터가 들어갔는지 slug로 재조회
+                $checkSql = "SELECT id FROM resources WHERE slug = ?";
+                $row = $this->db->query($checkSql, [$data['slug']])->fetch();
+                if ($row && isset($row['id'])) {
+                    $resourceId = $row['id'];
+                }
+            }
+            if (!$resourceId) {
                 error_log('[ERROR] Resource insert failed. Params: ' . json_encode($params));
                 throw new \Exception('리소스 DB 저장 실패');
             }
-            return $resourceId ? (int)$resourceId : null;
+            return (int)$resourceId;
         } catch (\Exception $e) {
             $pdo = $this->db->getConnection();
             if (method_exists($pdo, 'inTransaction') && $pdo->inTransaction()) {

@@ -259,9 +259,11 @@ class ResourceController extends BaseController {
                 ], 201);
             }
 
-            $_SESSION['success_message'] = '리소스가 성공적으로 생성되었습니다.';
-            error_log('[DEBUG] 리소스 생성 성공 - 리다이렉트');
-            return $this->response->redirect('/resources/show/' . $resource['id']);
+            if (!empty($resource['id'])) {
+                return $this->response->redirect('/resources/view/' . $resource['id']);
+            } else {
+                return $this->response->redirect('/resources');
+            }
 
             error_log('[DEBUG] End of try block in store');
             return $this->response->json(['error' => 'Unknown error (try block fallthrough)'], 500);

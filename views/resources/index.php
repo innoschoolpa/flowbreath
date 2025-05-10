@@ -45,7 +45,7 @@
                 <?php foreach ($resources as $resource): ?>
                 <article class="resource-card">
                     <h2 class="resource-title">
-                        <a href="/resources/show/<?= $resource['id'] ?>">
+                        <a href="/resources/view/<?= $resource['id'] ?>">
                             <?= htmlspecialchars($resource['title']) ?>
                         </a>
                     </h2>

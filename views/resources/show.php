@@ -75,7 +75,7 @@
                     <?php foreach ($related_resources as $related): ?>
                     <div class="related-item">
                         <h3>
-                            <a href="/resources/show/<?= $related['id'] ?>">
+                            <a href="/resources/view/<?= $related['id'] ?>">
                                 <?= htmlspecialchars($related['title']) ?>
                             </a>
                         </h3>
