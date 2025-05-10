@@ -23,7 +23,7 @@ use App\Core\Database;
  */
 class User extends Model {
     protected $table = 'users';
-    protected $fillable = ['name', 'email', 'password', 'role', 'google_id', 'status'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'google_id', 'status', 'bio', 'profile_image'];
 
     /**
      * 생성자

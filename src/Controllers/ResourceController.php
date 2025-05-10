@@ -115,23 +115,131 @@ class ResourceController extends BaseController {
 
     public function store(Request $request) {
         try {
+            // 인증 체크
             $user = $this->auth->user();
             if (!$user) {
-                return $this->response->json(['error' => '로그인이 필요합니다.'], 401);
+                if ($request->wantsJson() || $request->isAjax()) {
+                    return $this->response->json(['error' => '로그인이 필요합니다.'], 401);
+                }
+                $_SESSION['error_message'] = '로그인이 필요합니다.';
+                return $this->response->redirect('/login');
             }
-            $data = $this->validateResourceData($request);
-            if (isset($data['error'])) {
-                return $this->response->json(['error' => $data['error']], 422);
+
+            // 입력값 검증
+            $validator = new \App\Core\Validator();
+            $validator->validate([
+                'title' => [
+                    'required' => true,
+                    'min' => 2,
+                    'max' => 100,
+                    'message' => '제목은 2~100자 사이로 입력해주세요.'
+                ],
+                'content' => [
+                    'required' => true,
+                    'min' => 5,
+                    'message' => '내용을 입력해주세요.'
+                ],
+                'description' => [
+                    'required' => true,
+                    'min' => 10,
+                    'max' => 500,
+                    'message' => '설명은 10~500자 사이로 입력해주세요.'
+                ]
+            ]);
+
+            if ($validator->hasErrors()) {
+                if ($request->wantsJson() || $request->isAjax()) {
+                    return $this->response->json(['error' => $validator->getErrors()], 422);
+                }
+                $_SESSION['error_message'] = $validator->getFirstError();
+                return $this->response->redirect('/resources/create');
             }
-            $data['user_id'] = $user['id'];
+
+            // 파일 업로드 처리
+            $filePath = null;
+            if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
+                $allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                $maxSize = 5 * 1024 * 1024; // 5MB
+
+                if (!in_array($_FILES['file']['type'], $allowedTypes)) {
+                    if ($request->wantsJson() || $request->isAjax()) {
+                        return $this->response->json(['error' => '지원하지 않는 파일 형식입니다.'], 422);
+                    }
+                    $_SESSION['error_message'] = '지원하지 않는 파일 형식입니다.';
+                    return $this->response->redirect('/resources/create');
+                }
+
+                if ($_FILES['file']['size'] > $maxSize) {
+                    if ($request->wantsJson() || $request->isAjax()) {
+                        return $this->response->json(['error' => '파일 크기는 5MB를 초과할 수 없습니다.'], 422);
+                    }
+                    $_SESSION['error_message'] = '파일 크기는 5MB를 초과할 수 없습니다.';
+                    return $this->response->redirect('/resources/create');
+                }
+
+                $uploadDir = __DIR__ . '/../../public/uploads/resources/';
+                if (!file_exists($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+
+                $fileName = uniqid() . '_' . basename($_FILES['file']['name']);
+                $filePath = '/uploads/resources/' . $fileName;
+
+                if (!move_uploaded_file($_FILES['file']['tmp_name'], $uploadDir . $fileName)) {
+                    if ($request->wantsJson() || $request->isAjax()) {
+                        return $this->response->json(['error' => '파일 업로드에 실패했습니다.'], 500);
+                    }
+                    $_SESSION['error_message'] = '파일 업로드에 실패했습니다.';
+                    return $this->response->redirect('/resources/create');
+                }
+            }
+
+            // 태그 처리
+            $tags = [];
+            if (!empty($_POST['tags'])) {
+                $tags = array_map('trim', explode(',', $_POST['tags']));
+                $tags = array_filter($tags);
+            }
+
+            // 리소스 데이터 준비
+            $data = [
+                'user_id' => $user['id'],
+                'title' => $_POST['title'],
+                'content' => $_POST['content'],
+                'description' => $_POST['description'],
+                'category' => $_POST['category'] ?? null,
+                'file_path' => $filePath,
+                'tags' => $tags,
+                'is_public' => isset($_POST['is_public']) ? 1 : 0
+            ];
+
+            // 리소스 생성
             $resource = $this->resource->create($data);
-            return $this->response->json([
-                'message' => '리소스가 생성되었습니다.',
-                'data' => ['id' => $resource['id'] ?? null]
-            ], 201);
+
+            if (!$resource) {
+                throw new \Exception('리소스 생성에 실패했습니다.');
+            }
+
+            if ($request->wantsJson() || $request->isAjax()) {
+                return $this->response->json([
+                    'message' => '리소스가 성공적으로 생성되었습니다.',
+                    'data' => ['id' => $resource['id']]
+                ], 201);
+            }
+
+            $_SESSION['success_message'] = '리소스가 성공적으로 생성되었습니다.';
+            return $this->response->redirect('/resources/show/' . $resource['id']);
+
         } catch (\Exception $e) {
-            return $this->response->json(['error' => $e->getMessage()], 500);
+            error_log("Error in ResourceController::store: " . $e->getMessage());
+            if ($request->wantsJson() || $request->isAjax()) {
+                return $this->response->json(['error' => $e->getMessage()], 500);
+            }
+            $_SESSION['error_message'] = $e->getMessage();
+            return $this->response->redirect('/resources/create');
         }
+        // 모든 경로에서 반환이 보장되지 않을 경우를 대비한 안전장치
+        return $this->response->json(['error' => 'Unknown error'], 500);
     }
 
     public function update(Request $request, $id) {
@@ -282,9 +390,14 @@ class ResourceController extends BaseController {
     {
         $user = $this->auth->user();
         if (!$user) {
+            $_SESSION['error_message'] = '로그인이 필요합니다.';
             return $this->response->redirect('/login');
         }
-        return $this->view('resources/create');
+
+        $response = new \App\Core\Response();
+        $content = $this->view('resources/create');
+        $response->setContent($content);
+        return $response;
     }
 
     private function validateResourceData(Request $request, $isUpdate = false) {

@@ -373,8 +373,9 @@ $resources = [];
 // 프로필 수정 폼 제출
 document.getElementById('profileEditForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    
     const formData = new FormData(this);
-
+    
     fetch('/profile/update', {
         method: 'POST',
         body: formData
@@ -382,14 +383,18 @@ document.getElementById('profileEditForm').addEventListener('submit', function(e
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            // 성공 메시지 표시
             alert(data.message);
-            location.reload();
+            // 페이지 새로고침
+            window.location.reload();
         } else {
-            alert(data.message || '프로필 업데이트에 실패했습니다.');
+            // 오류 메시지 표시
+            alert(data.error || '프로필 업데이트 중 오류가 발생했습니다.');
         }
     })
     .catch(error => {
-        alert('오류가 발생했습니다.');
+        console.error('Error:', error);
+        alert('프로필 업데이트 중 오류가 발생했습니다.');
     });
 });
 

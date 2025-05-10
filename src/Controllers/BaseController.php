@@ -157,14 +157,14 @@ abstract class BaseController {
     }
 
     /**
-     * 뷰 파일을 렌더링
-     * 
+     * 뷰 파일을 렌더링하여 Response 객체로 반환
+     *
      * @param string $view 뷰 파일 경로 (View 디렉토리 기준)
      * @param array $data 뷰에 전달할 데이터
      * @param int $status HTTP 상태 코드
-     * @return string
+     * @return \App\Core\Response
      */
-    protected function view($view, $data = [], $statusCode = 200)
+    protected function view($view, $data = [], $statusCode = 200): \App\Core\Response
     {
         return $this->response->view($view, $data, $statusCode);
     }

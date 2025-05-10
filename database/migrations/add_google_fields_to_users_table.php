@@ -1,28 +1,34 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace App\Database\Migrations;
 
-class AddGoogleFieldsToUsersTable extends Migration
+use App\Database\Migration;
+
+class GoogleFieldsToUsersTable extends Migration
 {
+    protected $tableName = 'users';
+
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('google_id')->nullable()->unique();
-            $table->string('profile_picture')->nullable();
-            $table->boolean('email_verified')->default(false);
-            $table->string('auth_provider')->default('local');
-            
-            $table->index('google_id');
-            $table->index('auth_provider');
-        });
+        $sql = "ALTER TABLE {$this->tableName} 
+                ADD COLUMN google_id VARCHAR(255) NULL UNIQUE,
+                ADD COLUMN profile_picture VARCHAR(255) NULL,
+                ADD COLUMN email_verified BOOLEAN DEFAULT FALSE,
+                ADD COLUMN auth_provider VARCHAR(50) DEFAULT 'local',
+                ADD INDEX idx_google_id (google_id),
+                ADD INDEX idx_auth_provider (auth_provider)";
+        
+        $this->db->exec($sql);
     }
 
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['google_id', 'profile_picture', 'email_verified', 'auth_provider']);
-        });
+        $sql = "ALTER TABLE {$this->tableName} 
+                DROP COLUMN google_id,
+                DROP COLUMN profile_picture,
+                DROP COLUMN email_verified,
+                DROP COLUMN auth_provider";
+        
+        $this->db->exec($sql);
     }
 } 

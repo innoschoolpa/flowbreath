@@ -12,6 +12,7 @@ return function (Database $db) {
             role ENUM('user', 'admin') NOT NULL DEFAULT 'user',
             google_id VARCHAR(255) NULL UNIQUE,
             profile_image VARCHAR(255) NULL,
+            bio TEXT NULL,
             status ENUM('active', 'inactive', 'suspended') NOT NULL DEFAULT 'active',
             email_verified_at TIMESTAMP NULL,
             remember_token VARCHAR(100) NULL,

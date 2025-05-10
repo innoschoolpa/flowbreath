@@ -19,7 +19,11 @@
         </div>
         <div class="mb-3">
             <label for="content" class="form-label">내용 <span class="text-danger">*</span></label>
-            <textarea class="form-control" id="content" name="content" rows="6" required></textarea>
+            <textarea class="form-control" id="content" name="content" rows="6"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">설명 <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
         </div>
         <div class="mb-3">
             <label for="category" class="form-label">카테고리</label>
@@ -63,6 +67,18 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('form').addEventListener('submit', function(e) {
         if (ckeditorInstance) {
             document.getElementById('content').value = ckeditorInstance.getData();
+            // CKEditor 내용이 비어 있으면 제출 막기
+            if (!ckeditorInstance.getData().trim()) {
+                alert('내용을 입력하세요.');
+                e.preventDefault();
+                return false;
+            }
+        }
+        const descriptionInput = document.getElementById('description');
+        if (!descriptionInput.value.trim()) {
+            alert('설명을 입력하세요.');
+            e.preventDefault();
+            return false;
         }
     });
 

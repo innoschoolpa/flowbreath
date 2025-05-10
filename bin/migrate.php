@@ -23,18 +23,18 @@ require_once __DIR__ . '/../config/database.php';
 $db = \Config\Database::getInstance()->getConnection();
 
 // 마이그레이션 매니저 인스턴스 생성
-$manager = new \App\Database\MigrationManager($db);
+$manager = new \App\Database\MigrationManager($db, __DIR__ . '/../database/migrations');
 
 // 커맨드라인 인자 처리
 $command = $argv[1] ?? 'help';
 
 switch ($command) {
     case 'migrate':
-        $manager->migrate();
+        $manager->runMigrations();
         break;
 
     case 'rollback':
-        $manager->rollback();
+        $manager->rollbackMigrations();
         break;
 
     case 'create':

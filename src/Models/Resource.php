@@ -397,24 +397,57 @@ class Resource extends Model {
     /**
      * 리소스 생성
      */
-    public function create(array $data): ?int
+    public function create(array $data)
     {
-        $sql = "INSERT INTO resources (user_id, title, content, category, tags, file_path, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        $stmt = $this->db->prepare($sql);
-        $result = $stmt->execute([
-            $data['user_id'],
-            $data['title'],
-            $data['content'],
-            $data['category'],
-            $data['tags'],
-            $data['file_path'],
-            $data['created_at'],
-            $data['updated_at']
-        ]);
-        if ($result) {
-            return (int)$this->db->lastInsertId();
+        try {
+            $this->db->beginTransaction();
+
+            // 리소스 기본 정보 저장
+            $sql = "INSERT INTO resources (
+                user_id, title, content, description, category, 
+                file_path, is_public, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+
+            $params = [
+                $data['user_id'],
+                $data['title'],
+                $data['content'],
+                $data['description'],
+                $data['category'],
+                $data['file_path'],
+                $data['is_public']
+            ];
+
+            $this->db->query($sql, $params);
+            $resourceId = $this->db->lastInsertId();
+
+            // 태그 처리
+            if (!empty($data['tags'])) {
+                foreach ($data['tags'] as $tagName) {
+                    // 태그가 없으면 생성
+                    $tagSql = "INSERT IGNORE INTO tags (name, created_at) VALUES (?, NOW())";
+                    $this->db->query($tagSql, [$tagName]);
+                    
+                    // 태그 ID 조회
+                    $tagIdSql = "SELECT id FROM tags WHERE name = ?";
+                    $tagId = $this->db->query($tagIdSql, [$tagName])->fetch()['id'];
+
+                    // 리소스-태그 연결
+                    $relationSql = "INSERT INTO resource_tags (resource_id, tag_id) VALUES (?, ?)";
+                    $this->db->query($relationSql, [$resourceId, $tagId]);
+                }
+            }
+
+            $this->db->commit();
+
+            // 생성된 리소스 정보 반환
+            return $this->findById($resourceId);
+
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            error_log("Error in Resource::create: " . $e->getMessage());
+            throw $e;
         }
-        return null;
     }
 
     /**

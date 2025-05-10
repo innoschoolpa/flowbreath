@@ -51,104 +51,61 @@ class Auth
     public function user()
     {
         try {
-            // 세션에 사용자 ID가 없으면 null 반환
             if (!$this->check()) {
-                error_log("Auth::user() - No user session found");
+                file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] No user session found' . PHP_EOL, FILE_APPEND);
                 return null;
             }
-
-            // 이미 로드된 사용자 정보가 있으면 반환
             if ($this->user !== null) {
+                file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] Cached user: ' . print_r($this->user, true) . PHP_EOL, FILE_APPEND);
                 return $this->user;
             }
-
             $userId = $this->session->get('user_id');
+            file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] user_id from session: ' . $userId . PHP_EOL, FILE_APPEND);
+
             if (!$userId) {
-                error_log("Auth::user() - No user ID in session");
+                file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] No user ID in session' . PHP_EOL, FILE_APPEND);
                 return null;
             }
 
-            error_log("Auth::user() - Attempting to fetch user with ID: " . $userId);
-            
             try {
-                // 데이터베이스 연결 확인 및 재시도
-                $retryCount = 0;
-                $maxRetries = 3;
-                $lastError = null;
-                
-                while ($retryCount < $maxRetries) {
-                    try {
-                        if (!$this->db) {
-                            error_log("Auth::user() - Database connection is null, attempting to reconnect...");
-                            $this->db = Database::getInstance();
-                        }
-
-                        // 연결 테스트
-                        $this->db->getConnection()->query("SELECT 1");
-                        
-                        // 사용자 조회
-                        $sql = "SELECT * FROM users WHERE id = ? AND deleted_at IS NULL";
-                        error_log("Auth::user() - Executing SQL: " . $sql . " with ID: " . $userId);
-                        
-                        $stmt = $this->db->prepare($sql);
-                        if (!$stmt) {
-                            throw new \PDOException("Failed to prepare statement");
-                        }
-
-                        $stmt->execute([$userId]);
-                        $this->user = $stmt->fetch(\PDO::FETCH_ASSOC);
-                        
-                        if (!$this->user) {
-                            error_log("Auth::user() - User not found with ID: " . $userId);
-                            // 사용자를 찾을 수 없는 경우 (계정 삭제)
-                            $this->logout();
-                            return null;
-                        }
-
-                        // 사용자 상태 확인
-                        if (!isset($this->user['status']) || $this->user['status'] !== 'active') {
-                            error_log("Auth::user() - User is not active. User ID: " . $userId . ", Status: " . ($this->user['status'] ?? 'not set'));
-                            // 계정이 비활성화된 경우
-                            $this->logout();
-                            return null;
-                        }
-
-                        error_log("Auth::user() - Successfully retrieved active user");
-                        return $this->user;
-
-                    } catch (\PDOException $e) {
-                        $lastError = $e;
-                        $retryCount++;
-                        error_log("Auth::user() - Database error (attempt {$retryCount}): " . $e->getMessage());
-                        
-                        if ($retryCount >= $maxRetries) {
-                            // 일시적인 DB 오류로 간주하고 세션은 유지
-                            error_log("Auth::user() - Database error after all retries: " . $e->getMessage());
-                            return null;
-                        }
-                        
-                        sleep(1); // 재시도 전 잠시 대기
-                    }
+                if (!$this->db) {
+                    file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] DB connection is null' . PHP_EOL, FILE_APPEND);
+                    $this->db = Database::getInstance();
                 }
+                $this->db->getConnection()->query("SELECT 1");
+                file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] DB connection OK' . PHP_EOL, FILE_APPEND);
 
-                if ($lastError) {
-                    // 일시적인 DB 오류로 간주하고 세션은 유지
-                    error_log("Auth::user() - Database error after all retries: " . $lastError->getMessage());
+                $sql = "SELECT * FROM users WHERE id = ? AND deleted_at IS NULL";
+                file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] SQL: ' . $sql . ' with ID: ' . $userId . PHP_EOL, FILE_APPEND);
+
+                $stmt = $this->db->prepare($sql);
+                if (!$stmt) {
+                    file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] Failed to prepare statement' . PHP_EOL, FILE_APPEND);
+                    throw new \PDOException("Failed to prepare statement");
+                }
+                $stmt->execute([$userId]);
+                $this->user = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+                file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] Query result: ' . print_r($this->user, true) . PHP_EOL, FILE_APPEND);
+
+                if (!$this->user) {
+                    file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] User not found with ID: ' . $userId . PHP_EOL, FILE_APPEND);
+                    $this->logout();
                     return null;
                 }
-
+                if (!isset($this->user['status']) || $this->user['status'] !== 'active') {
+                    file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] User is not active. Status: ' . ($this->user['status'] ?? 'not set') . PHP_EOL, FILE_APPEND);
+                    $this->logout();
+                    return null;
+                }
+                file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] Successfully retrieved active user' . PHP_EOL, FILE_APPEND);
+                return $this->user;
             } catch (\PDOException $e) {
-                error_log("Auth::user() - Database error after all retries: " . $e->getMessage());
-                error_log("Auth::user() - SQL State: " . $e->getCode());
-                error_log("Auth::user() - Error Info: " . json_encode($e->errorInfo ?? []));
-                
-                // 일시적인 DB 오류로 간주하고 세션은 유지
+                file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] DB error: ' . $e->getMessage() . PHP_EOL, FILE_APPEND);
                 return null;
             }
         } catch (\Exception $e) {
-            error_log("Auth::user() - Unexpected error: " . $e->getMessage());
-            error_log("Auth::user() - Stack trace: " . $e->getTraceAsString());
-            // 예상치 못한 오류도 일시적인 것으로 간주하고 세션은 유지
+            file_put_contents(__DIR__ . '/../../logs/error.log', '[Auth::user()] Unexpected error: ' . $e->getMessage() . PHP_EOL, FILE_APPEND);
             return null;
         }
     }

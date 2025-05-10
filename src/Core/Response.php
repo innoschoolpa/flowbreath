@@ -157,4 +157,9 @@ class Response
     {
         return $this->headers;
     }
+
+    public function __toString()
+    {
+        return (string)$this->content;
+    }
 } 

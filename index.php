@@ -1,6 +1,6 @@
 <?php
 ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/logs/app.log');
+ini_set('error_log', __DIR__ . '/logs/error.log');
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -43,13 +43,20 @@ try {
     // 라우트 처리
     $result = $router->dispatch($method, $uri);
     
+    // 디버깅: 반환값 타입과 값 출력 (로그)
+    error_log('[DEBUG] Router dispatch result type: ' . gettype($result));
+    if (is_object($result)) {
+        error_log('[DEBUG] Router dispatch result class: ' . get_class($result));
+    }
+    
     // 응답 처리
     if ($result instanceof Response) {
         $result->send();
     } else if (is_string($result)) {
         echo $result;
     } else {
-        throw new \Exception('Invalid response type', 500);
+        error_log('[FATAL] Invalid response type: ' . print_r($result, true));
+        throw new \Exception('Invalid response type: ' . (is_object($result) ? get_class($result) : gettype($result)), 500);
     }
 } catch (\Exception $e) {
     error_log('[FATAL] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());

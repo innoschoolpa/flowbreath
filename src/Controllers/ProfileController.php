@@ -358,35 +358,33 @@ class ProfileController extends Controller
 
     public function update()
     {
-        if (!isset($_SESSION['user_id'])) {
-            $_SESSION['error'] = '로그인이 필요합니다.';
-            header('Location: /login');
-            exit;
-        }
-
-        // CSRF 토큰 검증
-        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== ($_SESSION['csrf_token'] ?? '')) {
-            $_SESSION['error'] = '잘못된 요청입니다.';
-            header('Location: /profile');
-            exit;
-        }
-
-        $userId = (int)$_SESSION['user_id'];
-        $name = trim($_POST['name'] ?? '');
-        $bio = trim($_POST['bio'] ?? '');
-
-        // 입력값 검증
-        if (empty($name)) {
-            $_SESSION['error'] = '이름은 필수 입력 항목입니다.';
-            header('Location: /profile');
-            exit;
-        }
-
         try {
+            if (!$this->auth->check()) {
+                return $this->json(['error' => '로그인이 필요합니다.'], 401);
+            }
+
+            $userId = $this->auth->id();
+            $name = trim($_POST['name'] ?? '');
+            $bio = trim($_POST['bio'] ?? '');
+
+            // 입력값 검증
+            if (empty($name)) {
+                return $this->json(['error' => '이름은 필수 입력 항목입니다.'], 400);
+            }
+
+            if (mb_strlen($name) > 100) {
+                return $this->json(['error' => '이름은 100자를 초과할 수 없습니다.'], 400);
+            }
+
+            if (mb_strlen($bio) > 1000) {
+                return $this->json(['error' => '자기소개는 1000자를 초과할 수 없습니다.'], 400);
+            }
+
             // 사용자 정보 업데이트
             $updateData = [
                 'name' => $name,
-                'bio' => $bio
+                'bio' => $bio,
+                'updated_at' => date('Y-m-d H:i:s')
             ];
 
             $updatedUser = $this->user->update($userId, $updateData);
@@ -396,16 +394,21 @@ class ProfileController extends Controller
 
             // 세션 정보 업데이트
             $_SESSION['user_name'] = $updatedUser['name'];
-            $_SESSION['user_bio'] = $updatedUser['bio'];
+            if (isset($updatedUser['profile_image'])) {
+                $_SESSION['user_avatar'] = $updatedUser['profile_image'];
+            }
 
-            $_SESSION['success'] = '프로필이 성공적으로 업데이트되었습니다.';
-            header('Location: /profile');
-            exit;
+            return $this->json([
+                'success' => true,
+                'message' => '프로필이 성공적으로 업데이트되었습니다.',
+                'user' => $updatedUser
+            ]);
+
         } catch (\Exception $e) {
             error_log("Profile update error: " . $e->getMessage());
-            $_SESSION['error'] = '프로필 업데이트 중 오류가 발생했습니다.';
-            header('Location: /profile');
-            exit;
+            return $this->json([
+                'error' => '프로필 업데이트 중 오류가 발생했습니다.'
+            ], 500);
         }
     }
 
