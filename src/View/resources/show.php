@@ -112,7 +112,6 @@ $title = $title ?? '리소스 상세';
                             <li><i class="fas fa-user"></i> 작성자: <?php echo htmlspecialchars($resource['user_name'] ?? '알 수 없음'); ?></li>
                             <li><i class="fas fa-calendar"></i> 작성일: <?php echo isset($resource['created_at']) ? date('Y-m-d H:i', strtotime($resource['created_at'])) : '알 수 없음'; ?></li>
                             <li><i class="fas fa-eye"></i> 조회수: <?php echo number_format($resource['view_count'] ?? 0); ?></li>
-                            <li><i class="fas fa-heart"></i> 좋아요: <?php echo number_format($resource['like_count'] ?? 0); ?></li>
                             <li><i class="fas fa-comments"></i> 댓글: <?php echo number_format($resource['comment_count'] ?? 0); ?></li>
                         </ul>
                     </div>

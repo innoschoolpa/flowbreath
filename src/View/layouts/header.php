@@ -24,11 +24,21 @@
         .profile-dropdown .dropdown-toggle::after {
             display: none;
         }
-        .profile-image {
+        .profile-image-container {
             width: 32px;
             height: 32px;
-            object-fit: cover;
+            position: relative;
+            overflow: hidden;
             border-radius: 50%;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .profile-icon {
             font-size: 32px;
@@ -39,6 +49,39 @@
         }
         .nav-link:hover {
             color: #fff !important;
+        }
+        .dropdown-header {
+            padding: 0.75rem 1rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .dropdown-header strong {
+            font-size: 0.95rem;
+            color: #2d3e50;
+            margin-bottom: 0.25rem;
+        }
+        .user-email {
+            display: block;
+            font-size: 0.85rem;
+            color: #6c757d;
+            word-break: break-all;
+            line-height: 1.2;
+        }
+        .user-name {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .dropdown-menu {
+            min-width: 200px;
+        }
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+        }
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
         }
     </style>
 </head>
@@ -63,20 +106,47 @@
                     </div>
                 </li>
                 <?php if (isset($_SESSION['user_id'])): ?>
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown profile-dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <?php if (isset($_SESSION['user_avatar']) && $_SESSION['user_avatar']): ?>
-                                <img src="<?= htmlspecialchars($_SESSION['user_avatar']) ?>" alt="Profile" class="profile-image">
-                            <?php else: ?>
-                                <i class="fas fa-user-circle profile-icon"></i>
-                            <?php endif; ?>
-                            <span class="ms-2"><?= htmlspecialchars($_SESSION['user_name'] ?? '내 정보') ?></span>
+                            <?php
+                            $userAvatar = $_SESSION['user_avatar'] ?? null;
+                            $userName = $_SESSION['user_name'] ?? '사용자';
+                            $isValidAvatar = $userAvatar && filter_var($userAvatar, FILTER_VALIDATE_URL);
+                            ?>
+                            <div class="profile-image-container">
+                                <?php if ($isValidAvatar): ?>
+                                    <img src="<?= htmlspecialchars($userAvatar) ?>" 
+                                         alt="<?= htmlspecialchars($userName) ?>" 
+                                         class="profile-image"
+                                         onerror="this.onerror=null; this.src='/assets/images/default-avatar.png';">
+                                <?php else: ?>
+                                    <i class="fas fa-user-circle profile-icon"></i>
+                                <?php endif; ?>
+                            </div>
+                            <span class="ms-2 user-name"><?= htmlspecialchars($userName) ?></span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="profileDropdown">
+                            <li>
+                                <div class="dropdown-header">
+                                    <strong class="d-block"><?= htmlspecialchars($userName) ?></strong>
+                                    <?php if (isset($_SESSION['user_email'])): ?>
+                                        <span class="text-muted small user-email"><?= htmlspecialchars($_SESSION['user_email']) ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>내 정보</a></li>
                             <li><a class="dropdown-item" href="/settings"><i class="fas fa-cog me-2"></i>설정</a></li>
+                            <li><a class="dropdown-item" href="/bookmarks"><i class="fas fa-bookmark me-2"></i>북마크</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>로그아웃</a></li>
+                            <li>
+                                <form action="/logout" method="POST" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-sign-out-alt me-2"></i>로그아웃
+                                    </button>
+                                </form>
+                            </li>
                         </ul>
                     </li>
                 <?php else: ?>

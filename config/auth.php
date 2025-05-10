@@ -11,7 +11,6 @@ return [
             'openid'
         ],
         'access_type' => 'offline',
-        'prompt' => 'consent',
         'include_granted_scopes' => true,
         'state_expiry' => 300, // 5 minutes
         'max_login_attempts' => 5,
@@ -19,6 +18,8 @@ return [
         'session_lifetime' => 3600, // 1 hour
         'session_secure' => true,
         'session_httponly' => true,
-        'session_samesite' => 'Lax'
+        'session_samesite' => 'None',
+        'session_path' => '/',
+        'session_domain' => '.flowbreath.io'
     ]
 ]; 

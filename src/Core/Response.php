@@ -23,7 +23,7 @@ class Response
         if ($this->sent) {
             throw new \RuntimeException('Cannot modify status code after response has been sent');
         }
-        $this->statusCode = $code;
+        $this->statusCode = (int)$code;
         return $this;
     }
 
@@ -131,7 +131,7 @@ class Response
             foreach ($this->headers as $name => $value) {
                 header("$name: $value", true);
             }
-            http_response_code($this->statusCode);
+            http_response_code((int)$this->statusCode);
         }
 
         echo $this->content;

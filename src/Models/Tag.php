@@ -39,9 +39,9 @@ class Tag extends Model {
      * 새 태그 생성
      * 
      * @param array $data 태그 데이터
-     * @return array|null 생성된 태그 데이터 또는 null
+     * @return int|null 생성된 태그 id 또는 null
      */
-    public function create(array $data): ?array
+    public function create(array $data): ?int
     {
         try {
             $this->db->beginTransaction();
@@ -50,7 +50,7 @@ class Tag extends Model {
             
             $this->db->commit();
             
-            return $this->find($id);
+            return $id;
         } catch (PDOException $e) {
             $this->db->rollback();
             error_log("Error in Tag::create: " . $e->getMessage());

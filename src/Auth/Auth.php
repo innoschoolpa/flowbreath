@@ -53,12 +53,17 @@ class Auth {
     }
 
     public function login(array $user) {
+        // name 필드 유효성 검사
+        if (!isset($user['name']) || !preg_match('/^[a-zA-Z가-힣0-9 _-]{2,50}$/u', $user['name'])) {
+            $user['name'] = '사용자'; // fallback 또는 예외처리 가능
+        }
         $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_name'] = $user['name'];
         $this->user = $user;
     }
 
     public function logout() {
-        unset($_SESSION['user_id']);
+        unset($_SESSION['user_id'], $_SESSION['user_name']);
         $this->user = null;
         session_regenerate_id(true);
     }
@@ -105,10 +110,15 @@ class Auth {
                     $user['id']
                 ]);
             }
+            // name 필드 검증
+            if (!isset($user['name']) || !preg_match('/^[a-zA-Z가-힣0-9 _-]{2,50}$/u', $user['name'])) {
+                $user['name'] = '사용자';
+            }
             return $user;
         }
 
         // 새 사용자 생성
+        $name = isset($googleUser['name']) && preg_match('/^[a-zA-Z가-힣0-9 _-]{2,50}$/u', $googleUser['name']) ? $googleUser['name'] : '사용자';
         $stmt = $this->db->prepare("
             INSERT INTO users (
                 email, name, google_id, profile_image, 
@@ -121,7 +131,7 @@ class Auth {
 
         $stmt->execute([
             $googleUser['email'],
-            $googleUser['name'],
+            $name,
             $googleUser['id'],
             $googleUser['picture'] ?? null
         ]);
@@ -129,7 +139,7 @@ class Auth {
         return [
             'id' => $this->db->lastInsertId(),
             'email' => $googleUser['email'],
-            'name' => $googleUser['name'],
+            'name' => $name,
             'google_id' => $googleUser['id'],
             'profile_image' => $googleUser['picture'] ?? null,
             'is_active' => true,

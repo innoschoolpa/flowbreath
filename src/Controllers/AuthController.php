@@ -7,7 +7,8 @@ use App\Core\Response;
 use App\Core\Controller;
 use App\Models\User;
 use Google\Client as GoogleClient;
-use Google\Service\Oauth2 as GoogleOauth2;
+use Google\Service\Oauth2;
+use Google\Service\Oauth2\Userinfo;
 use App\Core\Session;
 use App\Core\Validator;
 use PDO;
@@ -164,7 +165,7 @@ class AuthController extends Controller
 
             // Log the user in
             $this->session->set('user_id', $userId);
-            $this->session->set('username', $username);
+            $this->session->set('user_name', $username);
 
             return $this->json([
                 'success' => true,
@@ -199,26 +200,29 @@ class AuthController extends Controller
                 throw new \Exception('이메일 또는 비밀번호가 일치하지 않습니다.');
             }
 
+            // 사용자 상태 확인
+            if (!isset($user['status']) || $user['status'] !== 'active') {
+                throw new \Exception('비활성화된 계정입니다. 관리자에게 문의해주세요.');
+            }
+
+            // 세션 초기화
+            $this->session->regenerate();
+
             // 세션에 사용자 정보 저장
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_name'] = $user['name'];
-            $_SESSION['user_email'] = $user['email'];
-            $_SESSION['user_avatar'] = $user['profile_image'] ?? null;
-            $_SESSION['is_admin'] = $user['is_admin'] ?? false;
-
-            // CSRF 토큰 생성
-            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-
-            // 로그인 성공 메시지
-            $_SESSION['success'] = '로그인되었습니다.';
-
-            // 리다이렉트 URL 확인
-            $redirect = $_SESSION['redirect_after_login'] ?? '/';
-            unset($_SESSION['redirect_after_login']); // 사용 후 삭제
+            $this->session->set('user_id', $user['id']);
+            $this->session->set('user_name', $user['name']);
+            $this->session->set('user_email', $user['email']);
+            $this->session->set('user_avatar', $user['profile_image'] ?? null);
+            $this->session->set('is_admin', $user['is_admin'] ?? false);
+            $this->session->set('csrf_token', bin2hex(random_bytes(32)));
 
             // 디버그 로그
             error_log('Login successful for user: ' . $user['id']);
-            error_log('Session data: ' . print_r($_SESSION, true));
+            error_log('Session data: ' . print_r($this->session->all(), true));
+
+            // 리다이렉트 URL 확인
+            $redirect = $this->session->get('redirect_after_login', '/');
+            $this->session->remove('redirect_after_login');
 
             return $this->json([
                 'success' => true,
@@ -227,6 +231,7 @@ class AuthController extends Controller
 
         } catch (\Exception $e) {
             error_log('Login error: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
             return $this->json([
                 'success' => false,
                 'error' => $e->getMessage()
@@ -279,55 +284,65 @@ class AuthController extends Controller
                 throw new \Exception('Google 로그인 중 오류가 발생했습니다: ' . $token['error_description']);
             }
 
-            $oauth2 = new \Google_Service_Oauth2($client);
+            $oauth2 = new Oauth2($client);
             $googleUser = $oauth2->userinfo->get();
 
+            if (!($googleUser instanceof Userinfo)) {
+                throw new \Exception('Invalid user information received from Google');
+            }
+
             // 사용자 정보 가져오기 또는 생성
-            $user = $this->user->findByEmail($googleUser->email);
+            $user = $this->user->findByEmail($googleUser->getEmail());
             
             if (!$user) {
                 // 새 사용자 생성
                 $userData = [
-                    'email' => $googleUser->email,
-                    'name' => $googleUser->name,
-                    'profile_image' => $googleUser->picture,
-                    'google_id' => $googleUser->id,
+                    'email' => $googleUser->getEmail(),
+                    'name' => $googleUser->getName(),
+                    'profile_image' => $googleUser->getPicture(),
+                    'google_id' => $googleUser->getId(),
                     'password' => password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT),
-                    'email_verified_at' => date('Y-m-d H:i:s')
+                    'email_verified_at' => date('Y-m-d H:i:s'),
+                    'status' => 'active'  // 상태 추가
                 ];
                 
                 $userId = $this->user->create($userData);
+                if (!$userId) {
+                    throw new \Exception('Failed to create user account');
+                }
                 $user = $this->user->findById($userId);
+                if (!$user) {
+                    throw new \Exception('Failed to retrieve created user');
+                }
             }
 
+            // 세션 초기화
+            $this->session->regenerate();
+            
             // 세션에 사용자 정보 저장
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_name'] = $user['name'];
-            $_SESSION['user_email'] = $user['email'];
-            $_SESSION['user_avatar'] = $user['profile_image'] ?? null;
-            $_SESSION['is_admin'] = $user['is_admin'] ?? false;
-
-            // CSRF 토큰 생성
-            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            $this->session->set('user_id', $user['id']);
+            $this->session->set('user_name', $user['name']);
+            $this->session->set('user_email', $user['email']);
+            $this->session->set('user_avatar', $user['profile_image'] ?? null);
+            $this->session->set('is_admin', $user['is_admin'] ?? false);
+            $this->session->set('csrf_token', bin2hex(random_bytes(32)));
 
             // 디버그 로그
             error_log('Google login successful for user: ' . $user['id']);
-            error_log('Session data: ' . print_r($_SESSION, true));
+            error_log('Session data: ' . print_r($this->session->all(), true));
 
             // 추가 정보가 필요한지 확인
             if (empty($user['bio'])) {
-                header('Location: /auth/additional-info');
-                exit;
+                return $this->redirect('/auth/additional-info');
             }
 
-            header('Location: /resources');
-            exit;
+            return $this->redirect('/resources');
 
         } catch (\Exception $e) {
             error_log('Google login error: ' . $e->getMessage());
-            $_SESSION['error'] = 'Google 로그인 중 오류가 발생했습니다.';
-            header('Location: /login');
-            exit;
+            error_log('Stack trace: ' . $e->getTraceAsString());
+            $this->session->set('error', 'Google 로그인 중 오류가 발생했습니다.');
+            return $this->redirect('/login');
         }
     }
 
@@ -393,7 +408,7 @@ class AuthController extends Controller
             }
 
             // 세션 정보 업데이트
-            $this->session->set('username', $name);
+            $this->session->set('user_name', $name);
 
             return $this->json([
                 'success' => true,
@@ -468,7 +483,7 @@ class AuthController extends Controller
             }
 
             // 세션 정보 업데이트
-            $this->session->set('username', $name);
+            $this->session->set('user_name', $name);
 
             return $this->json([
                 'success' => true,

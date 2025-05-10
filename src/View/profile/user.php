@@ -60,7 +60,6 @@
                                     <tr>
                                         <th>제목</th>
                                         <th>조회수</th>
-                                        <th>좋아요</th>
                                         <th>작성일</th>
                                     </tr>
                                 </thead>
@@ -73,7 +72,6 @@
                                                 </a>
                                             </td>
                                             <td><?= number_format($resource['view_count']) ?></td>
-                                            <td><?= number_format($resource['like_count']) ?></td>
                                             <td><?= date('Y-m-d', strtotime($resource['created_at'])) ?></td>
                                         </tr>
                                     <?php endforeach; ?>

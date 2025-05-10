@@ -460,25 +460,32 @@ class User extends Model {
     /**
      * 사용자 생성
      */
-    public function create(array $data): ?array {
+    public function create(array $data): ?int
+    {
         try {
-            // 이메일 중복 체크
-            if ($this->findByEmail($data['email'])) {
-                throw new Exception("이미 사용 중인 이메일입니다.");
-            }
+            $this->db->beginTransaction();
 
-            // 비밀번호 해시화
-            $data['password_hash'] = password_hash($data['password'], PASSWORD_DEFAULT);
-            unset($data['password']); // 원본 비밀번호 제거
+            $fields = array_keys($data);
+            $values = array_values($data);
+            $placeholders = array_fill(0, count($fields), '?');
 
-            $id = $this->db->insert($this->table, $data);
-            if ($id === false) {
-                return null;
-            }
-            return $this->findById((int)$id);
-        } catch (PDOException $e) {
-            error_log("Error in create: " . $e->getMessage());
-            throw new Exception("사용자 생성 중 오류가 발생했습니다.");
+            $sql = sprintf(
+                "INSERT INTO users (%s) VALUES (%s)",
+                implode(', ', $fields),
+                implode(', ', $placeholders)
+            );
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($values);
+            
+            $userId = (int)$this->db->lastInsertId();
+            
+            $this->db->commit();
+            return $userId;
+        } catch (\PDOException $e) {
+            $this->db->rollBack();
+            error_log("Failed to create user: " . $e->getMessage());
+            return null;
         }
     }
 
@@ -489,11 +496,9 @@ class User extends Model {
         try {
             // 비밀번호가 있는 경우에만 해시화
             if (isset($data['password'])) {
-                $data['password_hash'] = password_hash($data['password'], PASSWORD_DEFAULT);
-                unset($data['password']); // 원본 비밀번호 제거
+                $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
             }
-
-            $this->db->update($this->table, $data, 'user_id = :user_id', ['user_id' => $id]);
+            $this->db->update($this->table, $data, 'id = :id', ['id' => $id]);
             return $this->findById($id);
         } catch (PDOException $e) {
             error_log("Error in update: " . $e->getMessage());

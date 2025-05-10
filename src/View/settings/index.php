@@ -1,4 +1,18 @@
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
+<?php
+if (!isset($_SESSION['user_id'])) {
+    header('Location: /login');
+    exit;
+}
+$user = [
+    'id' => $_SESSION['user_id'],
+    'name' => $_SESSION['user_name'] ?? '',
+    'email' => $_SESSION['user_email'] ?? '',
+    'profile_image' => $_SESSION['user_avatar'] ?? null,
+    'bio' => $_SESSION['user_bio'] ?? '',
+    'social_links' => $_SESSION['user_social_links'] ?? '',
+];
+?>
 
 <div class="container py-5">
     <div class="row">
@@ -58,6 +72,33 @@
                                 <div class="mb-3">
                                     <label for="bio" class="form-label">자기소개</label>
                                     <textarea class="form-control" id="bio" name="bio" rows="4"><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
+                                </div>
+
+                                <!-- 소셜 미디어 링크 -->
+                                <div class="mb-3">
+                                    <label class="form-label">소셜 미디어 링크</label>
+                                    <?php
+                                    $socialLinks = !empty($user['social_links']) ? json_decode($user['social_links'], true) : [];
+                                    $platforms = [
+                                        'github' => 'GitHub',
+                                        'twitter' => 'Twitter',
+                                        'linkedin' => 'LinkedIn',
+                                        'facebook' => 'Facebook',
+                                        'instagram' => 'Instagram'
+                                    ];
+                                    foreach ($platforms as $platform => $label):
+                                    ?>
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text">
+                                                <i class="fab fa-<?= $platform ?>"></i>
+                                            </span>
+                                            <input type="url" 
+                                                   class="form-control" 
+                                                   name="social_links[<?= $platform ?>]" 
+                                                   placeholder="<?= $label ?> URL"
+                                                   value="<?= htmlspecialchars($socialLinks[$platform] ?? '') ?>">
+                                        </div>
+                                    <?php endforeach; ?>
                                 </div>
 
                                 <button type="submit" class="btn btn-primary">저장</button>

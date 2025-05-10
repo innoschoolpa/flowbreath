@@ -1,4 +1,18 @@
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
+<?php
+if (!isset($_SESSION['user_id'])) {
+    header('Location: /login');
+    exit;
+}
+$user = [
+    'id' => $_SESSION['user_id'],
+    'name' => $_SESSION['user_name'] ?? '',
+    'email' => $_SESSION['user_email'] ?? '',
+    'profile_image' => $_SESSION['user_avatar'] ?? null,
+    'bio' => $_SESSION['user_bio'] ?? '',
+    'social_links' => $_SESSION['user_social_links'] ?? '',
+];
+?>
 
 <div class="container py-5">
     <div class="row">
@@ -19,32 +33,148 @@
                         <p class="mb-3"><?= nl2br(htmlspecialchars($user['bio'])) ?></p>
                     <?php endif; ?>
 
+                    <!-- 프로필 완성도 -->
+                    <?php
+                    $completion = 0;
+                    $total = 0;
+                    
+                    // 프로필 이미지
+                    if (!empty($user['profile_image'])) {
+                        $completion += 20;
+                    }
+                    $total += 20;
+                    
+                    // 이름
+                    if (!empty($user['name'])) {
+                        $completion += 20;
+                    }
+                    $total += 20;
+                    
+                    // 자기소개
+                    if (!empty($user['bio'])) {
+                        $completion += 20;
+                    }
+                    $total += 20;
+                    
+                    // 소셜 미디어 링크
+                    if (!empty($user['social_links'])) {
+                        $completion += 20;
+                    }
+                    $total += 20;
+                    
+                    // 활동 통계
+                    if ($stats['total_resources'] > 0) {
+                        $completion += 20;
+                    }
+                    $total += 20;
+                    
+                    $percentage = ($completion / $total) * 100;
+                    ?>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">프로필 완성도</span>
+                            <span class="text-primary"><?= round($percentage) ?>%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: <?= $percentage ?>%" 
+                                 aria-valuenow="<?= $percentage ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+                    <!-- 소셜 미디어 링크 -->
+                    <?php if (!empty($user['social_links'])): ?>
+                        <div class="social-links mb-3">
+                            <?php foreach (json_decode($user['social_links'], true) as $platform => $url): ?>
+                                <a href="<?= htmlspecialchars($url) ?>" target="_blank" class="btn btn-outline-secondary btn-sm me-2">
+                                    <i class="fab fa-<?= strtolower($platform) ?>"></i>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
                     <a href="/settings" class="btn btn-outline-primary">
                         <i class="fa fa-cog me-2"></i>설정
                     </a>
                 </div>
             </div>
 
-            <!-- 통계 정보 -->
-            <div class="card mt-4">
+            <!-- 활동 통계 -->
+            <div class="card mt-3">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">활동 통계</h5>
+                    <h5 class="card-title mb-3">활동 통계</h5>
                     <div class="row text-center">
-                        <div class="col-4">
-                            <h4 class="mb-1"><?= $stats['total_resources'] ?></h4>
+                        <div class="col">
+                            <h4 class="mb-1"><?= number_format($stats['total_resources']) ?></h4>
                             <small class="text-muted">리소스</small>
                         </div>
-                        <div class="col-4">
-                            <h4 class="mb-1"><?= $stats['total_likes'] ?></h4>
+                        <div class="col">
+                            <h4 class="mb-1"><?= number_format($stats['total_likes']) ?></h4>
                             <small class="text-muted">좋아요</small>
                         </div>
-                        <div class="col-4">
-                            <h4 class="mb-1"><?= $stats['total_views'] ?></h4>
+                        <div class="col">
+                            <h4 class="mb-1"><?= number_format($stats['total_views']) ?></h4>
                             <small class="text-muted">조회수</small>
+                        </div>
+                        <div class="col">
+                            <h4 class="mb-1"><?= number_format($stats['total_comments']) ?></h4>
+                            <small class="text-muted">댓글</small>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- 최근 활동 -->
+            <?php if (!empty($stats['recent_activity'])): ?>
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">최근 활동</h5>
+                    <div class="list-group list-group-flush">
+                        <?php foreach ($stats['recent_activity'] as $activity): ?>
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        <?php if ($activity['type'] === 'resource'): ?>
+                                            <i class="fas fa-file-alt text-primary me-2"></i>
+                                            <a href="/resources/<?= $activity['id'] ?>"><?= htmlspecialchars($activity['title']) ?></a>
+                                        <?php else: ?>
+                                            <i class="fas fa-comment text-success me-2"></i>
+                                            <?= htmlspecialchars(mb_substr($activity['title'], 0, 50)) ?>
+                                        <?php endif; ?>
+                                    </h6>
+                                    <small class="text-muted"><?= date('Y-m-d', strtotime($activity['created_at'])) ?></small>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- 인기 리소스 -->
+            <?php if (!empty($stats['popular_resources'])): ?>
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">인기 리소스</h5>
+                    <div class="list-group list-group-flush">
+                        <?php foreach ($stats['popular_resources'] as $resource): ?>
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        <a href="/resources/<?= $resource['id'] ?>"><?= htmlspecialchars($resource['title']) ?></a>
+                                    </h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-heart text-danger"></i> <?= number_format($resource['like_count']) ?>
+                                        <i class="fas fa-comment text-success ms-2"></i> <?= number_format($resource['comment_count']) ?>
+                                        <i class="fas fa-eye text-primary ms-2"></i> <?= number_format($resource['total_views']) ?>
+                                    </small>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
 
         <!-- 리소스 목록 -->
@@ -74,7 +204,6 @@
                                         <th>제목</th>
                                         <th>상태</th>
                                         <th>조회수</th>
-                                        <th>좋아요</th>
                                         <th>작성일</th>
                                         <th>관리</th>
                                     </tr>
@@ -95,7 +224,6 @@
                                                 <?php endif; ?>
                                             </td>
                                             <td><?= number_format($resource['view_count']) ?></td>
-                                            <td><?= number_format($resource['like_count']) ?></td>
                                             <td><?= date('Y-m-d', strtotime($resource['created_at'])) ?></td>
                                             <td>
                                                 <div class="btn-group">

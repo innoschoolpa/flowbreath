@@ -56,6 +56,9 @@ class Database
     private static array $connectionHistory = [];
     private const CONNECTION_HISTORY_WINDOW = 3600;
     private const THROTTLE_DELAY = 2; // 지연 시간 증가
+    private int $lastUsed = 0;
+    private int $activeConnections = 0;
+    private ?PDOStatement $lastStatement = null;
 
     private function __construct()
     {
@@ -79,10 +82,29 @@ class Database
             
             if (empty($config)) {
                 error_log("Database configuration not found in Application config. Attempting to load from file...");
-                $dbConfigPath = dirname(__DIR__, 2) . '/config/database.php';
-                if (!file_exists($dbConfigPath)) {
-                    throw new \Exception("Database configuration file not found at: " . $dbConfigPath);
+                
+                // 호스팅 환경의 실제 경로 사용
+                $possiblePaths = [
+                    '/domains/flowbreath.io/public_html/config/database.php',
+                    '/domains/flowbreath.io/public_html/src/Config/database.php',
+                    $_SERVER['DOCUMENT_ROOT'] . '/config/database.php',
+                    dirname($_SERVER['DOCUMENT_ROOT']) . '/config/database.php'
+                ];
+
+                $dbConfigPath = null;
+                foreach ($possiblePaths as $path) {
+                    error_log("Trying database config path: " . $path);
+                    if (file_exists($path)) {
+                        $dbConfigPath = $path;
+                        error_log("Found database config at: " . $path);
+                        break;
+                    }
                 }
+
+                if (!$dbConfigPath) {
+                    throw new \Exception("Database configuration file not found in any of the possible locations");
+                }
+
                 $config = require $dbConfigPath;
             }
 
@@ -123,34 +145,78 @@ class Database
     {
         try {
             if ($this->connection === null) {
+                error_log("Database::initializeConnection() - Creating new connection");
+                
                 $dsn = sprintf(
-                    "mysql:host=%s;port=%s;dbname=%s;charset=%s",
+                    "mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4",
                     $this->config['host'],
                     $this->config['port'],
-                    $this->config['database'],
-                    $this->config['charset']
+                    $this->config['database']
                 );
-
-                $options = [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false,
-                    PDO::ATTR_PERSISTENT => false, // 영구 연결 비활성화
-                    PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true
-                ];
-
-                $this->connection = new PDO($dsn, $this->config['username'], $this->config['password'], $options);
                 
-                // 연결 설정 최적화
-                $this->connection->exec("SET SESSION wait_timeout=300"); // 5분으로 설정
-                $this->connection->exec("SET SESSION interactive_timeout=300"); // 5분으로 설정
+                $options = [
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                    \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    \PDO::ATTR_EMULATE_PREPARES => false,
+                    \PDO::ATTR_PERSISTENT => true,
+                    \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
+                    \PDO::ATTR_TIMEOUT => 5, // 5초 타임아웃
+                    \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true
+                ];
+                
+                error_log("Database::initializeConnection() - Connecting to database with DSN: " . $dsn);
+                
+                $this->connection = new \PDO($dsn, $this->config['username'], $this->config['password'], $options);
+                
+                // 연결 테스트 및 설정
+                $this->connection->query("SELECT 1");
+                $this->connection->exec("SET SESSION wait_timeout=300");
+                $this->connection->exec("SET SESSION interactive_timeout=300");
                 $this->connection->exec("SET SESSION sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'");
                 
-                self::$connectionCount++;
-                error_log("New database connection established. Total connections this hour: " . self::$connectionCount);
+                error_log("Database::initializeConnection() - Connection successful");
+                
+                $this->lastUsed = time();
+                $this->activeConnections++;
+            } else {
+                // 기존 연결 상태 확인
+                try {
+                    $this->connection->query("SELECT 1");
+                    $this->lastUsed = time();
+                    error_log("Database::initializeConnection() - Using existing connection");
+                } catch (\PDOException $e) {
+                    error_log("Database::initializeConnection() - Existing connection failed, creating new one");
+                    $this->connection = null;
+                    $this->initializeConnection();
+                }
             }
-        } catch (PDOException $e) {
-            error_log("Failed to initialize database connection: " . $e->getMessage());
+        } catch (\PDOException $e) {
+            error_log("Database::initializeConnection() - Connection failed: " . $e->getMessage());
+            error_log("Database::initializeConnection() - SQL State: " . $e->getCode());
+            error_log("Database::initializeConnection() - Error Info: " . json_encode($e->errorInfo));
+            throw new \Exception("Database connection failed: " . $e->getMessage());
+        }
+    }
+
+    public function getConnection()
+    {
+        try {
+            if ($this->connection === null) {
+                $this->initializeConnection();
+            } else {
+                // 연결 상태 확인 및 필요시 재연결
+                try {
+                    $this->connection->query("SELECT 1");
+                    $this->lastUsed = time();
+                } catch (\PDOException $e) {
+                    error_log("Database::getConnection() - Connection lost, reconnecting");
+                    $this->connection = null;
+                    $this->initializeConnection();
+                }
+            }
+            return $this->connection;
+        } catch (\Exception $e) {
+            error_log("Database::getConnection() - Failed to get connection: " . $e->getMessage());
             throw $e;
         }
     }
@@ -194,7 +260,7 @@ class Database
         $this->connectionPool = array_values($this->connectionPool);
     }
 
-    private function getConnection()
+    private function getConnectionFromPool()
     {
         $this->cleanupConnections();
         $currentTime = time();
@@ -217,7 +283,6 @@ class Database
         if (self::$connectionsThisMinute >= self::MAX_CONNECTIONS_PER_MINUTE) {
             error_log("Connection rate limit exceeded: " . self::$connectionsThisMinute . " connections per minute");
             sleep(self::THROTTLE_DELAY);
-            throw new PDOException("Too many connections. Please try again later.");
         }
 
         // Check hourly connection limit with buffer
@@ -360,6 +425,7 @@ class Database
             
             $stmt = $this->preparedStatements[$sql];
             $stmt->execute($params);
+            $this->lastStatement = $stmt;  // 마지막 실행된 statement 저장
 
             // SELECT 쿼리 결과 캐싱
             if (self::CACHE_ENABLED && stripos(trim($sql), 'SELECT') === 0) {
@@ -511,13 +577,15 @@ class Database
         );
 
         $params = array_merge(array_values($data), $whereParams);
-        return $this->query($sql, $params)->rowCount();
+        $this->query($sql, $params);
+        return $this->getRowCount();
     }
 
     public function delete($table, $where, $params = [])
     {
         $sql = sprintf("DELETE FROM %s WHERE %s", $table, $where);
-        return $this->query($sql, $params)->rowCount();
+        $this->query($sql, $params);
+        return $this->getRowCount();
     }
 
     public function beginTransaction(): bool
@@ -545,9 +613,13 @@ class Database
         return $this->getConnection()->lastInsertId();
     }
 
-    public function getRowCount()
+    public function getRowCount(): int
     {
-        return $this->getConnection()->rowCount();
+        if ($this->lastStatement === null) {
+            error_log("Database::getRowCount() - No statement has been executed");
+            return 0;
+        }
+        return $this->lastStatement->rowCount();
     }
 
     public function getConnectionPoolSize()

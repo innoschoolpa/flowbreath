@@ -4,53 +4,41 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\Request;
-use App\Core\Session;
 use App\Models\User;
 use App\Core\Validator;
 
 class SettingsController extends Controller
 {
     private $user;
-    private $session;
 
     public function __construct(Request $request)
     {
         parent::__construct($request);
-        $this->session = new Session();
         $db = \App\Core\Database::getInstance();
         $this->user = new User($db);
     }
 
-    /**
-     * 로그인 체크 헬퍼 메서드
-     */
     private function checkAuth()
     {
-        error_log("Session data in SettingsController: " . print_r($_SESSION, true));
-        
-        if (!isset($_SESSION['user_id'])) {
+        $auth = \App\Core\Auth::getInstance();
+        if (!$auth->check()) {
             $_SESSION['error'] = '로그인이 필요한 서비스입니다.';
             $_SESSION['redirect_after_login'] = '/settings';
             header('Location: /login');
             exit;
         }
-        
-        $userId = (int)$_SESSION['user_id'];
-        error_log("Converted user_id to int: " . $userId);
-        return $userId;
+        return $auth->id();
     }
 
     public function index()
     {
         $userId = $this->checkAuth();
-        error_log("Fetching user settings for ID: " . $userId);
-        
-        $user = $this->user->findById($userId);
-        error_log("Found user data: " . ($user ? json_encode($user) : 'null'));
+        $auth = \App\Core\Auth::getInstance();
+        $user = $auth->user();
 
         if (!$user) {
-            error_log("User not found in database for ID: " . $userId);
-            $_SESSION['error'] = '사용자 정보를 찾을 수 없습니다.';
+            error_log("Settings access failed - User not found or inactive. User ID: " . $userId);
+            $_SESSION['error'] = '로그인 세션이 만료되었습니다. 다시 로그인 해주세요.';
             header('Location: /login');
             exit;
         }

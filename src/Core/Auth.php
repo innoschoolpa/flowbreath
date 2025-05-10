@@ -27,6 +27,7 @@ class Auth
     {
         $this->user = $user;
         $this->session->set('user_id', $user['id']);
+        $this->session->set('user_name', $user['name']);
         $this->session->regenerate();
     }
 
@@ -44,12 +45,107 @@ class Auth
 
     public function user()
     {
-        if ($this->user === null && $this->check()) {
+        try {
+            // 세션에 사용자 ID가 없으면 null 반환
+            if (!$this->check()) {
+                error_log("Auth::user() - No user session found");
+                return null;
+            }
+
+            // 이미 로드된 사용자 정보가 있으면 반환
+            if ($this->user !== null) {
+                return $this->user;
+            }
+
             $userId = $this->session->get('user_id');
-            $stmt = $this->db->query("SELECT * FROM users WHERE id = ?", [$userId]);
-            $this->user = $stmt->fetch();
+            if (!$userId) {
+                error_log("Auth::user() - No user ID in session");
+                return null;
+            }
+
+            error_log("Auth::user() - Attempting to fetch user with ID: " . $userId);
+            
+            try {
+                // 데이터베이스 연결 확인 및 재시도
+                $retryCount = 0;
+                $maxRetries = 3;
+                $lastError = null;
+                
+                while ($retryCount < $maxRetries) {
+                    try {
+                        if (!$this->db) {
+                            error_log("Auth::user() - Database connection is null, attempting to reconnect...");
+                            $this->db = Database::getInstance();
+                        }
+
+                        // 연결 테스트
+                        $this->db->getConnection()->query("SELECT 1");
+                        
+                        // 사용자 조회
+                        $sql = "SELECT * FROM users WHERE id = ? AND deleted_at IS NULL";
+                        error_log("Auth::user() - Executing SQL: " . $sql . " with ID: " . $userId);
+                        
+                        $stmt = $this->db->prepare($sql);
+                        if (!$stmt) {
+                            throw new \PDOException("Failed to prepare statement");
+                        }
+
+                        $stmt->execute([$userId]);
+                        $this->user = $stmt->fetch(\PDO::FETCH_ASSOC);
+                        
+                        if (!$this->user) {
+                            error_log("Auth::user() - User not found with ID: " . $userId);
+                            // 사용자를 찾을 수 없는 경우 (계정 삭제)
+                            $this->logout();
+                            return null;
+                        }
+
+                        // 사용자 상태 확인
+                        if (!isset($this->user['status']) || $this->user['status'] !== 'active') {
+                            error_log("Auth::user() - User is not active. User ID: " . $userId . ", Status: " . ($this->user['status'] ?? 'not set'));
+                            // 계정이 비활성화된 경우
+                            $this->logout();
+                            return null;
+                        }
+
+                        error_log("Auth::user() - Successfully retrieved active user");
+                        return $this->user;
+
+                    } catch (\PDOException $e) {
+                        $lastError = $e;
+                        $retryCount++;
+                        error_log("Auth::user() - Database error (attempt {$retryCount}): " . $e->getMessage());
+                        
+                        if ($retryCount >= $maxRetries) {
+                            // 일시적인 DB 오류로 간주하고 세션은 유지
+                            error_log("Auth::user() - Database error after all retries: " . $e->getMessage());
+                            return null;
+                        }
+                        
+                        sleep(1); // 재시도 전 잠시 대기
+                    }
+                }
+
+                if ($lastError) {
+                    // 일시적인 DB 오류로 간주하고 세션은 유지
+                    error_log("Auth::user() - Database error after all retries: " . $lastError->getMessage());
+                    return null;
+                }
+
+            } catch (\PDOException $e) {
+                error_log("Auth::user() - Database error after all retries: " . $e->getMessage());
+                error_log("Auth::user() - SQL State: " . $e->getCode());
+                error_log("Auth::user() - Error Info: " . json_encode($e->errorInfo ?? []));
+                
+                // 일시적인 DB 오류로 간주하고 세션은 유지
+                return null;
+            }
+        } catch (\Exception $e) {
+            error_log("Auth::user() - Unexpected error: " . $e->getMessage());
+            error_log("Auth::user() - Stack trace: " . $e->getTraceAsString());
+            // 예상치 못한 오류도 일시적인 것으로 간주하고 세션은 유지
+            return null;
         }
-        return $this->user;
     }
 
     public function id()
@@ -101,16 +197,27 @@ class Auth
         }
 
         $data['updated_at'] = date('Y-m-d H:i:s');
+        $userId = $this->id();
 
-        $updated = $this->db->table('users')
-            ->where('id', $this->id())
-            ->update($data);
+        try {
+            $fields = array_map(function($field) {
+                return "$field = ?";
+            }, array_keys($data));
 
-        if ($updated) {
-            $this->user = $this->db->table('users')
-                ->where('id', $this->id())
-                ->first();
-            return true;
+            $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?";
+            $params = array_merge(array_values($data), [$userId]);
+            
+            $stmt = $this->db->prepare($sql);
+            $updated = $stmt->execute($params);
+
+            if ($updated) {
+                $stmt = $this->db->prepare("SELECT * FROM users WHERE id = ?");
+                $stmt->execute([$userId]);
+                $this->user = $stmt->fetch(\PDO::FETCH_ASSOC);
+                return true;
+            }
+        } catch (\PDOException $e) {
+            error_log("Database error in Auth::update(): " . $e->getMessage());
         }
 
         return false;
@@ -118,61 +225,83 @@ class Auth
 
     public function resetPassword($email)
     {
-        $user = $this->db->table('users')
-            ->where('email', $email)
-            ->first();
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-        if (!$user) {
+            if (!$user) {
+                return false;
+            }
+
+            $token = bin2hex(random_bytes(32));
+            $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+            $stmt = $this->db->prepare("
+                INSERT INTO password_resets (email, token, created_at, expires_at)
+                VALUES (?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                $email,
+                $token,
+                date('Y-m-d H:i:s'),
+                $expires
+            ]);
+
+            return $token;
+        } catch (\PDOException $e) {
+            error_log("Database error in Auth::resetPassword(): " . $e->getMessage());
             return false;
         }
-
-        $token = bin2hex(random_bytes(32));
-        $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
-
-        $this->db->table('password_resets')->insert([
-            'email' => $email,
-            'token' => $token,
-            'created_at' => date('Y-m-d H:i:s'),
-            'expires_at' => $expires
-        ]);
-
-        // TODO: 이메일 발송 로직 구현
-        return $token;
     }
 
     public function validateResetToken($token)
     {
-        $reset = $this->db->table('password_resets')
-            ->where('token', $token)
-            ->where('expires_at', '>', date('Y-m-d H:i:s'))
-            ->first();
-
-        return $reset !== null;
+        try {
+            $stmt = $this->db->prepare("
+                SELECT * FROM password_resets 
+                WHERE token = ? AND expires_at > ?
+            ");
+            $stmt->execute([$token, date('Y-m-d H:i:s')]);
+            return $stmt->fetch(\PDO::FETCH_ASSOC) !== false;
+        } catch (\PDOException $e) {
+            error_log("Database error in Auth::validateResetToken(): " . $e->getMessage());
+            return false;
+        }
     }
 
     public function updatePassword($token, $password)
     {
-        $reset = $this->db->table('password_resets')
-            ->where('token', $token)
-            ->where('expires_at', '>', date('Y-m-d H:i:s'))
-            ->first();
+        try {
+            $stmt = $this->db->prepare("
+                SELECT * FROM password_resets 
+                WHERE token = ? AND expires_at > ?
+            ");
+            $stmt->execute([$token, date('Y-m-d H:i:s')]);
+            $reset = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-        if (!$reset) {
-            return false;
-        }
+            if (!$reset) {
+                return false;
+            }
 
-        $updated = $this->db->table('users')
-            ->where('email', $reset->email)
-            ->update([
-                'password' => password_hash($password, PASSWORD_DEFAULT),
-                'updated_at' => date('Y-m-d H:i:s')
+            $stmt = $this->db->prepare("
+                UPDATE users 
+                SET password = ?, updated_at = ? 
+                WHERE email = ?
+            ");
+            $updated = $stmt->execute([
+                password_hash($password, PASSWORD_DEFAULT),
+                date('Y-m-d H:i:s'),
+                $reset['email']
             ]);
 
-        if ($updated) {
-            $this->db->table('password_resets')
-                ->where('token', $token)
-                ->delete();
-            return true;
+            if ($updated) {
+                $stmt = $this->db->prepare("DELETE FROM password_resets WHERE token = ?");
+                $stmt->execute([$token]);
+                return true;
+            }
+        } catch (\PDOException $e) {
+            error_log("Database error in Auth::updatePassword(): " . $e->getMessage());
         }
 
         return false;
@@ -180,28 +309,42 @@ class Auth
 
     public function socialLogin($provider, $socialUser)
     {
-        $user = $this->db->table('users')
-            ->where('email', $socialUser->email)
-            ->first();
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM users WHERE email = ?");
+            $stmt->execute([$socialUser->email]);
+            $user = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-        if (!$user) {
-            // 소셜 로그인 사용자 등록
-            $userId = $this->db->table('users')->insert([
-                'email' => $socialUser->email,
-                'name' => $socialUser->name,
-                'password' => password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT),
-                'provider' => $provider,
-                'provider_id' => $socialUser->id,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
+            if (!$user) {
+                $stmt = $this->db->prepare("
+                    INSERT INTO users (
+                        email, name, password, provider, provider_id, 
+                        created_at, updated_at, status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, 'active')
+                ");
+                $stmt->execute([
+                    $socialUser->email,
+                    $socialUser->name,
+                    password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT),
+                    $provider,
+                    $socialUser->id,
+                    date('Y-m-d H:i:s'),
+                    date('Y-m-d H:i:s')
+                ]);
 
-            $user = $this->db->table('users')
-                ->where('id', $userId)
-                ->first();
+                $userId = $this->db->lastInsertId();
+                $stmt = $this->db->prepare("SELECT * FROM users WHERE id = ?");
+                $stmt->execute([$userId]);
+                $user = $stmt->fetch(\PDO::FETCH_ASSOC);
+            }
+
+            if ($user) {
+                $this->login($user);
+                return true;
+            }
+        } catch (\PDOException $e) {
+            error_log("Database error in Auth::socialLogin(): " . $e->getMessage());
         }
 
-        $this->login($user);
-        return true;
+        return false;
     }
 } 

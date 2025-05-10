@@ -395,47 +395,52 @@ class Resource extends Model {
     }
 
     /**
-     * 리소스 생성 (다국어)
+     * 새로운 리소스 생성
+     * 
+     * @param array $data
+     * @return int|null 생성된 리소스의 ID 또는 실패 시 null
      */
-    public function create(array $data): ?array {
+    public function create(array $data): ?int
+    {
         try {
             $this->db->beginTransaction();
-            // 기본 리소스 정보 저장 (title, content, description 제거)
-            $resourceData = array_diff_key($data, ['translations' => null, 'title' => null, 'content' => null, 'description' => null]);
-            $sql = "INSERT INTO resources (user_id, visibility, status, published_at) VALUES (?, ?, ?, NOW())";
-            $this->db->query($sql, [
-                $data['user_id'],
-                $data['visibility'] ?? 'public',
-                $data['status'] ?? 'published'
-            ]);
-            $resourceId = $this->db->lastInsertId();
-            // 번역 데이터 저장
-            if (!empty($data['translations'])) {
-                foreach ($data['translations'] as $lang => $translation) {
-                    $sql = "INSERT INTO resource_translations (resource_id, language_code, title, content, description) VALUES (?, ?, ?, ?, ?)";
-                    $this->db->query($sql, [
-                        $resourceId,
-                        $lang,
-                        $translation['title'],
-                        $translation['content'] ?? null,
-                        $translation['description'] ?? null
-                    ]);
+
+            // 필수 필드 검증
+            $requiredFields = ['title', 'content', 'user_id'];
+            foreach ($requiredFields as $field) {
+                if (!isset($data[$field]) || empty($data[$field])) {
+                    throw new \Exception("Required field '{$field}' is missing or empty");
                 }
             }
-            // 태그 처리
-            if (!empty($data['tags'])) {
-                foreach ($data['tags'] as $tagId) {
-                    $sql = "INSERT INTO resource_tags (resource_id, tag_id) VALUES (?, ?)";
-                    $this->db->query($sql, [$resourceId, $tagId]);
-                    $this->db->query("UPDATE tags SET count = count + 1 WHERE id = ?", [$tagId]);
-                }
-            }
+
+            // 현재 시간 추가
+            $data['created_at'] = $data['updated_at'] = date('Y-m-d H:i:s');
+
+            // 데이터 삽입
+            $fields = array_keys($data);
+            $values = array_values($data);
+            $placeholders = array_fill(0, count($fields), '?');
+
+            $sql = sprintf(
+                "INSERT INTO %s (%s) VALUES (%s)",
+                $this->table,
+                implode(', ', $fields),
+                implode(', ', $placeholders)
+            );
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($values);
+            
+            $resourceId = (int)$this->db->lastInsertId();
+            
             $this->db->commit();
-            return $this->findById($resourceId);
-        } catch (Exception $e) {
-            $this->db->rollback();
-            error_log("Error in Resource::create: " . $e->getMessage());
-            throw new Exception("리소스 생성 중 오류가 발생했습니다.");
+            return $resourceId;
+
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            error_log("Failed to create resource: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            return null;
         }
     }
 
@@ -1157,5 +1162,68 @@ class Resource extends Model {
         $stmt->execute(['user_id' => $userId]);
         $result = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $result['total'] ?? 0;
+    }
+
+    /**
+     * 사용자의 총 댓글 수 조회
+     */
+    public function getTotalCommentsByUserId($userId)
+    {
+        $sql = "SELECT COUNT(*) as total FROM comments WHERE user_id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$userId]);
+        $result = $stmt->fetch();
+        return $result['total'] ?? 0;
+    }
+
+    /**
+     * 사용자의 최근 활동 조회
+     */
+    public function getRecentActivityByUserId($userId, $limit = 5)
+    {
+        $sql = "SELECT 
+                    'resource' as type,
+                    id,
+                    title,
+                    created_at
+                FROM resources 
+                WHERE user_id = ?
+                UNION ALL
+                SELECT 
+                    'comment' as type,
+                    id,
+                    content as title,
+                    created_at
+                FROM comments 
+                WHERE user_id = ?
+                ORDER BY created_at DESC 
+                LIMIT ?";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$userId, $userId, $limit]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * 사용자의 인기 리소스 조회
+     */
+    public function getPopularResourcesByUserId($userId, $limit = 3)
+    {
+        $sql = "SELECT 
+                    r.*,
+                    COUNT(DISTINCT l.id) as like_count,
+                    COUNT(DISTINCT c.id) as comment_count,
+                    SUM(r.view_count) as total_views
+                FROM resources r
+                LEFT JOIN likes l ON r.id = l.resource_id
+                LEFT JOIN comments c ON r.id = c.resource_id
+                WHERE r.user_id = ?
+                GROUP BY r.id
+                ORDER BY (COUNT(DISTINCT l.id) + COUNT(DISTINCT c.id) + SUM(r.view_count)) DESC
+                LIMIT ?";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$userId, $limit]);
+        return $stmt->fetchAll();
     }
 }

@@ -30,45 +30,71 @@ class ProfileController extends Controller
      */
     private function checkAuth()
     {
-        error_log("Session data in ProfileController: " . print_r($_SESSION, true));
-        
-        if (!isset($_SESSION['user_id'])) {
+        $auth = \App\Core\Auth::getInstance();
+        if (!$auth->check()) {
             $_SESSION['error'] = '로그인이 필요한 서비스입니다.';
             $_SESSION['redirect_after_login'] = '/profile';
             header('Location: /login');
             exit;
         }
+        return $auth->id();
+    }
+
+    /**
+     * 사용자 활동 통계 계산
+     */
+    private function calculateUserStats($userId)
+    {
+        $stats = [
+            'total_resources' => 0,
+            'total_likes' => 0,
+            'total_views' => 0,
+            'total_comments' => 0,
+            'recent_activity' => [],
+            'popular_resources' => []
+        ];
+
+        // 리소스 통계
+        $resources = $this->resource->findByUserId($userId);
+        $stats['total_resources'] = count($resources);
         
-        $userId = (int)$_SESSION['user_id'];
-        error_log("Converted user_id to int: " . $userId);
-        return $userId;
+        // 좋아요 통계
+        $stats['total_likes'] = $this->resource->getTotalLikesByUserId($userId);
+        
+        // 조회수 통계
+        $stats['total_views'] = $this->resource->getTotalViewsByUserId($userId);
+        
+        // 댓글 통계
+        $stats['total_comments'] = $this->resource->getTotalCommentsByUserId($userId);
+        
+        // 최근 활동
+        $stats['recent_activity'] = $this->resource->getRecentActivityByUserId($userId, 5);
+        
+        // 인기 리소스
+        $stats['popular_resources'] = $this->resource->getPopularResourcesByUserId($userId, 3);
+
+        return $stats;
     }
 
     public function index()
     {
-        $userId = $this->checkAuth();
-        error_log("Fetching user profile for ID: " . $userId);
-        
-        $user = $this->user->findById($userId);
-        error_log("Found user data: " . ($user ? json_encode($user) : 'null'));
-
-        if (!$user) {
-            error_log("User not found in database for ID: " . $userId);
-            $_SESSION['error'] = '사용자 정보를 찾을 수 없습니다.';
+        if (!isset($_SESSION['user_id'])) {
+            $_SESSION['error'] = '로그인이 필요합니다.';
             header('Location: /login');
             exit;
         }
-
-        // 사용자의 리소스 목록 가져오기
-        $resources = $this->resource->findByUserId($userId);
-        
-        // 사용자의 통계 정보 계산
-        $stats = [
-            'total_resources' => count($resources),
-            'total_likes' => $this->resource->getTotalLikesByUserId($userId),
-            'total_views' => $this->resource->getTotalViewsByUserId($userId)
+        $user = [
+            'id' => $_SESSION['user_id'],
+            'name' => $_SESSION['user_name'] ?? '',
+            'email' => $_SESSION['user_email'] ?? '',
+            'profile_image' => $_SESSION['user_avatar'] ?? null,
+            'bio' => $_SESSION['user_bio'] ?? '',
+            'social_links' => $_SESSION['user_social_links'] ?? '',
         ];
-
+        // 사용자의 리소스 목록 가져오기
+        $resources = $this->resource->findByUserId((int)$_SESSION['user_id']);
+        // 사용자의 통계 정보 계산
+        $stats = $this->calculateUserStats((int)$_SESSION['user_id']);
         return $this->view('profile/index', [
             'user' => $user,
             'resources' => $resources,
@@ -80,7 +106,7 @@ class ProfileController extends Controller
     public function show($userId)
     {
         // 다른 사용자의 프로필을 볼 때는 로그인이 필수는 아님
-        $userId = (int)$userId; // URL 파라미터를 정수로 변환
+        $userId = (int)$userId;
         $user = $this->user->findById($userId);
 
         if (!$user) {
@@ -191,7 +217,10 @@ class ProfileController extends Controller
                 error_log("Updated user data: " . json_encode($updatedUser));
 
                 // Update session data
-                $_SESSION['name'] = $updatedUser['name'];
+                $_SESSION['user_name'] = $updatedUser['name'];
+                if (isset($updatedUser['profile_image'])) {
+                    $_SESSION['user_avatar'] = $updatedUser['profile_image'];
+                }
                 error_log("Session data updated successfully");
 
                 // Return success response with 200 status code
@@ -220,6 +249,107 @@ class ProfileController extends Controller
             error_log("Error during profile completion: " . $e->getMessage());
             error_log("Stack trace: " . $e->getTraceAsString());
             return $this->json(['success' => false, 'message' => '프로필 저장 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'], 500);
+        }
+    }
+
+    /**
+     * 프로필 이미지 업로드 처리
+     */
+    public function uploadProfileImage()
+    {
+        try {
+            $userId = $this->checkAuth();
+            
+            if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
+                return $this->json(['error' => '이미지 업로드에 실패했습니다.'], 400);
+            }
+
+            $file = $_FILES['profile_image'];
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            $maxSize = 5 * 1024 * 1024; // 5MB
+
+            // 파일 타입 검증
+            if (!in_array($file['type'], $allowedTypes)) {
+                return $this->json(['error' => '지원하지 않는 이미지 형식입니다.'], 400);
+            }
+
+            // 파일 크기 검증
+            if ($file['size'] > $maxSize) {
+                return $this->json(['error' => '이미지 크기는 5MB를 초과할 수 없습니다.'], 400);
+            }
+
+            // 이미지 최적화
+            $image = null;
+            switch ($file['type']) {
+                case 'image/jpeg':
+                    $image = imagecreatefromjpeg($file['tmp_name']);
+                    break;
+                case 'image/png':
+                    $image = imagecreatefrompng($file['tmp_name']);
+                    break;
+                case 'image/gif':
+                    $image = imagecreatefromgif($file['tmp_name']);
+                    break;
+            }
+
+            if (!$image) {
+                return $this->json(['error' => '이미지 처리에 실패했습니다.'], 400);
+            }
+
+            // 이미지 크기 조정
+            $maxDimension = 800;
+            $width = imagesx($image);
+            $height = imagesy($image);
+
+            if ($width > $maxDimension || $height > $maxDimension) {
+                if ($width > $height) {
+                    $newWidth = $maxDimension;
+                    $newHeight = floor($height * ($maxDimension / $width));
+                } else {
+                    $newHeight = $maxDimension;
+                    $newWidth = floor($width * ($maxDimension / $height));
+                }
+
+                $resized = imagecreatetruecolor($newWidth, $newHeight);
+                imagecopyresampled($resized, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                $image = $resized;
+            }
+
+            // 저장 경로 설정
+            $uploadDir = __DIR__ . '/../../public/uploads/profiles/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            $filename = uniqid('profile_') . '.jpg';
+            $filepath = $uploadDir . $filename;
+
+            // JPEG로 저장 (최적화)
+            imagejpeg($image, $filepath, 85);
+            imagedestroy($image);
+
+            // 이전 프로필 이미지 삭제
+            $user = $this->user->findById($userId);
+            if ($user && $user['profile_image']) {
+                $oldImagePath = __DIR__ . '/../../public' . $user['profile_image'];
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
+
+            // DB 업데이트
+            $imageUrl = '/uploads/profiles/' . $filename;
+            $this->user->update($userId, ['profile_image' => $imageUrl]);
+
+            return $this->json([
+                'success' => true,
+                'image_url' => $imageUrl,
+                'message' => '프로필 이미지가 업데이트되었습니다.'
+            ]);
+
+        } catch (\Exception $e) {
+            error_log("Profile image upload error: " . $e->getMessage());
+            return $this->json(['error' => '이미지 업로드 중 오류가 발생했습니다.'], 500);
         }
     }
 } 

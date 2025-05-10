@@ -62,7 +62,8 @@ return function (Router $router) {
     $router->add('POST', '/login', [AuthController::class, 'login']);
     $router->add('GET', '/register', [AuthController::class, 'showRegister']);
     $router->add('POST', '/register', [AuthController::class, 'register']);
-    $router->add('GET', '/logout', [AuthController::class, 'logout']);
+    $router->add('GET', '/logout', [\App\Controllers\LogoutController::class, 'index']);
+    $router->add('POST', '/logout', [\App\Controllers\LogoutController::class, 'index']);
     $router->add('GET', '/auth/google', [AuthController::class, 'google']);
     $router->add('GET', '/auth/google/callback', [AuthController::class, 'googleCallback']);
 
