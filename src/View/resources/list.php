@@ -1,3 +1,4 @@
+<?php $language = $language ?? \App\Core\Language::getInstance(); ?>
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
 <?php if (isset(
     $error) && $error) { dd($error); } ?>
@@ -107,47 +108,49 @@ body { background: #f7fcfc; }
   <div class="resource-search-box mb-4">
     <form action="/resources" method="GET" class="resource-search-form">
       <div class="form-group keyword">
-        <input type="text" name="keyword" class="form-control" placeholder="검색어를 입력하세요 (제목, 내용)" value="<?= e($keyword ?? '') ?>">
+        <input type="text" name="keyword" class="form-control" placeholder="<?= $language->get('common.search') ?>" value="<?= htmlspecialchars($keyword ?? '') ?>">
       </div>
       <div class="form-group tags">
         <select name="tags[]" class="form-select" multiple data-placeholder="태그 선택">
           <?php foreach ($all_tags as $tag): ?>
-            <option value="<?= e($tag['id']) ?>" <?= in_array($tag['id'], $selected_tags ?? []) ? 'selected' : '' ?>><?= e($tag['name']) ?></option>
+            <option value="<?= htmlspecialchars($tag['id']) ?>" <?= in_array($tag['id'], $selected_tags ?? []) ? 'selected' : '' ?>><?= htmlspecialchars($tag['name']) ?></option>
           <?php endforeach; ?>
         </select>
       </div>
       <div class="form-group sort">
         <select name="sort" class="form-select">
-          <option value="created_desc" <?= ($sort ?? '') === 'created_desc' ? 'selected' : '' ?>>최신순</option>
-          <option value="created_asc" <?= ($sort ?? '') === 'created_asc' ? 'selected' : '' ?>>오래된순</option>
-          <option value="title_asc" <?= ($sort ?? '') === 'title_asc' ? 'selected' : '' ?>>제목순</option>
-          <option value="views_desc" <?= ($sort ?? '') === 'views_desc' ? 'selected' : '' ?>>조회수순</option>
-          <option value="rating_desc" <?= ($sort ?? '') === 'rating_desc' ? 'selected' : '' ?>>평점순</option>
-          <option value="relevance" <?= ($sort ?? '') === 'relevance' ? 'selected' : '' ?>>관련도순</option>
+          <option value="latest" <?= ($sort ?? '') === 'latest' ? 'selected' : '' ?>><?= $language->get('resources.sort.latest') ?></option>
+          <option value="oldest" <?= ($sort ?? '') === 'oldest' ? 'selected' : '' ?>><?= $language->get('resources.sort.oldest') ?></option>
+          <option value="title" <?= ($sort ?? '') === 'title' ? 'selected' : '' ?>><?= $language->get('resources.sort.title') ?></option>
+          <option value="views" <?= ($sort ?? '') === 'views' ? 'selected' : '' ?>><?= $language->get('resources.sort.views') ?></option>
+          <option value="rating" <?= ($sort ?? '') === 'rating' ? 'selected' : '' ?>><?= $language->get('resources.sort.rating') ?></option>
+          <option value="relevance" <?= ($sort ?? '') === 'relevance' ? 'selected' : '' ?>><?= $language->get('resources.sort.relevance') ?></option>
         </select>
       </div>
       <div class="form-group type">
         <select name="type" class="form-select">
-          <option value="">전체 유형</option>
+          <option value=""><?= $language->get('resources.type.all') ?></option>
           <?php foreach ($types as $key => $label): ?>
-            <option value="<?= e($key) ?>" <?= ($type ?? '') === $key ? 'selected' : '' ?>><?= e($label) ?></option>
+            <option value="<?= htmlspecialchars($key) ?>" <?= ($type ?? '') === $key ? 'selected' : '' ?>><?= htmlspecialchars($label) ?></option>
           <?php endforeach; ?>
         </select>
       </div>
       <?php if (isset($user) && $user['is_admin']): ?>
       <div class="form-group is_public">
         <select name="is_public" class="form-select">
-          <option value="">공개 여부 (전체)</option>
-          <option value="1" <?= ($is_public ?? '') === '1' ? 'selected' : '' ?>>공개만</option>
-          <option value="0" <?= ($is_public ?? '') === '0' ? 'selected' : '' ?>>비공개만</option>
+          <option value=""><?= $language->get('resources.visibility.all') ?></option>
+          <option value="1" <?= ($is_public ?? '') === '1' ? 'selected' : '' ?>><?= $language->get('resources.visibility.public') ?></option>
+          <option value="0" <?= ($is_public ?? '') === '0' ? 'selected' : '' ?>><?= $language->get('resources.visibility.private') ?></option>
         </select>
       </div>
       <?php endif; ?>
       <div class="form-group button d-flex flex-row align-items-center gap-2" style="min-width:180px;">
-        <button type="submit" class="btn btn-primary px-3 rounded-3" style="height:40px;min-width:90px;font-size:1rem;font-weight:500;">검색</button>
+        <button type="submit" class="btn btn-primary px-3 rounded-3" style="height:40px;min-width:90px;font-size:1rem;font-weight:500;">
+          <?= $language->get('common.search') ?>
+        </button>
         <?php if (isset($user) && $user['id']): ?>
           <a href="/resources/create" class="btn btn-success px-3 rounded-3 d-flex align-items-center justify-content-center" style="height:40px;min-width:110px;font-size:1rem;font-weight:500;white-space:nowrap;">
-            <i class="fas fa-plus me-1"></i>자료 등록
+            <i class="fas fa-plus me-1"></i><?= $language->get('resources.create') ?>
           </a>
         <?php endif; ?>
       </div>
@@ -158,13 +161,13 @@ body { background: #f7fcfc; }
   <?php if (isset($error) && $error && $error !== 'unset'): ?>
     <div class="d-flex justify-content-center align-items-center my-5">
       <div class="alert alert-danger d-flex align-items-center gap-2" style="font-size:1.1em;">
-        <i class="fas fa-exclamation-triangle fa-lg me-2"></i> <?= e($error) ?>
+        <i class="fas fa-exclamation-triangle fa-lg me-2"></i> <?= htmlspecialchars($error) ?>
       </div>
     </div>
   <?php elseif (empty($resources)): ?>
     <div class="d-flex justify-content-center align-items-center my-5">
       <div class="alert alert-warning d-flex align-items-center gap-2" style="font-size:1.1em;">
-        <i class="fas fa-search fa-lg me-2"></i> 검색 결과가 없습니다. 다른 조건으로 시도해보세요.
+        <i class="fas fa-search fa-lg me-2"></i> <?= $language->get('resources.no_results') ?>
       </div>
     </div>
   <?php endif; ?>
@@ -183,34 +186,41 @@ body { background: #f7fcfc; }
           <div>
             <div class="mb-2">
               <?php if (!empty($resource['type'])): ?>
-                <span class="resource-type"><?= e($types[$resource['type']] ?? $resource['type']) ?></span>
+                <span class="resource-type"><?= htmlspecialchars($types[$resource['type']] ?? $resource['type']) ?></span>
               <?php endif; ?>
               <?php foreach (($resource['tags'] ?? []) as $tag): ?>
-                <span class="badge bg-secondary me-1 mb-1">#<?= e(is_array($tag) ? $tag['name'] : $tag) ?></span>
+                <span class="badge bg-secondary me-1 mb-1">#<?= htmlspecialchars(is_array($tag) ? $tag['name'] : $tag) ?></span>
               <?php endforeach; ?>
             </div>
             <h5 class="card-title mb-2">
-                <a href="/resources/view/<?= e($resource['id']) ?>" class="text-decoration-none text-dark">
-                    <?= e($resource['title']) ?>
+                <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" class="text-decoration-none text-dark">
+                    <?= htmlspecialchars($resource['title']) ?>
                 </a>
             </h5>
             <p class="card-text flex-grow-1 mb-2">
-                <a href="/resources/view/<?= e($resource['id']) ?>" class="text-decoration-none text-body">
-                    <?= e(mb_strimwidth(strip_tags($resource['content'] ?? ''), 0, 80, '...')) ?>
+                <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" class="text-decoration-none text-body">
+                    <?php
+                    $preview = '';
+                    if (!empty($resource['content'])) {
+                        $plain = strip_tags($resource['content']);
+                        $preview = mb_strimwidth($plain, 0, 120, '...');
+                    }
+                    echo htmlspecialchars($preview);
+                    ?>
                 </a>
             </p>
           </div>
           <div class="resource-meta mb-1 mt-1">
-            <span>작성자: <?= e($resource['author_name'] ?? '익명') ?></span>
+            <span><?= $language->get('resources.author') ?>: <?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></span>
             <span class="mx-2">|</span>
-            <span>작성일: <?= e(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?></span>
+            <span><?= $language->get('resources.date') ?>: <?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?></span>
             <?php if (isset($resource['view_count'])): ?>
               <span class="mx-2">|</span>
-              <span>조회수: <?= e($resource['view_count']) ?></span>
+              <span><?= $language->get('resources.views') ?>: <?= htmlspecialchars($resource['view_count']) ?></span>
             <?php endif; ?>
             <?php if (isset($resource['rating'])): ?>
               <span class="mx-2">|</span>
-              <span>평점: <?= number_format($resource['rating'], 1) ?></span>
+              <span><?= $language->get('resources.rating') ?>: <?= number_format($resource['rating'], 1) ?></span>
             <?php endif; ?>
           </div>
         </div>
@@ -224,7 +234,7 @@ body { background: #f7fcfc; }
       <ul class="pagination justify-content-center">
         <?php if (($current_page ?? 1) > 1): ?>
           <li class="page-item">
-            <a class="page-link" href="/resources?<?= http_build_query(array_merge($_GET, ['page' => $current_page - 1])) ?>">이전</a>
+            <a class="page-link" href="/resources?<?= http_build_query(array_merge($_GET, ['page' => $current_page - 1])) ?>"><?= $language->get('common.prev') ?></a>
           </li>
         <?php endif; ?>
         <li class="page-item disabled">
@@ -232,7 +242,7 @@ body { background: #f7fcfc; }
         </li>
         <?php if (($current_page ?? 1) < $total_pages): ?>
           <li class="page-item">
-            <a class="page-link" href="/resources?<?= http_build_query(array_merge($_GET, ['page' => $current_page + 1])) ?>">다음</a>
+            <a class="page-link" href="/resources?<?= http_build_query(array_merge($_GET, ['page' => $current_page + 1])) ?>"><?= $language->get('common.next') ?></a>
           </li>
         <?php endif; ?>
       </ul>
@@ -242,7 +252,7 @@ body { background: #f7fcfc; }
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  $('select[name="tags[]"]').select2({ placeholder: "태그 선택", allowClear: true });
+  $('select[name="tags[]"]').select2({ placeholder: "<?= $language->get('resources.tags_placeholder') ?>", allowClear: true });
   document.querySelector('.search-form').addEventListener('submit', function() {
     document.getElementById('loading-spinner').classList.remove('d-none');
   });

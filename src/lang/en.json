@@ -29,8 +29,28 @@
         "tags": "Tags",
         "author": "Author",
         "date": "Date",
+        "views": "Views",
+        "rating": "Rating",
         "content": "Content",
         "language": "Language",
+        "type": {
+            "all": "All Types",
+            "website": "Website",
+            "book": "Book",
+            "video": "Video",
+            "paper": "Paper",
+            "podcast": "Podcast",
+            "experience": "Personal Experience",
+            "other": "Other"
+        },
+        "sort": {
+            "latest": "Latest",
+            "oldest": "Oldest",
+            "title": "Title",
+            "views": "Views",
+            "rating": "Rating",
+            "relevance": "Relevance"
+        },
         "status": {
             "draft": "Draft",
             "published": "Published",
@@ -45,7 +65,8 @@
             "status": "Status",
             "submit": "Save",
             "cancel": "Cancel"
-        }
+        },
+        "create": "Create Resource"
     },
     "footer": {
         "copyright": "© {year} FlowBreath.io. All rights reserved.",

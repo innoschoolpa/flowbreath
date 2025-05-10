@@ -2,12 +2,12 @@
     "common": {
         "site_name": "FlowBreath.io",
         "search": "검색",
-        "view_all": "전체 보기",
+        "view_all": "전체보기",
         "read_more": "자세히 보기",
         "login": "로그인",
         "logout": "로그아웃",
         "register": "회원가입",
-        "profile": "내 정보",
+        "profile": "내 프로필",
         "anonymous": "익명"
     },
     "home": {
@@ -28,9 +28,29 @@
         "title": "자료",
         "tags": "태그",
         "author": "작성자",
-        "date": "등록일",
+        "date": "작성일",
+        "views": "조회수",
+        "rating": "평점",
         "content": "내용",
         "language": "언어",
+        "type": {
+            "all": "전체 유형",
+            "website": "웹사이트",
+            "book": "책",
+            "video": "비디오",
+            "paper": "논문",
+            "podcast": "팟캐스트",
+            "experience": "개인 경험",
+            "other": "기타"
+        },
+        "sort": {
+            "latest": "최신순",
+            "oldest": "오래된순",
+            "title": "제목순",
+            "views": "조회수순",
+            "rating": "평점순",
+            "relevance": "관련도순"
+        },
         "status": {
             "draft": "임시저장",
             "published": "발행됨",
@@ -45,7 +65,8 @@
             "status": "상태",
             "submit": "저장",
             "cancel": "취소"
-        }
+        },
+        "create": "자료 등록"
     },
     "footer": {
         "copyright": "© {year} FlowBreath.io. All rights reserved.",
