@@ -339,11 +339,7 @@ class AuthController extends Controller
             error_log('Google login successful for user: ' . $user['id']);
             error_log('Session data: ' . print_r($this->session->all(), true));
 
-            // 추가 정보가 필요한지 확인
-            if (empty($user['bio'])) {
-                return $this->redirect('/auth/additional-info');
-            }
-
+            // bio 여부와 관계없이 무조건 /resources로 이동
             return $this->redirect('/resources');
 
         } catch (\Exception $e) {
@@ -517,5 +513,11 @@ class AuthController extends Controller
     private function getGoogleClient(): GoogleClient
     {
         return $this->googleClient;
+    }
+
+    public function additionalInfo(Request $request)
+    {
+        // 로그인 체크 등 필요시 추가
+        return $this->view('auth/additional-info');
     }
 } 

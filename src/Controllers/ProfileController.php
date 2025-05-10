@@ -362,7 +362,7 @@ class ProfileController extends Controller
             return (new Response())->redirect('/login');
         }
 
-        $userId = $_SESSION['user_id'];
+        $userId = (int)$_SESSION['user_id'];
         $name = $this->request->getPost('name');
         $bio = $this->request->getPost('bio');
 
@@ -395,7 +395,7 @@ class ProfileController extends Controller
             return (new Response())->redirect('/login');
         }
 
-        $userId = $_SESSION['user_id'];
+        $userId = (int)$_SESSION['user_id'];
         $file = $this->request->getFile('profile_image');
 
         if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
@@ -460,7 +460,7 @@ class ProfileController extends Controller
             return (new Response())->redirect('/login');
         }
 
-        $userId = $_SESSION['user_id'];
+        $userId = (int)$_SESSION['user_id'];
         $platform = $this->request->getPost('platform');
         $url = $this->request->getPost('url');
 

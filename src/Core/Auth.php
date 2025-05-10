@@ -30,7 +30,8 @@ class Auth
             $user['name'] = '사용자';
         }
         $this->user = $user;
-        $this->session->set('user_id', $user['id']);
+        // user_id를 암호화/인코딩 없이 실제 int로 저장
+        $this->session->set('user_id', (int)$user['id']);
         $this->session->set('user_name', $user['name']);
         $this->session->regenerate();
     }

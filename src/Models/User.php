@@ -59,11 +59,12 @@ class User extends Model {
             // 디버그 로그 추가
             error_log("Finding user with ID: " . $id);
             
-            $sql = "SELECT * FROM {$this->table} WHERE id = ?";
+            $sql = "SELECT * FROM {$this->table} WHERE id = :id";
             $stmt = $this->db->prepare($sql);
-            $stmt->execute([$id]);
+            $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
+            $stmt->execute();
             
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
             
             // 디버그 로그 추가
             error_log("Query result: " . ($result ? json_encode($result) : 'null'));
@@ -73,7 +74,7 @@ class User extends Model {
             // 오류 로그 추가
             error_log("Error in findById: " . $e->getMessage());
             error_log("SQL: " . $sql);
-            error_log("Parameters: " . print_r([$id], true));
+            error_log("Parameters: " . print_r(['id' => $id], true));
             error_log("Stack trace: " . $e->getTraceAsString());
             throw new \Exception('사용자를 찾는 중 오류가 발생했습니다: ' . $e->getMessage());
         }

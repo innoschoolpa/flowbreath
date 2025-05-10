@@ -66,6 +66,8 @@ return function (Router $router) {
     $router->add('POST', '/logout', [\App\Controllers\LogoutController::class, 'index']);
     $router->add('GET', '/auth/google', [AuthController::class, 'google']);
     $router->add('GET', '/auth/google/callback', [AuthController::class, 'googleCallback']);
+    $router->add('GET', '/auth/additional-info', ['App\\Controllers\\AuthController', 'additionalInfo']);
+    $router->add('POST', '/auth/additional-info', ['App\\Controllers\\AuthController', 'saveAdditionalInfo']);
 
     // Batch operation routes
     $router->add('GET', '/batch', [BatchController::class, 'index']);
@@ -85,12 +87,12 @@ return function (Router $router) {
 
     // Profile routes
     $router->add('GET', '/profile', [ProfileController::class, 'index']);
+    // 정적 경로를 먼저 등록
+    $router->add('POST', '/profile/update', ['App\Controllers\ProfileController', 'update']);
+    $router->add('POST', '/profile/update-image', ['App\Controllers\ProfileController', 'updateImage']);
+    $router->add('POST', '/profile/update-social', ['App\Controllers\ProfileController', 'updateSocial']);
+    // 동적 경로는 아래에 등록
     $router->add('GET', '/profile/{id}', [ProfileController::class, 'show']);
-
-    // 프로필 업데이트 라우트
-    $router->add('POST', '/profile/update', ['App\\Controllers\\ProfileController', 'update']);
-    $router->add('POST', '/profile/update-image', ['App\\Controllers\\ProfileController', 'updateImage']);
-    $router->add('POST', '/profile/update-social', ['App\\Controllers\\ProfileController', 'updateSocial']);
 
     // 404 처리 라우트 (모든 경로에 대해)
     $router->add('GET', '*', [HomeController::class, 'notFound']);

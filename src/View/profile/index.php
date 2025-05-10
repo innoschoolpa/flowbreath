@@ -4,14 +4,40 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: /login');
     exit;
 }
+
+// DB에서 최신 사용자 정보 불러오기
+require_once __DIR__ . '/../../Models/User.php';
+require_once __DIR__ . '/../../Core/Database.php';
+$db = \App\Core\Database::getInstance();
+$userModel = new \App\Models\User($db);
+$userData = $userModel->findById((int)$_SESSION['user_id']);
+
+// 사용자 데이터가 없거나 null인 경우 기본값 설정
 $user = [
     'id' => $_SESSION['user_id'],
-    'name' => $_SESSION['user_name'] ?? '',
-    'email' => $_SESSION['user_email'] ?? '',
-    'profile_image' => $_SESSION['user_avatar'] ?? null,
-    'bio' => $_SESSION['user_bio'] ?? '',
-    'social_links' => $_SESSION['user_social_links'] ?? '',
+    'name' => $userData['name'] ?? $_SESSION['user_name'] ?? '사용자',
+    'email' => $userData['email'] ?? $_SESSION['user_email'] ?? '',
+    'profile_image' => $userData['profile_image'] ?? null,
+    'bio' => $userData['bio'] ?? '',
+    'social_links' => $userData['social_links'] ?? ''
 ];
+
+// 디버그 로그 추가
+error_log("User data from DB: " . json_encode($userData));
+error_log("Final user data: " . json_encode($user));
+
+// 활동 통계 초기화
+$stats = [
+    'total_resources' => 0,
+    'total_likes' => 0,
+    'total_views' => 0,
+    'total_comments' => 0,
+    'recent_activity' => [],
+    'popular_resources' => []
+];
+
+// 리소스 목록 초기화
+$resources = [];
 ?>
 
 <div class="container py-5">
