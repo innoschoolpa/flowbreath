@@ -77,7 +77,11 @@
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card card-resource h-100">
                         <div class="card-body">
-                            <h5 class="card-title mb-2"><?= htmlspecialchars($resource['title']) ?></h5>
+                            <h5 class="card-title mb-2">
+                                <a href="/resources/view/<?= $resource['id'] ?>" class="text-decoration-none text-dark">
+                                    <?= htmlspecialchars($resource['title']) ?>
+                                </a>
+                            </h5>
                             <div class="resource-meta mb-2">
                                 <i class="fa fa-user"></i> <?= htmlspecialchars($resource['username'] ?? $language->get('common.anonymous')) ?> ·
                                 <i class="fa fa-calendar"></i> <?= htmlspecialchars(substr($resource['created_at'],0,10)) ?>
@@ -88,7 +92,6 @@
                                     <span class="tag-badge">#<?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
                                 <?php endforeach; ?>
                             </div>
-                            <a href="/resources/view/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm"><?= $language->get('common.read_more') ?></a>
                         </div>
                     </div>
                 </div>
@@ -104,7 +107,11 @@
                 <div class="col-md-6 col-lg-6 mb-4">
                     <div class="card card-resource h-100">
                         <div class="card-body">
-                            <h5 class="card-title mb-2"><?= htmlspecialchars($resource['title']) ?></h5>
+                            <h5 class="card-title mb-2">
+                                <a href="/resources/view/<?= $resource['id'] ?>" class="text-decoration-none text-dark">
+                                    <?= htmlspecialchars($resource['title']) ?>
+                                </a>
+                            </h5>
                             <div class="resource-meta mb-2">
                                 <i class="fa fa-user"></i> <?= htmlspecialchars($resource['username'] ?? $language->get('common.anonymous')) ?> ·
                                 <i class="fa fa-calendar"></i> <?= htmlspecialchars(substr($resource['created_at'],0,10)) ?>
@@ -115,7 +122,6 @@
                                     <span class="tag-badge">#<?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
                                 <?php endforeach; ?>
                             </div>
-                            <a href="/resources/view/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm"><?= $language->get('common.read_more') ?></a>
                         </div>
                     </div>
                 </div>

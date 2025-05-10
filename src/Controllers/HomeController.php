@@ -30,15 +30,23 @@ class HomeController
 
         // 최근 리소스
         $resourceModel = new Resource();
-        $recentResources = $resourceModel->getRecentPublic(4);
+        $lang = isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko';
+        $recentResources = $resourceModel->getRecentPublic(4, $lang);
 
         // 인기 태그
         $tagModel = new Tag();
         $popularTags = $tagModel->getPopularTags(8);
 
         // 로그인 상태
-        $isLoggedIn = isset($_SESSION['user']);
-        $user = $isLoggedIn ? $_SESSION['user'] : null;
+        $isLoggedIn = isset($_SESSION['user_id']);
+        $user = $isLoggedIn ? [
+            'id' => $_SESSION['user_id'],
+            'name' => $_SESSION['user_name'] ?? '',
+            'email' => $_SESSION['user_email'] ?? '',
+            'profile_image' => $_SESSION['user_avatar'] ?? null,
+            'bio' => $_SESSION['user_bio'] ?? '',
+            'social_links' => $_SESSION['user_social_links'] ?? ''
+        ] : null;
 
         // 검색 처리
         $searchQuery = isset($_GET['q']) ? trim($_GET['q']) : '';

@@ -23,6 +23,17 @@ class ResourceController extends BaseController {
 
     public function index(Request $request) {
         error_log('ResourceController::index 진입');
+        // 로그인 사용자 정보 세팅
+        $user = null;
+        if (isset($_SESSION['user_id'])) {
+            $user = [
+                'id' => $_SESSION['user_id'],
+                'name' => $_SESSION['user_name'] ?? '',
+                'email' => $_SESSION['user_email'] ?? '',
+                'profile_image' => $_SESSION['user_avatar'] ?? null,
+                'is_admin' => $_SESSION['is_admin'] ?? false
+            ];
+        }
         $keyword = $request->get('keyword', '');
         $selected_tags = $request->get('tags', []);
         $sort = $request->get('sort', 'created_desc');
@@ -40,6 +51,7 @@ class ResourceController extends BaseController {
             'offset' => $offset,
             'type' => $type,
             'is_public' => $is_public,
+            'language_code' => (isset($_SESSION['lang']) && $_SESSION['lang'] === 'en') ? 'en' : null,
         ];
 
         try {
@@ -58,7 +70,7 @@ class ResourceController extends BaseController {
                 'is_public' => $is_public,
                 'current_page' => $page,
                 'total_pages' => $total_pages,
-                'user' => $this->user,
+                'user' => $user,
                 'error' => null,
                 'types' => \App\Models\Resource::getTypes(),
             ]);
@@ -75,7 +87,7 @@ class ResourceController extends BaseController {
                 'is_public' => $is_public,
                 'current_page' => $page,
                 'total_pages' => 1,
-                'user' => $this->user,
+                'user' => $user,
                 'error' => $e->getMessage(),
                 'types' => \App\Models\Resource::getTypes(),
             ]);
@@ -349,17 +361,20 @@ class ResourceController extends BaseController {
             $status = $_POST['status'] ?? ($resource['status'] ?? 'draft');
             $visibility = $_POST['visibility'] ?? ($resource['visibility'] ?? 'public');
             $is_public = isset($_POST['is_public']) ? 1 : ($resource['is_public'] ?? 0);
+            $languageCode = $_POST['language_code'] ?? ($_SESSION['lang'] ?? 'ko');
             $data = array_merge($data, [
-                'title' => $_POST['title'] ?? $data['translations'][$_SESSION['lang'] ?? 'ko']['title'],
-                'content' => html_entity_decode($_POST['content'] ?? $data['translations'][$_SESSION['lang'] ?? 'ko']['content'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
-                'description' => $_POST['description'] ?? $data['translations'][$_SESSION['lang'] ?? 'ko']['description'],
+                'title' => $_POST['title'] ?? $data['translations'][$languageCode]['title'],
+                'content' => $_POST['content'] ?? $data['translations'][$languageCode]['content'],
+                'description' => $_POST['description'] ?? $data['translations'][$languageCode]['description'],
                 'status' => $status,
                 'visibility' => $visibility,
                 'is_public' => $is_public,
                 'slug' => $slug,
                 'tags' => $tags,
-                'language_code' => $_SESSION['lang'] ?? 'ko'
+                'language_code' => $languageCode,
             ]);
+            // translations 키도 언어 코드로 맞춰줌
+            $data['translations'] = [ $languageCode => $data['translations'][$_SESSION['lang'] ?? 'ko'] ];
             $this->resource->update($id, $data);
             if ($request->wantsJson() || $request->isAjax()) {
                 return $this->response->json(['message' => '리소스가 수정되었습니다.']);
@@ -577,6 +592,37 @@ class ResourceController extends BaseController {
                 'error' => $e->getMessage(),
                 'title' => '500 Internal Server Error'
             ], 500);
+        }
+    }
+
+    public function delete(Request $request, $id) {
+        try {
+            $user = $this->auth->user();
+            if (!$user) {
+                $_SESSION['error_message'] = '로그인이 필요합니다.';
+                return $this->response->redirect('/login');
+            }
+            $resource = $this->resource->findById($id);
+            if (!$resource) {
+                $_SESSION['error_message'] = '리소스를 찾을 수 없습니다.';
+                return $this->response->redirect('/resources');
+            }
+            if ($resource['user_id'] !== $user['id'] && empty($user['is_admin'])) {
+                $_SESSION['error_message'] = '삭제 권한이 없습니다.';
+                return $this->response->redirect('/resources');
+            }
+            // CSRF 토큰 검증
+            $csrfToken = $_POST['csrf_token'] ?? '';
+            if (!$csrfToken || $csrfToken !== ($_SESSION['csrf_token'] ?? '')) {
+                $_SESSION['error_message'] = 'CSRF 토큰이 유효하지 않습니다.';
+                return $this->response->redirect("/resources/{$id}");
+            }
+            $this->resource->delete($id);
+            $_SESSION['success_message'] = '리소스가 삭제되었습니다.';
+            return $this->response->redirect('/resources');
+        } catch (\Exception $e) {
+            $_SESSION['error_message'] = $e->getMessage();
+            return $this->response->redirect("/resources/{$id}");
         }
     }
 } 

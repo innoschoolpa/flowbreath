@@ -15,9 +15,9 @@ body { background: #f7fcfc; }
 }
 .resource-search-form {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: flex-end;
+  flex-wrap: nowrap;
+  gap: 0.7rem;
+  align-items: center;
 }
 .resource-search-form .form-group {
   flex: 1 1 220px;
@@ -29,9 +29,9 @@ body { background: #f7fcfc; }
   flex: 0 1 180px;
 }
 .resource-search-form .form-group.keyword {
-  flex: 2 1 400px;
-  min-width: 300px;
-  max-width: 600px;
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 320px;
 }
 .resource-search-form .form-group.sort,
 .resource-search-form .form-group.type,
@@ -97,8 +97,10 @@ body { background: #f7fcfc; }
 }
 #loading-spinner { min-height: 80px; }
 @media (max-width: 900px) {
-  .resource-search-form { flex-direction: column; gap: 0.7rem; }
+  .resource-search-form { flex-direction: column; gap: 0.7rem; flex-wrap: wrap; }
   .resource-search-form .form-group { min-width: 0; max-width: 100%; }
+  .form-group.button { flex-direction: row !important; justify-content: flex-start !important; gap: 0.7rem !important; }
+  .form-group.button .btn { width: 100%; min-width: 0; }
 }
 </style>
 <div class="container py-4" style="max-width:1200px;">
@@ -141,8 +143,13 @@ body { background: #f7fcfc; }
         </select>
       </div>
       <?php endif; ?>
-      <div class="form-group button">
-        <button type="submit" class="btn btn-primary">검색</button>
+      <div class="form-group button d-flex flex-row align-items-center gap-2" style="min-width:180px;">
+        <button type="submit" class="btn btn-primary px-3 rounded-3" style="height:40px;min-width:90px;font-size:1rem;font-weight:500;">검색</button>
+        <?php if (isset($user) && $user['id']): ?>
+          <a href="/resources/create" class="btn btn-success px-3 rounded-3 d-flex align-items-center justify-content-center" style="height:40px;min-width:110px;font-size:1rem;font-weight:500;white-space:nowrap;">
+            <i class="fas fa-plus me-1"></i>자료 등록
+          </a>
+        <?php endif; ?>
       </div>
     </form>
   </div>

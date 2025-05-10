@@ -74,6 +74,13 @@ $title = $title ?? '리소스 상세';
                             <a href="/resources/<?php echo htmlspecialchars($resource['id']); ?>/edit" class="btn btn-primary">
                                 <i class="fas fa-edit"></i> 수정
                             </a>
+                            <form action="/resources/<?php echo htmlspecialchars($resource['id']); ?>" method="POST" class="d-inline" onsubmit="return confirm('정말로 이 리소스를 삭제하시겠습니까?');">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                <button type="submit" class="btn btn-danger ms-1">
+                                    <i class="fas fa-trash"></i> 삭제
+                                </button>
+                            </form>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -93,6 +100,11 @@ $title = $title ?? '리소스 상세';
                                 ?>
                             </div>
                         </div>
+                        <?php if (!empty($resource['description'])): ?>
+                        <div class="alert alert-info mb-4" style="white-space:pre-line;">
+                            <strong>설명:</strong> <?= htmlspecialchars($resource['description']) ?>
+                        </div>
+                        <?php endif; ?>
                     <?php endif; ?>
 
                     <?php if (!empty($resource['tags'])): ?>
@@ -107,13 +119,21 @@ $title = $title ?? '리소스 상세';
                     <?php endif; ?>
 
                     <div class="mb-4">
-                        <h5 class="card-title">메타 정보</h5>
-                        <ul class="list-unstyled">
-                            <li><i class="fas fa-user"></i> 작성자: <?php echo htmlspecialchars($resource['user_name'] ?? '알 수 없음'); ?></li>
-                            <li><i class="fas fa-calendar"></i> 작성일: <?php echo isset($resource['created_at']) ? date('Y-m-d H:i', strtotime($resource['created_at'])) : '알 수 없음'; ?></li>
-                            <li><i class="fas fa-eye"></i> 조회수: <?php echo number_format($resource['view_count'] ?? 0); ?></li>
-                            <li><i class="fas fa-comments"></i> 댓글: <?php echo number_format($resource['comment_count'] ?? 0); ?></li>
+                        <h5 class="card-title">DB 원본 정보</h5>
+                        <ul class="list-unstyled small" id="db-meta-list" style="max-height: 120px; overflow: hidden; transition: max-height 0.3s;">
+                            <li><b>ID:</b> <?= htmlspecialchars($resource['id']) ?></li>
+                            <li><b>언어 코드:</b> <?= htmlspecialchars($resource['translation_language_code'] ?? $resource['language_code'] ?? 'ko') ?></li>
+                            <li><b>작성자 ID:</b> <?= htmlspecialchars($resource['user_id'] ?? '-') ?></li>
+                            <li><b>작성일:</b> <?= htmlspecialchars($resource['created_at'] ?? '-') ?></li>
+                            <li><b>수정일:</b> <?= htmlspecialchars($resource['updated_at'] ?? '-') ?></li>
+                            <li><b>공개여부:</b> <?= ($resource['visibility'] ?? 'public') === 'public' ? '공개' : '비공개' ?></li>
+                            <li><b>유형:</b> <?= htmlspecialchars($resource['type'] ?? '-') ?></li>
+                            <li><b>슬러그:</b> <?= htmlspecialchars($resource['slug'] ?? '-') ?></li>
+                            <li><b>파일:</b> <?= htmlspecialchars($resource['file_path'] ?? '-') ?></li>
+                            <li><b>설명(description):</b> <?= htmlspecialchars($resource['description'] ?? '-') ?></li>
+                            <!-- 필요시 추가 필드 -->
                         </ul>
+                        <button id="toggle-meta-btn" class="btn btn-sm btn-outline-secondary mt-2">더보기</button>
                     </div>
                 </div>
             </div>
@@ -134,6 +154,23 @@ $title = $title ?? '리소스 상세';
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const metaList = document.getElementById('db-meta-list');
+        const toggleBtn = document.getElementById('toggle-meta-btn');
+        let expanded = false;
+        toggleBtn.addEventListener('click', function() {
+            expanded = !expanded;
+            if (expanded) {
+                metaList.style.maxHeight = '1000px';
+                toggleBtn.textContent = '접기';
+            } else {
+                metaList.style.maxHeight = '120px';
+                toggleBtn.textContent = '더보기';
+            }
+        });
+    });
+    </script>
 </body>
 </html>
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?> 

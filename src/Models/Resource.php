@@ -260,7 +260,7 @@ class Resource extends Model {
             $lang = $language ?: Language::getInstance()->getCurrentLanguage();
             $def = $defaultLang ?: Language::getInstance()->getDefaultLanguage();
             $select = $this->translationSelect('r', $lang, $def);
-            $sql = "SELECT r.*, {$select[0]}, {$select[1]}, {$select[2]},
+            $sql = "SELECT r.*, rt.language_code as translation_language_code, {$select[0]}, {$select[1]}, {$select[2]},
                     GROUP_CONCAT(DISTINCT t.name) as tags,
                     GROUP_CONCAT(DISTINCT t.id) as tag_ids
                 FROM resources r
@@ -934,10 +934,10 @@ class Resource extends Model {
                     {$select[3]}
                     {$select[4]}
                     LEFT JOIN users u ON r.user_id = u.id
-                    WHERE r.visibility = 'public'
+                    WHERE r.visibility = 'public' AND rt.language_code = ?
                     ORDER BY r.created_at DESC
                     LIMIT ?";
-            return $this->db->fetchAll($sql, [$lang, $def, $limit]);
+            return $this->db->fetchAll($sql, [$lang, $def, $lang, $limit]);
         } catch (PDOException $e) {
             error_log("Database error in getRecentPublic: " . $e->getMessage());
             throw new Exception("최근 공개 리소스를 조회하는 중 오류가 발생했습니다.");
@@ -1064,61 +1064,50 @@ class Resource extends Model {
             $limit = isset($params['limit']) ? (int)$params['limit'] : 12;
             $offset = isset($params['offset']) ? (int)$params['offset'] : 0;
 
+            $joinLang = $params['language_code'] ?? 'en';
+            $defaultLang = 'ko';
+            $whereParams = [];
             if (!empty($params['keyword'])) {
-                $where[] = "(r.title LIKE ? OR r.description LIKE ?)";
-                $sqlParams[] = '%' . $params['keyword'] . '%';
-                $sqlParams[] = '%' . $params['keyword'] . '%';
+                $where[] = "(COALESCE(rt.title, rt_default.title) LIKE ? OR COALESCE(rt.description, rt_default.description) LIKE ?)";
+                $whereParams[] = '%' . $params['keyword'] . '%';
+                $whereParams[] = '%' . $params['keyword'] . '%';
             }
             if (!empty($params['type'])) {
                 $where[] = "r.type = ?";
-                $sqlParams[] = $params['type'];
+                $whereParams[] = $params['type'];
             }
             if (isset($params['is_public']) && $params['is_public'] !== '') {
                 $where[] = "r.visibility = ?";
-                $sqlParams[] = $params['is_public'] == '1' ? 'public' : 'private';
+                $whereParams[] = $params['is_public'] == '1' ? 'public' : 'private';
             }
             if (!empty($params['tag_ids'])) {
                 $placeholders = str_repeat('?,', count($params['tag_ids']) - 1) . '?';
-                $where[] = "EXISTS (SELECT 1 FROM resource_tags rt WHERE rt.resource_id = r.id AND rt.tag_id IN ($placeholders))";
-                $sqlParams = array_merge($sqlParams, $params['tag_ids']);
+                $where[] = "EXISTS (SELECT 1 FROM resource_tags rt2 WHERE rt2.resource_id = r.id AND rt2.tag_id IN ($placeholders))";
+                $whereParams = array_merge($whereParams, $params['tag_ids']);
             }
-
+            if (!empty($params['language_code'])) {
+                $where[] = "EXISTS (SELECT 1 FROM resource_translations rt2 WHERE rt2.resource_id = r.id AND rt2.language_code = ?)";
+                $whereParams[] = $params['language_code'];
+            }
             $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-            
-            $orderBy = 'ORDER BY r.created_at DESC';
-            if (!empty($params['sort'])) {
-                switch ($params['sort']) {
-                    case 'created_asc': $orderBy = 'ORDER BY r.created_at ASC'; break;
-                    case 'title_asc': $orderBy = 'ORDER BY r.title ASC'; break;
-                    case 'views_desc': $orderBy = 'ORDER BY r.view_count DESC'; break;
-                    case 'rating_desc': $orderBy = 'ORDER BY (SELECT AVG(rating) FROM resource_ratings WHERE resource_id = r.id) DESC'; break;
-                    case 'relevance': 
-                        if (!empty($params['keyword'])) {
-                            $orderBy = 'ORDER BY MATCH(r.title, r.description) AGAINST (? IN BOOLEAN MODE) DESC';
-                            $sqlParams[] = $params['keyword'];
-                        }
-                        break;
-                }
-            }
-
-            $sql = "SELECT r.*, u.name as author_name,
+            $sql = "SELECT r.*, 
+                    COALESCE(rt.title, rt_default.title) as title,
+                    COALESCE(rt.content, rt_default.content) as content,
+                    COALESCE(rt.description, rt_default.description) as description,
+                    u.name as author_name,
                     (SELECT AVG(rating) FROM resource_ratings WHERE resource_id = r.id) as rating
                     FROM resources r
+                    LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
+                    LEFT JOIN resource_translations rt_default ON r.id = rt_default.resource_id AND rt_default.language_code = ?
                     LEFT JOIN users u ON r.user_id = u.id
                     $whereClause
-                    $orderBy
+                    ORDER BY r.created_at DESC
                     LIMIT ? OFFSET ?";
-            
-            $sqlParams[] = $limit;
-            $sqlParams[] = $offset;
-
+            $sqlParams = array_merge([$joinLang, $defaultLang], $whereParams, [$limit, $offset]);
             $resources = $this->db->fetchAll($sql, $sqlParams);
-
-            // 태그 정보 추가
             foreach ($resources as &$resource) {
-                $resource['tags'] = $this->getTags($resource['id']);
+                $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
             }
-
             return $resources;
         } catch (Exception $e) {
             error_log("Error in Resource::search: " . $e->getMessage());
@@ -1156,6 +1145,10 @@ class Resource extends Model {
                 $placeholders = str_repeat('?,', count($params['tag_ids']) - 1) . '?';
                 $where[] = "EXISTS (SELECT 1 FROM resource_tags rt WHERE rt.resource_id = r.id AND rt.tag_id IN ($placeholders))";
                 $sqlParams = array_merge($sqlParams, $params['tag_ids']);
+            }
+            if (!empty($params['language_code'])) {
+                $where[] = "EXISTS (SELECT 1 FROM resource_translations rt WHERE rt.resource_id = r.id AND rt.language_code = ?)";
+                $sqlParams[] = $params['language_code'];
             }
 
             $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
