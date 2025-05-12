@@ -1,0 +1,75 @@
+{
+    "common": {
+        "site_name": "FlowBreath.io",
+        "search": "Search",
+        "view_all": "View All",
+        "read_more": "Read More",
+        "login": "Login",
+        "logout": "Logout",
+        "register": "Register",
+        "profile": "My Profile",
+        "anonymous": "Anonymous"
+    },
+    "home": {
+        "hero": {
+            "title": "Best Resources for Breathing, FlowBreath.io",
+            "subtitle": "Find breathing resources for health, exercise, meditation, and therapy easily and quickly.",
+            "search_placeholder": "Search by resource, tag, or keyword..."
+        },
+        "recent_resources": {
+            "title": "Recently Added Breathing Resources",
+            "no_results": "No search results found."
+        },
+        "popular_tags": {
+            "title": "Popular Tags"
+        }
+    },
+    "resources": {
+        "title": "Resources",
+        "tags": "Tags",
+        "author": "Author",
+        "date": "Date",
+        "views": "Views",
+        "rating": "Rating",
+        "content": "Content",
+        "language": "Language",
+        "type": {
+            "all": "All Types",
+            "website": "Website",
+            "book": "Book",
+            "video": "Video",
+            "paper": "Paper",
+            "podcast": "Podcast",
+            "experience": "Personal Experience",
+            "other": "Other"
+        },
+        "sort": {
+            "latest": "Latest",
+            "oldest": "Oldest",
+            "title": "Title",
+            "views": "Views",
+            "rating": "Rating",
+            "relevance": "Relevance"
+        },
+        "status": {
+            "draft": "Draft",
+            "published": "Published",
+            "private": "Private"
+        },
+        "form": {
+            "title": "Title",
+            "content": "Content",
+            "description": "Description",
+            "language": "Language",
+            "visibility": "Visibility",
+            "status": "Status",
+            "submit": "Save",
+            "cancel": "Cancel"
+        },
+        "create": "Create Resource"
+    },
+    "footer": {
+        "copyright": "© {year} FlowBreath.io. All rights reserved.",
+        "description": "The Best Resource Platform for Breathing Health"
+    }
+}
