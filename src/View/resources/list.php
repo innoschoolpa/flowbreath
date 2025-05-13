@@ -193,10 +193,11 @@ body { background: #f7fcfc; }
               <?php endforeach; ?>
             </div>
             <h5 class="card-title mb-2">
-                <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" class="text-decoration-none text-dark">
-                    <?= htmlspecialchars($resource['title']) ?>
+                <a href="/resources/view/<?= htmlspecialchars($resource['id'] ?? '') ?>" class="text-decoration-none text-dark">
+                    <?= htmlspecialchars($resource['title'] ?? '') ?>
                 </a>
             </h5>
+            <span class="badge bg-secondary mb-2"><?= htmlspecialchars($resource['source_type'] ?? '') ?></span>
             <?php if (!empty($resource['link'])): ?>
                 <?php
                 $videoId = null;
@@ -212,16 +213,17 @@ body { background: #f7fcfc; }
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
-            <p class="card-text flex-grow-1 mb-2">
-                <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" class="text-decoration-none text-body">
-                    <?php
-                    $preview = '';
-                    if (!empty($resource['content'])) {
-                        $plain = strip_tags($resource['content']);
-                        $preview = mb_strimwidth($plain, 0, 120, '...');
-                    }
-                    echo htmlspecialchars($preview);
-                    ?>
+            <p class="card-text flex-grow-1">
+                <a href="/resources/view/<?= htmlspecialchars($resource['id'] ?? '') ?>" class="text-decoration-none text-body">
+                <?php
+                $preview = '';
+                if (!empty($resource['content'])) {
+                    $preview = mb_strimwidth(strip_tags($resource['content']), 0, 100, '...');
+                } elseif (!empty($resource['summary'])) {
+                    $preview = $resource['summary'];
+                }
+                echo htmlspecialchars($preview);
+                ?>
                 </a>
             </p>
           </div>
