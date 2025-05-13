@@ -1187,7 +1187,7 @@ class Resource extends Model {
             $sqlParams = [];
 
             if (!empty($params['keyword'])) {
-                $where[] = "(r.title LIKE ? OR r.description LIKE ?)";
+                $where[] = "(rt.title LIKE ? OR rt.description LIKE ?)";
                 $sqlParams[] = '%' . $params['keyword'] . '%';
                 $sqlParams[] = '%' . $params['keyword'] . '%';
             }
@@ -1205,12 +1205,15 @@ class Resource extends Model {
                 $sqlParams = array_merge($sqlParams, $params['tag_ids']);
             }
             if (!empty($params['language_code'])) {
-                $where[] = "EXISTS (SELECT 1 FROM resource_translations rt WHERE rt.resource_id = r.id AND rt.language_code = ?)";
+                $where[] = "rt.language_code = ?";
                 $sqlParams[] = $params['language_code'];
             }
 
             $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-            $sql = "SELECT COUNT(DISTINCT r.id) as total FROM resources r $whereClause";
+            $sql = "SELECT COUNT(DISTINCT r.id) as total 
+                    FROM resources r 
+                    JOIN resource_translations rt ON r.id = rt.resource_id 
+                    $whereClause";
             
             $result = $this->db->fetch($sql, $sqlParams);
             return $result ? (int)$result['total'] : 0;
@@ -1218,9 +1221,6 @@ class Resource extends Model {
             error_log("Error in Resource::count: " . $e->getMessage());
             error_log("SQL: " . (isset($sql) ? $sql : 'unset'));
             error_log("Params: " . print_r(isset($sqlParams) ? $sqlParams : [], true));
-            echo '<pre style="color:red;font-weight:bold;">MODEL ERROR: ';
-            var_dump($e);
-            echo "\nSQL: ", isset($sql) ? $sql : 'unset', "\nParams: ", print_r(isset($sqlParams) ? $sqlParams : [], true), "</pre>";
             throw new Exception("리소스 개수 조회 중 오류가 발생했습니다: " . $e->getMessage());
         }
     }
