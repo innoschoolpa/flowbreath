@@ -220,7 +220,7 @@ body { background: #f7fcfc; }
                         $plain = strip_tags($resource['content']);
                         $preview = mb_strimwidth($plain, 0, 120, '...');
                     }
-                    echo htmlspecialchars($preview);
+                    echo htmlspecialchars($preview ?? '');
                     ?>
                 </a>
             </p>
