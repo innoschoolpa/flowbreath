@@ -9,10 +9,11 @@
                     <h1 class="card-title"><?= htmlspecialchars($resource['title']) ?></h1>
                     <div class="text-muted">
                         <small>
-                            <?= __('resource.author') ?>: <a href="/profile/<?= htmlspecialchars($resource['user_id']) ?>" class="text-decoration-none"><?= htmlspecialchars($resource['author_name']) ?></a> |
-                            <?= __('resource.created_at') ?>: <?= date('Y-m-d H:i', strtotime($resource['created_at'])) ?>
-                            <?php if ($resource['updated_at']): ?>
-                                | <?= __('resource.updated_at') ?>: <?= date('Y-m-d H:i', strtotime($resource['updated_at'])) ?>
+                            작성자: <a href="/profile/<?= htmlspecialchars($resource['user_id']) ?>" class="text-decoration-none"><?= htmlspecialchars($resource['author_name']) ?></a> | 
+                            작성일: <?= date('Y-m-d', strtotime($resource['created_at'])) ?> | 
+                            조회수: <?= number_format($resource['view_count'] ?? 0) ?>
+                            <?php if ($resource['updated_at'] && $resource['updated_at'] !== $resource['created_at']): ?>
+                                | 수정일: <?= date('Y-m-d', strtotime($resource['updated_at'])) ?>
                             <?php endif; ?>
                         </small>
                     </div>
