@@ -936,22 +936,38 @@ class Resource extends Model {
     {
         try {
             $lang = $language ?: (isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko');
-            $select = $this->translationSelect('r', $lang);
-            $sql = "SELECT r.*, {$select[0]}, {$select[1]}, {$select[2]}, u.name as user_name
+            error_log("Getting recent public resources for language: " . $lang);
+            
+            $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.name as user_name
                     FROM resources r
-                    {$select[3]}
+                    LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
                     LEFT JOIN users u ON r.user_id = u.id
                     WHERE r.visibility = 'public'
-                    AND EXISTS (
-                        SELECT 1 FROM resource_translations rt 
-                        WHERE rt.resource_id = r.id 
-                        AND rt.language_code = ?
-                    )
+                    AND r.status = 'published'
+                    AND r.deleted_at IS NULL
                     ORDER BY r.created_at DESC
                     LIMIT ?";
-            return $this->db->fetchAll($sql, [$lang, $limit]);
+            
+            error_log("SQL Query: " . $sql);
+            error_log("Parameters: " . json_encode([$lang, $limit]));
+            
+            $resources = $this->db->fetchAll($sql, [$lang, $limit]);
+            error_log("Found " . count($resources) . " resources");
+            
+            if (empty($resources)) {
+                error_log("No resources found. Checking if any resources exist at all...");
+                $countSql = "SELECT COUNT(*) as total FROM resources 
+                            WHERE visibility = 'public' 
+                            AND status = 'published' 
+                            AND deleted_at IS NULL";
+                $total = $this->db->fetch($countSql);
+                error_log("Total public resources: " . json_encode($total));
+            }
+            
+            return $resources;
         } catch (PDOException $e) {
             error_log("Database error in getRecentPublic: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             throw new Exception("최근 공개 리소스를 조회하는 중 오류가 발생했습니다.");
         }
     }
