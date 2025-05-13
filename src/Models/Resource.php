@@ -73,6 +73,11 @@ class Resource extends Model {
                     {$select[4]}
                     LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id
                     LEFT JOIN tags t ON rtag.tag_id = t.id
+                    WHERE EXISTS (
+                        SELECT 1 FROM resource_translations rt 
+                        WHERE rt.resource_id = r.id 
+                        AND rt.language_code = ?
+                    )
                     GROUP BY r.id
                     ORDER BY r.created_at DESC";
             if ($limit !== null) {
@@ -81,7 +86,7 @@ class Resource extends Model {
                     $sql .= " OFFSET ?";
                 }
             }
-            $params = [$lang, $def];
+            $params = [$lang, $def, $lang];
             if ($limit !== null) {
                 $params[] = $limit;
                 if ($offset !== null) $params[] = $offset;
