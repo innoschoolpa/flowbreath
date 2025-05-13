@@ -1225,12 +1225,41 @@ class Resource extends Model {
         }
     }
 
-    public function findByUserId($userId)
-    {
-        $sql = "SELECT * FROM resources WHERE user_id = :user_id ORDER BY created_at DESC";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['user_id' => $userId]);
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    public function findByUserId($userId, $lang = null) {
+        try {
+            $lang = $lang ?? $_SESSION['lang'] ?? 'ko';
+            $defaultLang = Language::getInstance()->getDefaultLanguage();
+            
+            $sql = "SELECT r.*, 
+                    COALESCE(rt.title, rt_default.title) as title,
+                    COALESCE(rt.content, rt_default.content) as content,
+                    COALESCE(rt.description, rt_default.description) as description,
+                    rt.language_code as translation_language_code,
+                    u.name as author_name,
+                    GROUP_CONCAT(DISTINCT t.name) as tags,
+                    GROUP_CONCAT(DISTINCT t.id) as tag_ids
+                FROM resources r
+                LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
+                LEFT JOIN resource_translations rt_default ON r.id = rt_default.resource_id AND rt_default.language_code = ?
+                LEFT JOIN users u ON r.user_id = u.id
+                LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id
+                LEFT JOIN tags t ON rtag.tag_id = t.id
+                WHERE r.user_id = ? AND r.deleted_at IS NULL
+                GROUP BY r.id
+                ORDER BY r.created_at DESC";
+            
+            $resources = $this->db->fetchAll($sql, [$lang, $defaultLang, $userId]);
+            
+            foreach ($resources as &$resource) {
+                $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
+                $resource['tag_ids'] = $resource['tag_ids'] ? explode(',', $resource['tag_ids']) : [];
+            }
+            
+            return $resources;
+        } catch (\Exception $e) {
+            error_log("Error in Resource::findByUserId: " . $e->getMessage());
+            throw new \Exception("리소스 조회 중 오류가 발생했습니다.");
+        }
     }
 
     public function findPublicByUserId($userId)

@@ -79,31 +79,57 @@ class ProfileController extends Controller
         return $stats;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        if (!isset($_SESSION['user_id'])) {
-            $_SESSION['error'] = '로그인이 필요합니다.';
-            header('Location: /login');
-            exit;
+        try {
+            $user = $this->auth->user();
+            if (!$user) {
+                return $this->response->redirect('/login');
+            }
+
+            $userId = is_array($user) ? $user['id'] : $user->id;
+            $lang = $_SESSION['lang'] ?? 'ko';
+
+            // 사용자 정보 가져오기
+            $userModel = new \App\Models\User();
+            $userData = $userModel->findById($userId);
+            if (!$userData) {
+                throw new \Exception("사용자를 찾을 수 없습니다.");
+            }
+
+            // 사용자의 리소스 가져오기
+            $resourceModel = new \App\Models\Resource();
+            $resources = $resourceModel->findByUserId($userId, $lang);
+
+            // 통계 계산
+            $stats = [
+                'total_resources' => count($resources),
+                'public_resources' => count(array_filter($resources, function($r) { return $r['is_public'] == 1; })),
+                'total_views' => array_sum(array_column($resources, 'view_count')),
+                'total_likes' => array_sum(array_column($resources, 'like_count')),
+                'total_comments' => $resourceModel->getTotalCommentsByUserId($userId)
+            ];
+
+            // 최근 활동 가져오기
+            $recentActivity = $resourceModel->getRecentActivityByUserId($userId, 5);
+
+            // 인기 리소스 가져오기
+            $popularResources = $resourceModel->getPopularResourcesByUserId($userId, 3);
+
+            return $this->view('profile/index', [
+                'user' => $userData,
+                'resources' => $resources,
+                'stats' => $stats,
+                'recent_activity' => $recentActivity,
+                'popular_resources' => $popularResources
+            ]);
+        } catch (\Exception $e) {
+            error_log("Error in ProfileController::index: " . $e->getMessage());
+            return $this->view('errors/500', [
+                'error' => $e->getMessage(),
+                'title' => '500 Internal Server Error'
+            ], 500);
         }
-        $user = [
-            'id' => $_SESSION['user_id'],
-            'name' => $_SESSION['user_name'] ?? '',
-            'email' => $_SESSION['user_email'] ?? '',
-            'profile_image' => $_SESSION['user_avatar'] ?? null,
-            'bio' => $_SESSION['user_bio'] ?? '',
-            'social_links' => $_SESSION['user_social_links'] ?? '',
-        ];
-        // 사용자의 리소스 목록 가져오기
-        $resources = $this->resource->findByUserId((int)$_SESSION['user_id']);
-        // 사용자의 통계 정보 계산
-        $stats = $this->calculateUserStats((int)$_SESSION['user_id']);
-        return $this->view('profile/index', [
-            'user' => $user,
-            'resources' => $resources,
-            'stats' => $stats,
-            'title' => '프로필'
-        ]);
     }
 
     public function show($userId)
