@@ -266,11 +266,13 @@ class Resource extends Model {
             $select = $this->translationSelect('r', $lang);
             $sql = "SELECT r.*, rt.language_code as translation_language_code, {$select[0]}, {$select[1]}, {$select[2]},
                     GROUP_CONCAT(DISTINCT t.name) as tags,
-                    GROUP_CONCAT(DISTINCT t.id) as tag_ids
+                    GROUP_CONCAT(DISTINCT t.id) as tag_ids,
+                    u.name as author_name
                 FROM resources r
                 {$select[3]}
                 LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id
                 LEFT JOIN tags t ON rtag.tag_id = t.id
+                LEFT JOIN users u ON r.user_id = u.id
                 WHERE r.id = ?
                 GROUP BY r.id";
             $resource = $this->db->fetch($sql, [$lang, $id]);

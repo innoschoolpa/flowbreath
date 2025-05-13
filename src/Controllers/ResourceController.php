@@ -144,6 +144,10 @@ class ResourceController extends BaseController {
             if (!$resource) {
                 throw new \Exception("리소스를 찾을 수 없습니다.", 404);
             }
+
+            // DB 원본 정보에 작성자 이름 추가
+            $resource['author_name'] = $resource['author_name'] ?? 'Unknown';
+
             if ($request->wantsJson() || $request->isAjax()) {
                 return $this->response->json($resource);
             }

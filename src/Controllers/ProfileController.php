@@ -97,31 +97,54 @@ class ProfileController extends Controller
                 throw new \Exception("사용자를 찾을 수 없습니다.");
             }
 
-            // 사용자의 리소스 가져오기
+            // 사용자의 리소스 가져오기 (삭제되지 않은 리소스만)
             $resourceModel = new \App\Models\Resource();
             $resources = $resourceModel->findByUserId($userId, $lang);
+
+            // 리소스 정렬 (최신순)
+            usort($resources, function($a, $b) {
+                return strtotime($b['created_at']) - strtotime($a['created_at']);
+            });
 
             // 통계 계산
             $stats = [
                 'total_resources' => count($resources),
-                'public_resources' => count(array_filter($resources, function($r) { return $r['is_public'] == 1; })),
+                'public_resources' => count(array_filter($resources, function($r) { 
+                    return $r['is_public'] == 1 && $r['deleted_at'] === null; 
+                })),
                 'total_views' => array_sum(array_column($resources, 'view_count')),
                 'total_likes' => array_sum(array_column($resources, 'like_count')),
                 'total_comments' => $resourceModel->getTotalCommentsByUserId($userId)
             ];
 
-            // 최근 활동 가져오기
-            $recentActivity = $resourceModel->getRecentActivityByUserId($userId, 5);
+            // 최근 활동 가져오기 (삭제되지 않은 리소스만)
+            $recentActivity = array_filter($resourceModel->getRecentActivityByUserId($userId, 5), function($activity) {
+                return $activity['deleted_at'] === null;
+            });
 
-            // 인기 리소스 가져오기
-            $popularResources = $resourceModel->getPopularResourcesByUserId($userId, 3);
+            // 인기 리소스 가져오기 (삭제되지 않은 리소스만)
+            $popularResources = array_filter($resourceModel->getPopularResourcesByUserId($userId, 3), function($resource) {
+                return $resource['deleted_at'] === null;
+            });
+
+            // 리소스 타입별 통계
+            $typeStats = [];
+            foreach ($resources as $resource) {
+                $type = $resource['type'] ?? 'other';
+                if (!isset($typeStats[$type])) {
+                    $typeStats[$type] = 0;
+                }
+                $typeStats[$type]++;
+            }
 
             return $this->view('profile/index', [
                 'user' => $userData,
                 'resources' => $resources,
                 'stats' => $stats,
+                'type_stats' => $typeStats,
                 'recent_activity' => $recentActivity,
-                'popular_resources' => $popularResources
+                'popular_resources' => $popularResources,
+                'resource_types' => \App\Models\Resource::getTypes()
             ]);
         } catch (\Exception $e) {
             error_log("Error in ProfileController::index: " . $e->getMessage());
