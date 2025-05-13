@@ -94,6 +94,9 @@ class Resource extends Model {
             $resources = $this->db->fetchAll($sql, $params);
             foreach ($resources as &$resource) {
                 $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
+                // 번역된 title과 content를 메인 필드로 설정
+                $resource['title'] = $resource['title'] ?? '';
+                $resource['content'] = $resource['content'] ?? '';
             }
             return $resources;
         } catch (PDOException $e) {

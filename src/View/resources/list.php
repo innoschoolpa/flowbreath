@@ -194,7 +194,7 @@ body { background: #f7fcfc; }
             </div>
             <h5 class="card-title mb-2">
                 <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" class="text-decoration-none text-dark">
-                    <?= htmlspecialchars($resource['title']) ?>
+                    <?= htmlspecialchars($resource['title'] ?? '') ?>
                 </a>
             </h5>
             <?php if (!empty($resource['link'])): ?>
