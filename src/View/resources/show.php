@@ -155,7 +155,7 @@ $title = $title ?? '리소스 상세';
                         <ul class="list-unstyled small" id="db-meta-list" style="max-height: 120px; overflow: hidden; transition: max-height 0.3s;">
                             <li><b>ID:</b> <?= htmlspecialchars($resource['id']) ?></li>
                             <li><b>언어 코드:</b> <?= htmlspecialchars($resource['translation_language_code'] ?? $resource['language_code'] ?? 'ko') ?></li>
-                            <li><b>작성자 ID:</b> <?= htmlspecialchars($resource['user_id'] ?? '-') ?></li>
+                            <li><b>작성자:</b> <a href="/profile/<?= htmlspecialchars($resource['user_id']) ?>" class="text-decoration-none"><?= htmlspecialchars($resource['author_name'] ?? '-') ?></a></li>
                             <li><b>작성일:</b> <?= htmlspecialchars($resource['created_at'] ?? '-') ?></li>
                             <li><b>수정일:</b> <?= htmlspecialchars($resource['updated_at'] ?? '-') ?></li>
                             <li><b>공개여부:</b> <?= ($resource['visibility'] ?? 'public') === 'public' ? '공개' : '비공개' ?></li>
