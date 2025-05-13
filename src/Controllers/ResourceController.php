@@ -43,6 +43,10 @@ class ResourceController extends BaseController {
         $limit = 12;
         $offset = ($page - 1) * $limit;
 
+        // 현재 언어 설정
+        $current_lang = $_SESSION['lang'] ?? 'ko';
+        error_log("Current language: " . $current_lang);
+
         $params = [
             'keyword' => $keyword,
             'tag_ids' => $selected_tags,
@@ -51,15 +55,41 @@ class ResourceController extends BaseController {
             'offset' => $offset,
             'type' => $type,
             'is_public' => $is_public,
+<<<<<<< Updated upstream
             'language_code' => (isset($_SESSION['lang']) && $_SESSION['lang'] === 'en') ? 'en' : null,
+=======
+            'language_code' => $current_lang,
+>>>>>>> Stashed changes
         ];
 
         try {
             $resourceModel = new \App\Models\Resource();
+            
+            // 리소스 검색 전에 번역 데이터 존재 여부 확인
+            $sql = "SELECT DISTINCT r.id 
+                    FROM resources r 
+                    JOIN resource_translations rt ON r.id = rt.resource_id 
+                    WHERE rt.language_code = ?";
+            $resources_with_translations = $resourceModel->db->fetchAll($sql, [$current_lang]);
+            $resource_ids = array_column($resources_with_translations, 'id');
+            
+            if (!empty($resource_ids)) {
+                $params['resource_ids'] = $resource_ids;
+            } else {
+                error_log("No resources found with translations for language: " . $current_lang);
+            }
+
             $resources = $resourceModel->search($params);
             $total_count = $resourceModel->count($params);
             $total_pages = ceil($total_count / $limit);
             $all_tags = $resourceModel->getAllTags();
+
+            // 디버깅을 위한 로그
+            error_log("Found resources: " . count($resources));
+            foreach ($resources as $resource) {
+                error_log("Resource ID: " . $resource['id'] . ", Title: " . ($resource['title'] ?? 'NULL'));
+            }
+
             return $this->view('resources/list', [
                 'resources' => $resources,
                 'all_tags' => $all_tags,
