@@ -69,6 +69,11 @@ class Resource extends Model {
                     {$select[3]}
                     LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id
                     LEFT JOIN tags t ON rtag.tag_id = t.id
+                    WHERE EXISTS (
+                        SELECT 1 FROM resource_translations rt 
+                        WHERE rt.resource_id = r.id 
+                        AND rt.language_code = ?
+                    )
                     GROUP BY r.id
                     ORDER BY r.created_at DESC";
             if ($limit !== null) {
@@ -85,6 +90,9 @@ class Resource extends Model {
             $resources = $this->db->fetchAll($sql, $params);
             foreach ($resources as &$resource) {
                 $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
+                // 번역된 title과 content를 메인 필드로 설정
+                $resource['title'] = $resource['title'] ?? '';
+                $resource['content'] = $resource['content'] ?? '';
             }
             return $resources;
         } catch (PDOException $e) {
@@ -1064,58 +1072,88 @@ class Resource extends Model {
             $limit = isset($params['limit']) ? (int)$params['limit'] : 12;
             $offset = isset($params['offset']) ? (int)$params['offset'] : 0;
 
-            $joinLang = $params['language_code'] ?? 'en';
-            $defaultLang = 'ko';
-            $whereParams = [];
+            $language_code = $params['language_code'] ?? 'ko';
+            error_log("Searching resources with language: " . $language_code);
+
+            // 기본 WHERE 조건
+            $where[] = "r.id IN (SELECT resource_id FROM resource_translations WHERE language_code = ?)";
+            $sqlParams[] = $language_code;
+
+            // 키워드 검색
             if (!empty($params['keyword'])) {
-                $where[] = "(COALESCE(rt.title, rt_default.title) LIKE ? OR COALESCE(rt.description, rt_default.description) LIKE ?)";
-                $whereParams[] = '%' . $params['keyword'] . '%';
-                $whereParams[] = '%' . $params['keyword'] . '%';
+                $where[] = "(rt.title LIKE ? OR rt.description LIKE ?)";
+                $searchTerm = '%' . $params['keyword'] . '%';
+                $sqlParams[] = $searchTerm;
+                $sqlParams[] = $searchTerm;
             }
+
+            // 타입 필터
             if (!empty($params['type'])) {
                 $where[] = "r.type = ?";
-                $whereParams[] = $params['type'];
+                $sqlParams[] = $params['type'];
             }
+
+            // 공개 여부 필터
             if (isset($params['is_public']) && $params['is_public'] !== '') {
                 $where[] = "r.visibility = ?";
-                $whereParams[] = $params['is_public'] == '1' ? 'public' : 'private';
+                $sqlParams[] = $params['is_public'] == '1' ? 'public' : 'private';
             }
+
+            // 태그 필터
             if (!empty($params['tag_ids'])) {
                 $placeholders = str_repeat('?,', count($params['tag_ids']) - 1) . '?';
                 $where[] = "EXISTS (SELECT 1 FROM resource_tags rt2 WHERE rt2.resource_id = r.id AND rt2.tag_id IN ($placeholders))";
-                $whereParams = array_merge($whereParams, $params['tag_ids']);
+                $sqlParams = array_merge($sqlParams, $params['tag_ids']);
             }
-            if (!empty($params['language_code'])) {
-                $where[] = "EXISTS (SELECT 1 FROM resource_translations rt2 WHERE rt2.resource_id = r.id AND rt2.language_code = ?)";
-                $whereParams[] = $params['language_code'];
+
+            // 정렬 조건
+            $orderBy = "r.created_at DESC";
+            if (!empty($params['sort'])) {
+                switch ($params['sort']) {
+                    case 'views_desc':
+                        $orderBy = "r.view_count DESC";
+                        break;
+                    case 'rating_desc':
+                        $orderBy = "(SELECT AVG(rating) FROM resource_ratings WHERE resource_id = r.id) DESC";
+                        break;
+                }
             }
+
             $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+            
             $sql = "SELECT r.*, 
-                    COALESCE(rt.title, rt_default.title) as title,
-                    COALESCE(rt.content, rt_default.content) as content,
-                    COALESCE(rt.description, rt_default.description) as description,
+                    rt.title,
+                    rt.content,
+                    rt.description,
                     u.name as author_name,
-                    (SELECT AVG(rating) FROM resource_ratings WHERE resource_id = r.id) as rating
+                    (SELECT AVG(rating) FROM resource_ratings WHERE resource_id = r.id) as rating,
+                    GROUP_CONCAT(DISTINCT t.name) as tags
                     FROM resources r
-                    LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
-                    LEFT JOIN resource_translations rt_default ON r.id = rt_default.resource_id AND rt_default.language_code = ?
+                    JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
                     LEFT JOIN users u ON r.user_id = u.id
+                    LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id
+                    LEFT JOIN tags t ON rtag.tag_id = t.id
                     $whereClause
-                    ORDER BY r.created_at DESC
+                    GROUP BY r.id
+                    ORDER BY $orderBy
                     LIMIT ? OFFSET ?";
-            $sqlParams = array_merge([$joinLang, $defaultLang], $whereParams, [$limit, $offset]);
+
+            $sqlParams = array_merge([$language_code], $sqlParams, [$limit, $offset]);
+            
+            error_log("Search SQL: " . $sql);
+            error_log("Search Params: " . print_r($sqlParams, true));
+
             $resources = $this->db->fetchAll($sql, $sqlParams);
+            
             foreach ($resources as &$resource) {
                 $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
             }
+
             return $resources;
         } catch (Exception $e) {
             error_log("Error in Resource::search: " . $e->getMessage());
             error_log("SQL: " . (isset($sql) ? $sql : 'unset'));
             error_log("Params: " . print_r(isset($sqlParams) ? $sqlParams : [], true));
-            echo '<pre style="color:red;font-weight:bold;">MODEL ERROR: ';
-            var_dump($e);
-            echo "\nSQL: ", isset($sql) ? $sql : 'unset', "\nParams: ", print_r(isset($sqlParams) ? $sqlParams : [], true), "</pre>";
             throw new Exception("리소스 검색 중 오류가 발생했습니다: " . $e->getMessage());
         }
     }
@@ -1262,5 +1300,12 @@ class Resource extends Model {
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$userId, $limit]);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * 데이터베이스 인스턴스 반환
+     */
+    public function getDb() {
+        return $this->db;
     }
 }

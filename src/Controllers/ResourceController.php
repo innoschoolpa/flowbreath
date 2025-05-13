@@ -21,6 +21,19 @@ class ResourceController extends BaseController {
         $this->resourceManager = ResourceManager::getInstance();
     }
 
+    /**
+     * 문자열을 URL 친화적인 slug로 변환
+     */
+    private function slugify($text) {
+        $text = preg_replace('~[^\pL\d]+~u', '-', $text);
+        $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+        $text = preg_replace('~[^-\w]+~', '', $text);
+        $text = trim($text, '-');
+        $text = preg_replace('~-+~', '-', $text);
+        $text = strtolower($text);
+        return empty($text) ? 'n-a' : $text;
+    }
+
     public function index(Request $request) {
         error_log('ResourceController::index 진입');
         // 로그인 사용자 정보 세팅
@@ -43,6 +56,10 @@ class ResourceController extends BaseController {
         $limit = 12;
         $offset = ($page - 1) * $limit;
 
+        // 현재 언어 설정
+        $current_lang = $_SESSION['lang'] ?? 'ko';
+        error_log("Current language: " . $current_lang);
+
         $params = [
             'keyword' => $keyword,
             'tag_ids' => $selected_tags,
@@ -51,15 +68,37 @@ class ResourceController extends BaseController {
             'offset' => $offset,
             'type' => $type,
             'is_public' => $is_public,
-            'language_code' => (isset($_SESSION['lang']) && $_SESSION['lang'] === 'en') ? 'en' : 'ko',
+            'language_code' => (isset($_SESSION['lang']) && $_SESSION['lang'] === 'en') ? 'en' : null,
         ];
 
         try {
             $resourceModel = new \App\Models\Resource();
+            
+            // 리소스 검색 전에 번역 데이터 존재 여부 확인
+            $sql = "SELECT DISTINCT r.id 
+                    FROM resources r 
+                    JOIN resource_translations rt ON r.id = rt.resource_id 
+                    WHERE rt.language_code = ?";
+            $resources_with_translations = $resourceModel->getDb()->fetchAll($sql, [$current_lang]);
+            $resource_ids = array_column($resources_with_translations, 'id');
+            
+            if (!empty($resource_ids)) {
+                $params['resource_ids'] = $resource_ids;
+            } else {
+                error_log("No resources found with translations for language: " . $current_lang);
+            }
+
             $resources = $resourceModel->search($params);
             $total_count = $resourceModel->count($params);
             $total_pages = ceil($total_count / $limit);
             $all_tags = $resourceModel->getAllTags();
+
+            // 디버깅을 위한 로그
+            error_log("Found resources: " . count($resources));
+            foreach ($resources as $resource) {
+                error_log("Resource ID: " . $resource['id'] . ", Title: " . ($resource['title'] ?? 'NULL'));
+            }
+
             return $this->view('resources/list', [
                 'resources' => $resources,
                 'all_tags' => $all_tags,
@@ -231,17 +270,7 @@ class ResourceController extends BaseController {
             // 리소스 데이터 준비 (기본 테이블용 - title, content, description 제외)
             error_log('[DEBUG] Start: 리소스 데이터 준비');
             
-            function slugify($text) {
-                $text = preg_replace('~[^\\pL\\d]+~u', '-', $text);
-                $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
-                $text = preg_replace('~[^-\w]+~', '', $text);
-                $text = trim($text, '-');
-                $text = preg_replace('~-+~', '-', $text);
-                $text = strtolower($text);
-                return empty($text) ? 'n-a' : $text;
-            }
-            
-            $slug = slugify($_POST['title']);
+            $slug = $this->slugify($_POST['title']);
             $status = $_POST['status'] ?? 'draft';
             $visibility = $_POST['visibility'] ?? 'public';
             $languageCode = $_POST['language_code'] ?? 'ko';
@@ -348,17 +377,7 @@ class ResourceController extends BaseController {
                 $tags = array_filter($tags);
             }
             
-            function slugify($text) {
-                $text = preg_replace('~[^\pL\d]+~u', '-', $text);
-                $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
-                $text = preg_replace('~[^-\w]+~', '', $text);
-                $text = trim($text, '-');
-                $text = preg_replace('~-+~', '-', $text);
-                $text = strtolower($text);
-                return empty($text) ? 'n-a' : $text;
-            }
-            
-            $slug = slugify($_POST['title']);
+            $slug = $this->slugify($_POST['title']);
             $status = $_POST['status'] ?? ($resource['status'] ?? 'draft');
             $visibility = $_POST['visibility'] ?? ($resource['visibility'] ?? 'public');
             $is_public = isset($_POST['is_public']) ? 1 : ($resource['is_public'] ?? 0);
@@ -478,7 +497,7 @@ class ResourceController extends BaseController {
             $total_pages = ceil($total_count / $limit);
 
             $tagModel = new \App\Models\Tag();
-            $all_tags = $tagModel->getAllTags();
+            $all_tags = $tagModel->getAll();
 
             return $this->view('resources/search', [
                 'resources' => $resources,
