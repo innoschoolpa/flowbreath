@@ -92,7 +92,7 @@ return function (Router $router) {
     $router->add('POST', '/profile/update-image', ['App\Controllers\ProfileController', 'updateImage']);
     $router->add('POST', '/profile/update-social', ['App\Controllers\ProfileController', 'updateSocial']);
     // 동적 경로는 아래에 등록
-    $router->add('GET', '/profile/{id}', [ProfileController::class, 'show']);
+    $router->add('GET', '/profile/{userId}', [ProfileController::class, 'show']);
 
     // 404 처리 라우트 (모든 경로에 대해)
     $router->add('GET', '*', [HomeController::class, 'notFound']);

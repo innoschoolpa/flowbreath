@@ -157,6 +157,12 @@ class ProfileController extends Controller
 
     public function show($userId)
     {
+        if (!$userId) {
+            $_SESSION['error'] = '사용자 ID가 필요합니다.';
+            header('Location: /resources');
+            exit;
+        }
+
         // 다른 사용자의 프로필을 볼 때는 로그인이 필수는 아님
         $userId = (int)$userId;
         $user = $this->user->findById($userId);
