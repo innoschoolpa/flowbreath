@@ -1278,11 +1278,12 @@ class Resource extends Model {
     {
         $sql = "SELECT 
                     'resource' as type,
-                    id,
-                    title,
-                    created_at
-                FROM resources 
-                WHERE user_id = ?
+                    r.id,
+                    rt.title,
+                    r.created_at
+                FROM resources r
+                JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
+                WHERE r.user_id = ?
                 UNION ALL
                 SELECT 
                     'comment' as type,
@@ -1294,8 +1295,9 @@ class Resource extends Model {
                 ORDER BY created_at DESC 
                 LIMIT ?";
         
+        $lang = isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$userId, $userId, $limit]);
+        $stmt->execute([$lang, $userId, $userId, $limit]);
         return $stmt->fetchAll();
     }
 
