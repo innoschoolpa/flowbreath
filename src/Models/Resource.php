@@ -1308,4 +1308,11 @@ class Resource extends Model {
         $stmt->execute([$userId, $limit]);
         return $stmt->fetchAll();
     }
+
+    /**
+     * 데이터베이스 인스턴스 반환
+     */
+    public function getDb() {
+        return $this->db;
+    }
 }
