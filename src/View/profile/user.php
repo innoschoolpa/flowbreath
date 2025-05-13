@@ -25,17 +25,29 @@
                 <div class="card-body">
                     <h5 class="card-title mb-4">활동 통계</h5>
                     <div class="row text-center">
-                        <div class="col-4">
-                            <h4 class="mb-1"><?= $stats['total_resources'] ?></h4>
-                            <small class="text-muted">리소스</small>
+                        <div class="col-6 mb-3">
+                            <h4 class="mb-1"><?= number_format($stats['total_resources']) ?></h4>
+                            <small class="text-muted">전체 리소스</small>
                         </div>
-                        <div class="col-4">
-                            <h4 class="mb-1"><?= $stats['total_likes'] ?></h4>
-                            <small class="text-muted">좋아요</small>
+                        <div class="col-6 mb-3">
+                            <h4 class="mb-1"><?= number_format($stats['public_resources']) ?></h4>
+                            <small class="text-muted">공개 리소스</small>
                         </div>
-                        <div class="col-4">
-                            <h4 class="mb-1"><?= $stats['total_views'] ?></h4>
-                            <small class="text-muted">조회수</small>
+                        <div class="col-6 mb-3">
+                            <h4 class="mb-1"><?= number_format($stats['total_likes']) ?></h4>
+                            <small class="text-muted">받은 좋아요</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="mb-1"><?= number_format($stats['total_views']) ?></h4>
+                            <small class="text-muted">총 조회수</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="mb-1"><?= number_format($stats['avg_views']) ?></h4>
+                            <small class="text-muted">평균 조회수</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="mb-1"><?= number_format($stats['total_comments']) ?></h4>
+                            <small class="text-muted">총 댓글수</small>
                         </div>
                     </div>
                 </div>
@@ -59,8 +71,12 @@
                                 <thead>
                                     <tr>
                                         <th>제목</th>
+                                        <th>상태</th>
                                         <th>조회수</th>
+                                        <th>좋아요</th>
+                                        <th>댓글</th>
                                         <th>작성일</th>
+                                        <th>수정일</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -70,9 +86,22 @@
                                                 <a href="/resources/view/<?= $resource['id'] ?>" class="text-decoration-none">
                                                     <?= htmlspecialchars($resource['title']) ?>
                                                 </a>
+                                                <?php if ($resource['is_pinned']): ?>
+                                                    <span class="badge bg-info ms-1">고정</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php if ($resource['is_public']): ?>
+                                                    <span class="badge bg-success">공개</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-warning">비공개</span>
+                                                <?php endif; ?>
                                             </td>
                                             <td><?= number_format($resource['view_count']) ?></td>
+                                            <td><?= number_format($resource['like_count'] ?? 0) ?></td>
+                                            <td><?= number_format($resource['comment_count'] ?? 0) ?></td>
                                             <td><?= date('Y-m-d', strtotime($resource['created_at'])) ?></td>
+                                            <td><?= $resource['updated_at'] ? date('Y-m-d', strtotime($resource['updated_at'])) : '-' ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>

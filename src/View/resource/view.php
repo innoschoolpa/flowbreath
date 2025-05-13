@@ -9,7 +9,7 @@
                     <h1 class="card-title"><?= htmlspecialchars($resource['title']) ?></h1>
                     <div class="text-muted">
                         <small>
-                            <?= __('resource.author') ?>: <?= htmlspecialchars($resource['author_name']) ?> |
+                            <?= __('resource.author') ?>: <a href="/profile/<?= htmlspecialchars($resource['user_id']) ?>" class="text-decoration-none"><?= htmlspecialchars($resource['author_name']) ?></a> |
                             <?= __('resource.created_at') ?>: <?= date('Y-m-d H:i', strtotime($resource['created_at'])) ?>
                             <?php if ($resource['updated_at']): ?>
                                 | <?= __('resource.updated_at') ?>: <?= date('Y-m-d H:i', strtotime($resource['updated_at'])) ?>
