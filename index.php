@@ -148,7 +148,7 @@ $language = Language::getInstance();
 
 // 최근 리소스
 $resourceModel = new \App\Models\Resource();
-$recentResources = $resourceModel->getRecentPublic(3);
+$recentResources = $resourceModel->getRecentPublic(6);
 
 // 인기 태그
 $tagModel = new \App\Models\Tag();
@@ -214,7 +214,7 @@ require_once PROJECT_ROOT . '/src/View/layouts/header.php';
                         <div class="card-body">
                             <h5 class="card-title"><?= htmlspecialchars($resource['title']) ?></h5>
                             <p class="card-text text-muted">
-                                <?= htmlspecialchars($resource['author_name'] ?? '익명') ?> · 
+                                <?= htmlspecialchars($resource['username'] ?? '익명') ?> · 
                                 <?= date('Y-m-d', strtotime($resource['created_at'])) ?>
                             </p>
                             <p class="card-text">
