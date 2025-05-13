@@ -51,7 +51,7 @@ class ResourceController extends BaseController {
             'offset' => $offset,
             'type' => $type,
             'is_public' => $is_public,
-            'language_code' => (isset($_SESSION['lang']) && $_SESSION['lang'] === 'en') ? 'en' : null,
+            'language_code' => (isset($_SESSION['lang']) && $_SESSION['lang'] === 'en') ? 'en' : 'ko',
         ];
 
         try {
