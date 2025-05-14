@@ -46,13 +46,15 @@ class Resource extends Model {
     /**
      * 언어별 번역 정보 조인 쿼리 생성 (공통)
      */
-    private function translationSelect($alias = 'r', $lang = null) {
+    private function translationSelect($alias = 'r', $lang = null, $def = null) {
         if (!$lang) $lang = Language::getInstance()->getCurrentLanguage();
         return [
             "rt.title as title",
             "rt.content as content",
             "rt.description as description",
-            "LEFT JOIN resource_translations rt ON {$alias}.id = rt.resource_id AND rt.language_code = ?"
+            "LEFT JOIN resource_translations rt ON {$alias}.id = rt.resource_id AND rt.language_code = ?",
+            $def ? "LEFT JOIN resource_translations rt_default ON {$alias}.id = rt_default.resource_id AND rt_default.language_code = ?" : '',
+            $def ? "LEFT JOIN users u ON {$alias}.user_id = u.id" : ''
         ];
     }
 
@@ -205,38 +207,51 @@ class Resource extends Model {
         try {
             $lang = $language ?: Language::getInstance()->getCurrentLanguage();
             $def = Language::getInstance()->getDefaultLanguage();
-            $select = $this->translationSelect('r', $lang);
+            $select = $this->translationSelect('r', $lang, $def);
             $params = [$lang, $def];
             $where = ["rt.language_code = ?"];
+            
             if ($keyword) {
-                $where[] = "MATCH(rt.title, rt.content, rt.description) AGAINST (? IN BOOLEAN MODE)";
+                $where[] = "(
+                    MATCH(rt.title, rt.content, rt.description) AGAINST (? IN BOOLEAN MODE) OR
+                    MATCH(u.name) AGAINST (? IN BOOLEAN MODE) OR
+                    MATCH(r.slug, r.category) AGAINST (? IN BOOLEAN MODE)
+                )";
+                $params[] = $keyword;
+                $params[] = $keyword;
                 $params[] = $keyword;
             }
+            
             if (!empty($filters['tags'])) {
                 $placeholders = str_repeat('?,', count($filters['tags']) - 1) . '?';
                 $where[] = "EXISTS (SELECT 1 FROM resource_tags rt2 WHERE rt2.resource_id = r.id AND rt2.tag_id IN ($placeholders))";
                 $params = array_merge($params, $filters['tags']);
             }
+            
             $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
             $sql = "SELECT r.*, {$select[0]}, {$select[1]}, {$select[2]},
+                    u.name as username,
                     GROUP_CONCAT(DISTINCT t.name) as tags,
                     MATCH(rt.title, rt.content, rt.description) AGAINST (? IN BOOLEAN MODE) as relevance
                 FROM resources r
                 {$select[3]}
+                {$select[4]}
+                LEFT JOIN users u ON r.user_id = u.id
                 LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id
                 LEFT JOIN tags t ON rtag.tag_id = t.id
                 $whereClause
                 GROUP BY r.id
                 ORDER BY relevance DESC, r.created_at DESC";
+                
             if ($keyword) $params[] = $keyword;
             $resources = $this->db->fetchAll($sql, $params);
             foreach ($resources as &$resource) {
                 $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
             }
             return $resources;
-        } catch (Exception $e) {
-            error_log("Error in Resource::searchFulltext: " . $e->getMessage());
-            throw new Exception("리소스 검색 중 오류가 발생했습니다.");
+        } catch (PDOException $e) {
+            error_log("Database error in searchFulltext: " . $e->getMessage());
+            throw new Exception("리소스 검색 중 오류가 발생했습니다: " . $e->getMessage());
         }
     }
 
