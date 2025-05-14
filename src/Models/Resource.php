@@ -215,8 +215,15 @@ class Resource extends Model {
                 $where[] = "(
                     MATCH(rt.title, rt.content, rt.description) AGAINST (? IN BOOLEAN MODE) OR
                     MATCH(u.name) AGAINST (? IN BOOLEAN MODE) OR
-                    MATCH(r.slug, r.category) AGAINST (? IN BOOLEAN MODE)
+                    MATCH(r.slug, r.category) AGAINST (? IN BOOLEAN MODE) OR
+                    EXISTS (
+                        SELECT 1 FROM tags t 
+                        JOIN resource_tags rt2 ON t.id = rt2.tag_id 
+                        WHERE rt2.resource_id = r.id 
+                        AND MATCH(t.name) AGAINST (? IN BOOLEAN MODE)
+                    )
                 )";
+                $params[] = $keyword;
                 $params[] = $keyword;
                 $params[] = $keyword;
                 $params[] = $keyword;
@@ -232,7 +239,19 @@ class Resource extends Model {
             $sql = "SELECT r.*, {$select[0]}, {$select[1]}, {$select[2]},
                     u.name as username,
                     GROUP_CONCAT(DISTINCT t.name) as tags,
-                    MATCH(rt.title, rt.content, rt.description) AGAINST (? IN BOOLEAN MODE) as relevance
+                    (
+                        MATCH(rt.title) AGAINST (? IN BOOLEAN MODE) * 3 +
+                        MATCH(rt.content, rt.description) AGAINST (? IN BOOLEAN MODE) * 2 +
+                        MATCH(u.name) AGAINST (? IN BOOLEAN MODE) * 1.5 +
+                        MATCH(r.slug, r.category) AGAINST (? IN BOOLEAN MODE) * 1.5 +
+                        (
+                            SELECT COUNT(*) * 1.5
+                            FROM tags t2
+                            JOIN resource_tags rt2 ON t2.id = rt2.tag_id
+                            WHERE rt2.resource_id = r.id
+                            AND MATCH(t2.name) AGAINST (? IN BOOLEAN MODE)
+                        )
+                    ) as relevance
                 FROM resources r
                 {$select[3]}
                 {$select[4]}
@@ -241,9 +260,17 @@ class Resource extends Model {
                 LEFT JOIN tags t ON rtag.tag_id = t.id
                 $whereClause
                 GROUP BY r.id
+                HAVING relevance > 0
                 ORDER BY relevance DESC, r.created_at DESC";
                 
-            if ($keyword) $params[] = $keyword;
+            if ($keyword) {
+                $params[] = $keyword;
+                $params[] = $keyword;
+                $params[] = $keyword;
+                $params[] = $keyword;
+                $params[] = $keyword;
+            }
+            
             $resources = $this->db->fetchAll($sql, $params);
             foreach ($resources as &$resource) {
                 $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
