@@ -161,12 +161,15 @@ class Resource extends Model {
 
     public function searchResources($query, $limit = null, $offset = null) {
         try {
-            $sql = "SELECT r.*, GROUP_CONCAT(t.name) as tags 
-                    FROM {$this->table} r 
-                    LEFT JOIN resource_tags rt ON r.id = rt.resource_id 
-                    LEFT JOIN tags t ON rt.tag_id = t.id 
-                    WHERE r.title LIKE ? 
-                    OR r.content LIKE ? 
+            $lang = Language::getInstance()->getCurrentLanguage();
+            $sql = "SELECT r.*, rt.title, rt.content, rt.description, GROUP_CONCAT(t.name) as tags 
+                    FROM resources r 
+                    LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
+                    LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id 
+                    LEFT JOIN tags t ON rtag.tag_id = t.id 
+                    WHERE rt.title LIKE ? 
+                    OR rt.content LIKE ? 
+                    OR rt.description LIKE ?
                     GROUP BY r.id 
                     ORDER BY r.created_at DESC";
 
@@ -178,7 +181,7 @@ class Resource extends Model {
             }
 
             $searchTerm = '%' . $query . '%';
-            $params = [$searchTerm, $searchTerm];
+            $params = [$lang, $searchTerm, $searchTerm, $searchTerm];
             
             if ($limit !== null) {
                 $params[] = $limit;
