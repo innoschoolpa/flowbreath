@@ -985,7 +985,7 @@ class Resource extends Model {
             $lang = $language ?: (isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko');
             error_log("Getting recent public resources for language: " . $lang);
             
-            $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.name as user_name
+            $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.name as username
                     FROM resources r
                     LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
                     LEFT JOIN users u ON r.user_id = u.id
