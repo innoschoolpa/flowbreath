@@ -1,0 +1,17 @@
+{
+    "host": "46.202.199.181",
+    "username": "u573434051",
+    "password": "Eduispa1712!",  
+    "remotePath": "domains/flowbreath.io/public_html",
+    "protocol": "ftp",
+    "port": 21,
+    "fileNameEncoding": "utf8",
+    "autoUpload": true,
+    "autoDelete": true,
+    "autoDownload": true,
+    "ignore": [
+        ".git",
+        "/.vscode",
+        "/vendor"
+    ]
+}
