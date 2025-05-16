@@ -353,8 +353,6 @@ class Resource extends Model {
      */
     public function findOrCreateTag($name) {
         try {
-            $this->db->beginTransaction();
-
             // 태그 이름 정규화
             $name = trim($name);
             if (empty($name)) {
@@ -373,10 +371,8 @@ class Resource extends Model {
                 $tag = ['id' => $tag_id, 'name' => $name];
             }
 
-            $this->db->commit();
             return $tag;
         } catch (PDOException $e) {
-            $this->db->rollback();
             error_log("Database error in findOrCreateTag: " . $e->getMessage());
             throw new Exception("태그를 처리하는 중 오류가 발생했습니다: " . $e->getMessage());
         }
@@ -659,8 +655,6 @@ class Resource extends Model {
      */
     public function updateResourceTags($resource_id, array $tag_names) {
         try {
-            $this->db->beginTransaction();
-
             // 기존 태그 제거
             $sql = "DELETE FROM resource_tags WHERE resource_id = ?";
             $this->db->query($sql, [$resource_id]);
@@ -686,10 +680,8 @@ class Resource extends Model {
                 }
             }
 
-            $this->db->commit();
             return true;
         } catch (PDOException $e) {
-            $this->db->rollback();
             error_log("Database error in updateResourceTags: " . $e->getMessage());
             throw new Exception("태그를 업데이트하는 중 오류가 발생했습니다: " . $e->getMessage());
         }
