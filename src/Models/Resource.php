@@ -457,7 +457,7 @@ class Resource extends Model {
             $publishedAt = (isset($data['status']) && $data['status'] === 'published') ? date('Y-m-d H:i:s') : null;
             $sql = "INSERT INTO resources (
                 user_id, file_path, visibility, status, slug, published_at, link, category, type, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
             $params = [
                 $data['user_id'],
