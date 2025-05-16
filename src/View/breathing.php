@@ -4,8 +4,6 @@
     <div class="row">
         <div class="col-md-8 mx-auto">
             <div class="card">
-                <div class="card-header">
-                </div>
                 <div class="card-body">
                     <!-- 호흡 패턴 선택 -->
                     <div class="mb-4">
@@ -34,18 +32,22 @@
                         <button class="btn btn-primary" id="startButton">시작</button>
                         <button class="btn btn-secondary" id="stopButton" disabled>정지</button>
                     </div>
+                </div>
+            </div>
 
-                    <!-- 설정 -->
-                    <div class="mt-4">
-                        <h3 class="h5">설정</h3>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="soundEnabled" checked>
-                            <label class="form-check-label" for="soundEnabled">소리</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="vibrationEnabled" checked>
-                            <label class="form-check-label" for="vibrationEnabled">진동</label>
-                        </div>
+            <!-- 설정 -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">설정</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="soundEnabled" checked>
+                        <label class="form-check-label" for="soundEnabled">소리</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="vibrationEnabled" checked>
+                        <label class="form-check-label" for="vibrationEnabled">진동</label>
                     </div>
                 </div>
             </div>
