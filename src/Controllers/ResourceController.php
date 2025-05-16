@@ -424,12 +424,7 @@ class ResourceController extends BaseController {
             
             // 태그 업데이트
             if (!empty($tags)) {
-                $tagIds = [];
-                foreach ($tags as $tagName) {
-                    $tag = $this->resource->findOrCreateTag($tagName);
-                    $tagIds[] = $tag['id'];
-                }
-                $this->resource->updateResourceTags($id, $tagIds);
+                $this->resource->updateResourceTags($id, $tags);
             } else {
                 // 태그가 비어있으면 모든 태그 제거
                 $this->resource->updateResourceTags($id, []);
