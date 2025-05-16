@@ -965,44 +965,25 @@ class Resource extends Model {
      * @return array 리소스 목록 (태그 포함)
      * @throws ModelException
      */
-    public function getRecentPublic($limit = 10, $language = null, $defaultLang = null)
+    public function getRecentPublic($limit = 3, $lang = 'ko')
     {
-        try {
-            $lang = $language ?: (isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko');
-            error_log("Getting recent public resources for language: " . $lang);
-            
-            $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.name as username
-                    FROM resources r
-                    LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
-                    LEFT JOIN users u ON r.user_id = u.id
-                    WHERE r.visibility = 'public'
-                    AND r.status = 'published'
-                    AND r.deleted_at IS NULL
-                    ORDER BY r.created_at DESC
-                    LIMIT ?";
-            
-            error_log("SQL Query: " . $sql);
-            error_log("Parameters: " . json_encode([$lang, $limit]));
-            
-            $resources = $this->db->fetchAll($sql, [$lang, $limit]);
-            error_log("Found " . count($resources) . " resources");
-            
-            if (empty($resources)) {
-                error_log("No resources found. Checking if any resources exist at all...");
-                $countSql = "SELECT COUNT(*) as total FROM resources 
-                            WHERE visibility = 'public' 
-                            AND status = 'published' 
-                            AND deleted_at IS NULL";
-                $total = $this->db->fetch($countSql);
-                error_log("Total public resources: " . json_encode($total));
-            }
-            
-            return $resources;
-        } catch (PDOException $e) {
-            error_log("Database error in getRecentPublic: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
-            throw new Exception("최근 공개 리소스를 조회하는 중 오류가 발생했습니다.");
-        }
+        $sql = "SELECT r.*, 
+                COALESCE(rt.title, r.title) as title,
+                COALESCE(rt.content, r.content) as content,
+                COALESCE(rt.description, r.description) as description,
+                u.name as username
+                FROM resources r
+                LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
+                LEFT JOIN users u ON r.user_id = u.id
+                WHERE r.visibility = 'public'
+                AND r.status = 'published'
+                AND r.deleted_at IS NULL
+                ORDER BY r.created_at DESC
+                LIMIT ?";
+        
+        $resources = $this->db->fetchAll($sql, [$lang, $limit]);
+        
+        return $resources;
     }
 
     public function searchWithLang($params) {
