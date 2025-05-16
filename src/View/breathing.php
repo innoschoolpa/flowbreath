@@ -5,7 +5,6 @@
         <div class="col-md-8 mx-auto">
             <div class="card">
                 <div class="card-header">
-                    <h2 class="h4 mb-0">호흡 운동</h2>
                 </div>
                 <div class="card-body">
                     <!-- 호흡 패턴 선택 -->
