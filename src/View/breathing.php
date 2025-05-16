@@ -139,7 +139,7 @@ async function startSession() {
 
         const data = await response.json();
         if (!data.success) {
-            throw new Error('Failed to start session');
+            throw new Error(data.message || 'Failed to start session');
         }
 
         currentSession = data.data.session_id;
@@ -154,7 +154,7 @@ async function startSession() {
         vibrate(500);
     } catch (error) {
         console.error('Error starting session:', error);
-        alert('세션을 시작하는 중 오류가 발생했습니다.');
+        alert('세션을 시작하는 중 오류가 발생했습니다: ' + error.message);
     }
 }
 
@@ -164,12 +164,20 @@ async function updateSessionStatus() {
 
     try {
         const response = await fetch(`/api/breathing/sessions/${currentSession}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         if (data.success) {
             updateVisualGuide(data.data);
+        } else {
+            throw new Error(data.message || 'Failed to update session status');
         }
     } catch (error) {
         console.error('Error updating session status:', error);
+        if (error.message.includes('404')) {
+            stopSession();
+        }
     }
 }
 
@@ -246,6 +254,10 @@ async function stopSession() {
                 'Content-Type': 'application/json'
             }
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
         const data = await response.json();
         if (!data.success) {
