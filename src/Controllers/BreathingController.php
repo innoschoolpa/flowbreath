@@ -53,9 +53,9 @@ class BreathingController
         ]);
     }
 
-    public function getSessionStatus($sessionId)
+    public function getSessionStatus($session_id)
     {
-        $status = $this->breathingService->getSessionStatus($sessionId);
+        $status = $this->breathingService->getSessionStatus($session_id);
         return $this->jsonResponse([
             'success' => true,
             'data' => $status

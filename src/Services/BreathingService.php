@@ -67,13 +67,13 @@ class BreathingService
         ];
     }
 
-    public function getSessionStatus($sessionId)
+    public function getSessionStatus($session_id)
     {
-        if (!isset($this->sessions[$sessionId])) {
+        if (!isset($this->sessions[$session_id])) {
             throw new \InvalidArgumentException('Session not found');
         }
 
-        $session = $this->sessions[$sessionId];
+        $session = $this->sessions[$session_id];
         $pattern = $this->patterns[$session['pattern']];
         $currentPhase = $pattern['phases'][$session['current_phase']];
         $elapsed = time() - $session['current_phase_start'];
@@ -84,13 +84,13 @@ class BreathingService
             $session['current_phase_start'] = time();
             $currentPhase = $pattern['phases'][$session['current_phase']];
             $remaining = $currentPhase['duration'];
-            $this->sessions[$sessionId] = $session;
+            $this->sessions[$session_id] = $session;
         }
 
         $nextPhase = $pattern['phases'][($session['current_phase'] + 1) % count($pattern['phases'])];
 
         return [
-            'session_id' => $sessionId,
+            'session_id' => $session_id,
             'status' => $session['status'],
             'current_phase' => [
                 'type' => $currentPhase['type'],
