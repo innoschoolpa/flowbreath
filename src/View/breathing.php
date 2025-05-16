@@ -1,6 +1,6 @@
 <?php require_once __DIR__ . '/layouts/header.php'; ?>
 
-<div class="container mt-4">
+<div class="container">
     <div class="row">
         <div class="col-md-8 mx-auto">
             <div class="card">
@@ -56,53 +56,84 @@
 <script>
 let currentSession = null;
 let timerInterval = null;
+let statusInterval = null;
 
 // 호흡 패턴 가져오기
 async function getPatterns() {
-    const response = await fetch('/api/breathing/patterns');
-    const data = await response.json();
-    return data.data.patterns;
+    try {
+        const response = await fetch('/api/breathing/patterns');
+        const data = await response.json();
+        if (data.success) {
+            return data.data.patterns;
+        }
+        throw new Error('Failed to get patterns');
+    } catch (error) {
+        console.error('Error getting patterns:', error);
+        return [];
+    }
 }
 
 // 세션 시작
 async function startSession() {
-    const pattern = document.getElementById('breathingPattern').value;
-    const duration = parseInt(document.getElementById('duration').value);
-    const sound = document.getElementById('soundEnabled').checked;
-    const vibration = document.getElementById('vibrationEnabled').checked;
+    try {
+        const pattern = document.getElementById('breathingPattern').value;
+        const duration = parseInt(document.getElementById('duration').value);
+        const sound = document.getElementById('soundEnabled').checked;
+        const vibration = document.getElementById('vibrationEnabled').checked;
 
-    const response = await fetch('/api/breathing/sessions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            pattern,
-            duration,
-            sound,
-            vibration
-        })
-    });
+        const response = await fetch('/api/breathing/sessions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                pattern,
+                duration,
+                sound,
+                vibration
+            })
+        });
 
-    const data = await response.json();
-    currentSession = data.data.session_id;
-    startTimer();
-    updateVisualGuide();
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error('Failed to start session');
+        }
+
+        currentSession = data.data.id;
+        document.getElementById('startButton').disabled = true;
+        document.getElementById('stopButton').disabled = false;
+        
+        startTimer(duration);
+        startStatusUpdates();
+    } catch (error) {
+        console.error('Error starting session:', error);
+        alert('세션을 시작하는 중 오류가 발생했습니다.');
+    }
 }
 
 // 세션 상태 업데이트
 async function updateSessionStatus() {
     if (!currentSession) return;
 
-    const response = await fetch(`/api/breathing/sessions/${currentSession}`);
-    const data = await response.json();
-    updateVisualGuide(data.data);
+    try {
+        const response = await fetch(`/api/breathing/sessions/${currentSession}`);
+        const data = await response.json();
+        if (data.success) {
+            updateVisualGuide(data.data);
+        }
+    } catch (error) {
+        console.error('Error updating session status:', error);
+    }
 }
 
 // 시각적 가이드 업데이트
 function updateVisualGuide(data) {
     const circle = document.getElementById('breathingCircle');
-    if (!data) return;
+    if (!data || !data.visual_guide) {
+        circle.style.transform = 'scale(1)';
+        circle.style.backgroundColor = '#4CAF50';
+        return;
+    }
 
     const guide = data.visual_guide;
     circle.style.transform = `scale(${guide.circle_size})`;
@@ -110,15 +141,10 @@ function updateVisualGuide(data) {
 }
 
 // 타이머 시작
-function startTimer() {
-    const duration = parseInt(document.getElementById('duration').value);
+function startTimer(duration) {
     let remaining = duration;
 
-    document.getElementById('startButton').disabled = true;
-    document.getElementById('stopButton').disabled = false;
-
-    timerInterval = setInterval(() => {
-        remaining--;
+    function updateTimer() {
         const minutes = Math.floor(remaining / 60);
         const seconds = remaining % 60;
         document.getElementById('timer').textContent = 
@@ -126,32 +152,55 @@ function startTimer() {
 
         if (remaining <= 0) {
             stopSession();
+        } else {
+            remaining--;
         }
-    }, 1000);
+    }
+
+    updateTimer();
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+// 상태 업데이트 시작
+function startStatusUpdates() {
+    if (statusInterval) {
+        clearInterval(statusInterval);
+    }
+    statusInterval = setInterval(updateSessionStatus, 1000);
 }
 
 // 세션 정지
 async function stopSession() {
     if (!currentSession) return;
 
-    await fetch(`/api/breathing/sessions/${currentSession}/end`, {
-        method: 'POST'
-    });
-
-    clearInterval(timerInterval);
-    currentSession = null;
-    document.getElementById('startButton').disabled = false;
-    document.getElementById('stopButton').disabled = true;
-    document.getElementById('timer').textContent = '00:00';
-    document.getElementById('breathingCircle').style.transform = 'scale(1)';
+    try {
+        const response = await fetch(`/api/breathing/sessions/${currentSession}/end`, {
+            method: 'POST'
+        });
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error('Failed to end session');
+        }
+    } catch (error) {
+        console.error('Error stopping session:', error);
+    } finally {
+        clearInterval(timerInterval);
+        clearInterval(statusInterval);
+        currentSession = null;
+        document.getElementById('startButton').disabled = false;
+        document.getElementById('stopButton').disabled = true;
+        document.getElementById('timer').textContent = '00:00';
+        document.getElementById('breathingCircle').style.transform = 'scale(1)';
+        document.getElementById('breathingCircle').style.backgroundColor = '#4CAF50';
+    }
 }
 
 // 이벤트 리스너
 document.getElementById('startButton').addEventListener('click', startSession);
 document.getElementById('stopButton').addEventListener('click', stopSession);
 
-// 주기적인 상태 업데이트
-setInterval(updateSessionStatus, 1000);
+// 초기 상태 설정
+updateVisualGuide();
 </script>
 
 <?php require_once __DIR__ . '/layouts/footer.php'; ?> 
