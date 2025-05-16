@@ -95,6 +95,16 @@ return function (Router $router) {
     // 동적 경로는 아래에 등록
     $router->add('GET', '/profile/{userId}', [ProfileController::class, 'show']);
 
+    // Breathing exercise routes
+    $router->add('GET', '/breathing', ['App\Controllers\BreathingController', 'index']);
+    $router->add('GET', '/api/breathing/patterns', ['App\Controllers\BreathingController', 'getPatterns']);
+    $router->add('POST', '/api/breathing/sessions', ['App\Controllers\BreathingController', 'startSession']);
+    $router->add('GET', '/api/breathing/sessions/{session_id}', ['App\Controllers\BreathingController', 'getSessionStatus']);
+    $router->add('POST', '/api/breathing/sessions/{session_id}/end', ['App\Controllers\BreathingController', 'endSession']);
+    $router->add('GET', '/api/breathing/sessions/{session_id}/guide', ['App\Controllers\BreathingController', 'getSessionGuide']);
+    $router->add('GET', '/api/breathing/settings', ['App\Controllers\BreathingController', 'getSettings']);
+    $router->add('POST', '/api/breathing/settings', ['App\Controllers\BreathingController', 'updateSettings']);
+
     // 404 처리 라우트 (모든 경로에 대해)
     $router->add('GET', '*', [HomeController::class, 'notFound']);
 }; 
