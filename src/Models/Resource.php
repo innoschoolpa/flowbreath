@@ -968,12 +968,12 @@ class Resource extends Model {
     public function getRecentPublic($limit = 3, $lang = 'ko')
     {
         $sql = "SELECT r.*, 
-                COALESCE(rt.title, r.title) as title,
-                COALESCE(rt.content, r.content) as content,
-                COALESCE(rt.description, r.description) as description,
+                rt.title,
+                rt.content,
+                rt.description,
                 u.name as username
                 FROM resources r
-                LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
+                JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
                 LEFT JOIN users u ON r.user_id = u.id
                 WHERE r.visibility = 'public'
                 AND r.status = 'published'
