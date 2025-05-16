@@ -113,6 +113,16 @@ class BreathingService
         }
 
         $this->sessions[$sessionId]['status'] = 'completed';
+        $this->sessions[$sessionId]['ended_at'] = date('c');
+        
+        // 세션 데이터 반환
+        return [
+            'session_id' => $sessionId,
+            'status' => 'completed',
+            'ended_at' => $this->sessions[$sessionId]['ended_at'],
+            'duration' => $this->sessions[$sessionId]['duration'],
+            'pattern' => $this->sessions[$sessionId]['pattern']
+        ];
     }
 
     public function getSessionGuide($sessionId)

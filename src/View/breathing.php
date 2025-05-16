@@ -174,23 +174,34 @@ async function stopSession() {
 
     try {
         const response = await fetch(`/api/breathing/sessions/${currentSession}/end`, {
-            method: 'POST'
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
+        
         const data = await response.json();
         if (!data.success) {
             throw new Error('Failed to end session');
         }
-    } catch (error) {
-        console.error('Error stopping session:', error);
-    } finally {
+
+        // 타이머와 상태 업데이트 중지
         clearInterval(timerInterval);
         clearInterval(statusInterval);
+        
+        // UI 초기화
         currentSession = null;
         document.getElementById('startButton').disabled = false;
         document.getElementById('stopButton').disabled = true;
         document.getElementById('timer').textContent = '00:00';
         document.getElementById('breathingCircle').style.transform = 'scale(1)';
         document.getElementById('breathingCircle').style.backgroundColor = '#4CAF50';
+        
+        // 성공 메시지 표시
+        alert('호흡 운동이 종료되었습니다.');
+    } catch (error) {
+        console.error('Error stopping session:', error);
+        alert('세션을 종료하는 중 오류가 발생했습니다.');
     }
 }
 
