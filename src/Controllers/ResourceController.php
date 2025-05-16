@@ -579,6 +579,47 @@ class ResourceController extends BaseController {
         ]);
     }
 
+    public function tagResources(Request $request, $tag) {
+        try {
+            $tagModel = new \App\Models\Tag();
+            $tagInfo = $tagModel->findByName($tag);
+            
+            if (!$tagInfo) {
+                throw new \Exception("태그를 찾을 수 없습니다.", 404);
+            }
+
+            $params = [
+                'tag_ids' => [$tagInfo['id']],
+                'limit' => 12,
+                'offset' => 0
+            ];
+
+            $resources = $this->resource->search($params);
+            $total_count = $this->resource->count($params);
+            $total_pages = ceil($total_count / 12);
+
+            return $this->view('resources/list', [
+                'resources' => $resources,
+                'all_tags' => $tagModel->getAll(),
+                'selected_tags' => [$tagInfo['id']],
+                'keyword' => '',
+                'sort' => 'created_desc',
+                'type' => '',
+                'is_public' => null,
+                'current_page' => 1,
+                'total_pages' => $total_pages,
+                'title' => "태그: {$tagInfo['name']}",
+                'user' => $this->auth->user()
+            ]);
+        } catch (\Exception $e) {
+            error_log("Error in ResourceController::tagResources: " . $e->getMessage());
+            return $this->view('errors/404', [
+                'error' => $e->getMessage(),
+                'title' => '404 Not Found'
+            ], 404);
+        }
+    }
+
     public function create(Request $request)
     {
         $user = $this->auth->user();

@@ -45,6 +45,7 @@ return function (Router $router) {
 
     // New routes for /tags and /api/docs
     $router->add('GET', '/tags', [ResourceController::class, 'tags']);
+    $router->add('GET', '/tags/{tag}', [ResourceController::class, 'tagResources']);
     $router->add('GET', '/api/docs', [HomeController::class, 'apiDocs']);
 
     // 댓글 관련 라우트
