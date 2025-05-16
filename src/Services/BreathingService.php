@@ -176,9 +176,9 @@ class BreathingService
     private function getVisualGuide($phaseType)
     {
         $guides = [
-            'inhale' => ['circle_size' => 0.5, 'color' => '#4CAF50'],
-            'hold' => ['circle_size' => 1.0, 'color' => '#2196F3'],
-            'exhale' => ['circle_size' => 0.2, 'color' => '#FFC107']
+            'inhale' => ['circle_size' => 1.5, 'color' => '#4CAF50'],
+            'hold' => ['circle_size' => 1.5, 'color' => '#2196F3'],
+            'exhale' => ['circle_size' => 0.5, 'color' => '#FFC107']
         ];
 
         return $guides[$phaseType] ?? $guides['inhale'];

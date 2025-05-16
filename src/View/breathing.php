@@ -24,7 +24,7 @@
 
                     <!-- 시각적 가이드 -->
                     <div class="text-center mb-4">
-                        <div id="breathingCircle" class="mx-auto" style="width: 200px; height: 200px; border-radius: 50%; background-color: #4CAF50; transition: all 1s ease-in-out;"></div>
+                        <div id="breathingCircle" class="mx-auto" style="width: 200px; height: 200px; border-radius: 50%; background-color: #4CAF50; transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                         <div id="timer" class="mt-3 h3">05:00</div>
                         <div id="phaseText" class="mt-2 text-muted">준비</div>
                     </div>
@@ -186,8 +186,10 @@ function updateVisualGuide(data) {
     }
 
     const guide = data.visual_guide;
-    circle.style.transform = `scale(${guide.circle_size})`;
-    circle.style.backgroundColor = guide.color;
+    requestAnimationFrame(() => {
+        circle.style.transform = `scale(${guide.circle_size})`;
+        circle.style.backgroundColor = guide.color;
+    });
     
     // 단계 텍스트 업데이트
     const phaseMap = {
@@ -247,7 +249,7 @@ async function stopSession() {
         
         const data = await response.json();
         if (!data.success) {
-            throw new Error('Failed to end session');
+            throw new Error(data.message || 'Failed to end session');
         }
 
         // 타이머와 상태 업데이트 중지
@@ -259,8 +261,13 @@ async function stopSession() {
         document.getElementById('startButton').disabled = false;
         document.getElementById('stopButton').disabled = true;
         document.getElementById('timer').textContent = '00:00';
-        document.getElementById('breathingCircle').style.transform = 'scale(1)';
-        document.getElementById('breathingCircle').style.backgroundColor = '#4CAF50';
+        
+        // 원 애니메이션 초기화
+        const circle = document.getElementById('breathingCircle');
+        requestAnimationFrame(() => {
+            circle.style.transform = 'scale(1)';
+            circle.style.backgroundColor = '#4CAF50';
+        });
         document.getElementById('phaseText').textContent = '준비';
         
         // 종료 소리
@@ -271,7 +278,7 @@ async function stopSession() {
         alert('호흡 운동이 종료되었습니다.');
     } catch (error) {
         console.error('Error stopping session:', error);
-        alert('세션을 종료하는 중 오류가 발생했습니다.');
+        alert('세션을 종료하는 중 오류가 발생했습니다: ' + error.message);
     }
 }
 
