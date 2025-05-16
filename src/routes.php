@@ -2,7 +2,6 @@
 
 use App\Core\Router;
 use App\Controllers\HealthController;
-use App\Controllers\TestController;
 use App\Controllers\HomeController;
 use App\Controllers\LanguageController;
 use App\Controllers\ResourceController;
@@ -12,6 +11,7 @@ use App\Controllers\BatchController;
 use App\Controllers\AuthController;
 use App\Controllers\SettingsController;
 use App\Controllers\ProfileController;
+use App\Controllers\BreathingController;
 
 return function (Router $router) {
     // 홈 라우트
@@ -21,11 +21,11 @@ return function (Router $router) {
     $router->add('GET', '/api/health', [HealthController::class, 'check']);
 
     // 테스트 라우트
-    $router->add('GET', '/api/test/error', [TestController::class, 'testError']);
-    $router->add('GET', '/api/test/warning', [TestController::class, 'testWarning']);
-    $router->add('GET', '/api/test/notice', [TestController::class, 'testNotice']);
-    $router->add('GET', '/api/test/memory', [TestController::class, 'testMemory']);
-    $router->add('GET', '/api/test/performance', [TestController::class, 'testPerformance']);
+    $router->add('GET', '/api/test/error', ['App\Controllers\TestController', 'testError']);
+    $router->add('GET', '/api/test/warning', ['App\Controllers\TestController', 'testWarning']);
+    $router->add('GET', '/api/test/notice', ['App\Controllers\TestController', 'testNotice']);
+    $router->add('GET', '/api/test/memory', ['App\Controllers\TestController', 'testMemory']);
+    $router->add('GET', '/api/test/performance', ['App\Controllers\TestController', 'testPerformance']);
 
     // Language routes
     $router->add('GET', '/language/switch/{lang}', [LanguageController::class, 'switch']);
