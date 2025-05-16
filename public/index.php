@@ -249,7 +249,7 @@ $app->run();
             <div class="popular-tags mt-5">
                 <h5 class="mb-3"><?= $language->get('home.popular_tags.title') ?></h5>
                 <?php foreach ($popularTags as $tag): ?>
-                    <a href="/tags/view/<?= $tag['id'] ?>" class="tag-badge">#<?= htmlspecialchars($tag['name']) ?></a>
+                    <a href="/resources?tags[]=<?= $tag['id'] ?>" class="tag-badge">#<?= htmlspecialchars($tag['name']) ?></a>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>

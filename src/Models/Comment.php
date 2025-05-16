@@ -248,7 +248,7 @@ class Comment
         <div class="popular-tags mt-5">
             <h5 class="mb-3">인기 태그</h5>
             <?php foreach ($popularTags as $tag): ?>
-                <a href="/tags/view/<?= $tag['id'] ?>" class="tag-badge">#<?= htmlspecialchars($tag['name']) ?></a>
+                <a href="/resources?tags[]=<?= $tag['id'] ?>" class="tag-badge">#<?= htmlspecialchars($tag['name']) ?></a>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
