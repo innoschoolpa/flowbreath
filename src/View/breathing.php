@@ -245,7 +245,12 @@ function startStatusUpdates() {
 
 // 세션 정지
 async function stopSession() {
-    if (!currentSession) return;
+    if (!currentSession) {
+        console.log('No active session to stop');
+        return;
+    }
+
+    console.log('Stopping session:', currentSession);
 
     try {
         const response = await fetch(`/api/breathing/sessions/${currentSession}/end`, {
@@ -255,11 +260,17 @@ async function stopSession() {
             }
         });
 
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
         }
         
         const data = await response.json();
+        console.log('Response data:', data);
+
         if (!data.success) {
             throw new Error(data.message || 'Failed to end session');
         }

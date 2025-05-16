@@ -108,21 +108,34 @@ class BreathingService
 
     public function endSession($sessionId)
     {
+        error_log("BreathingService::endSession called with ID: " . $sessionId);
+        
+        if (empty($sessionId)) {
+            throw new \InvalidArgumentException('Session ID is required');
+        }
+
         if (!isset($this->sessions[$sessionId])) {
+            error_log("Session not found: " . $sessionId);
             throw new \InvalidArgumentException('Session not found');
         }
 
+        error_log("Found session: " . json_encode($this->sessions[$sessionId]));
+        
         $this->sessions[$sessionId]['status'] = 'completed';
         $this->sessions[$sessionId]['ended_at'] = date('c');
         
-        // 세션 데이터 반환
-        return [
+        $sessionData = [
             'session_id' => $sessionId,
             'status' => 'completed',
             'ended_at' => $this->sessions[$sessionId]['ended_at'],
             'duration' => $this->sessions[$sessionId]['duration'],
             'pattern' => $this->sessions[$sessionId]['pattern']
         ];
+        
+        error_log("Session data to return: " . json_encode($sessionData));
+        
+        // 세션 데이터 반환
+        return $sessionData;
     }
 
     public function getSessionGuide($sessionId)
