@@ -483,30 +483,19 @@ class Resource extends Model {
             // 태그 처리
             if (!empty($data['tags'])) {
                 foreach ($data['tags'] as $tagName) {
-                    try {
-                        $this->db->beginTransaction();
-                        
-                        // 태그 생성 또는 조회
-                        $tagSql = "INSERT IGNORE INTO tags (name, created_at) VALUES (?, NOW())";
-                        $this->db->query($tagSql, [$tagName]);
-                        
-                        // 태그 ID 조회
-                        $tagIdSql = "SELECT id FROM tags WHERE name = ?";
-                        $tagResult = $this->db->query($tagIdSql, [$tagName])->fetch();
-                        
-                        if ($tagResult && isset($tagResult['id'])) {
-                            $tagId = $tagResult['id'];
-                            // 리소스-태그 관계 생성
-                            $relationSql = "INSERT IGNORE INTO resource_tags (resource_id, tag_id) VALUES (?, ?)";
-                            $this->db->query($relationSql, [$resourceId, $tagId]);
-                        }
-                        
-                        $this->db->commit();
-                    } catch (\Exception $e) {
-                        $this->db->rollBack();
-                        error_log("Tag processing error: " . $e->getMessage());
-                        // 태그 처리 실패는 전체 트랜잭션에 영향을 주지 않도록 함
-                        continue;
+                    // 태그 생성 또는 조회
+                    $tagSql = "INSERT IGNORE INTO tags (name, created_at) VALUES (?, NOW())";
+                    $this->db->query($tagSql, [$tagName]);
+                    
+                    // 태그 ID 조회
+                    $tagIdSql = "SELECT id FROM tags WHERE name = ?";
+                    $tagResult = $this->db->query($tagIdSql, [$tagName])->fetch();
+                    
+                    if ($tagResult && isset($tagResult['id'])) {
+                        $tagId = $tagResult['id'];
+                        // 리소스-태그 관계 생성
+                        $relationSql = "INSERT IGNORE INTO resource_tags (resource_id, tag_id) VALUES (?, ?)";
+                        $this->db->query($relationSql, [$resourceId, $tagId]);
                     }
                 }
             }
