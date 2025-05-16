@@ -91,4 +91,14 @@ return function (Router $router) {
     $router->add('GET', '/resources/{id}/edit', ['App\Controllers\ResourceController', 'edit']);
     $router->add('POST', '/resources/{id}/update', ['App\Controllers\ResourceController', 'update']);
     $router->add('POST', '/resources/{id}/delete', ['App\Controllers\ResourceController', 'delete']);
+
+    // Breathing Exercise Routes
+    $router->add('GET', '/breathing', ['App\Controllers\BreathingController', 'index']);
+    $router->add('GET', '/api/breathing/patterns', ['App\Controllers\BreathingController', 'getPatterns']);
+    $router->add('POST', '/api/breathing/sessions', ['App\Controllers\BreathingController', 'startSession']);
+    $router->add('GET', '/api/breathing/sessions/{session_id}', ['App\Controllers\BreathingController', 'getSessionStatus']);
+    $router->add('POST', '/api/breathing/sessions/{session_id}/end', ['App\Controllers\BreathingController', 'endSession']);
+    $router->add('GET', '/api/breathing/sessions/{session_id}/guide', ['App\Controllers\BreathingController', 'getSessionGuide']);
+    $router->add('GET', '/api/breathing/settings', ['App\Controllers\BreathingController', 'getSettings']);
+    $router->add('POST', '/api/breathing/settings', ['App\Controllers\BreathingController', 'updateSettings']);
 }; 
