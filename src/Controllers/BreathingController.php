@@ -8,6 +8,7 @@ use App\Models\BreathingSession;
 use App\Models\UserSettings;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use App\Core\View;
 
 class BreathingController
 {
@@ -24,7 +25,8 @@ class BreathingController
 
     public function index()
     {
-        return (new Response())->view('breathing')->send();
+        $view = new View();
+        return $view->render('breathing');
     }
 
     public function getPatterns()
