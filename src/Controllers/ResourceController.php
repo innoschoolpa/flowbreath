@@ -581,6 +581,7 @@ class ResourceController extends BaseController {
 
     public function tagResources(Request $request, $tag) {
         try {
+            $tag = urldecode($tag);
             $tagModel = new \App\Models\Tag();
             $tagInfo = $tagModel->findByName($tag);
             
