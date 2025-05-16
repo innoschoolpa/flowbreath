@@ -34,6 +34,32 @@ class BreathingService
 
     private $sessions = [];
     private $settings = [];
+    private $sessionsFile;
+
+    public function __construct()
+    {
+        $this->sessionsFile = __DIR__ . '/../../storage/sessions.json';
+        $this->loadSessions();
+    }
+
+    private function loadSessions()
+    {
+        if (file_exists($this->sessionsFile)) {
+            $content = file_get_contents($this->sessionsFile);
+            if ($content !== false) {
+                $this->sessions = json_decode($content, true) ?? [];
+            }
+        }
+    }
+
+    private function saveSessions()
+    {
+        $dir = dirname($this->sessionsFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        file_put_contents($this->sessionsFile, json_encode($this->sessions));
+    }
 
     public function getPatterns()
     {
@@ -58,6 +84,8 @@ class BreathingService
             'current_phase' => 0,
             'current_phase_start' => time()
         ];
+
+        $this->saveSessions();
 
         return [
             'session_id' => $sessionId,
@@ -85,6 +113,7 @@ class BreathingService
             $currentPhase = $pattern['phases'][$session['current_phase']];
             $remaining = $currentPhase['duration'];
             $this->sessions[$session_id] = $session;
+            $this->saveSessions();
         }
 
         $nextPhase = $pattern['phases'][($session['current_phase'] + 1) % count($pattern['phases'])];
@@ -132,6 +161,7 @@ class BreathingService
             'pattern' => $this->sessions[$session_id]['pattern']
         ];
         
+        $this->saveSessions();
         error_log("Session data to return: " . json_encode($sessionData));
         
         return $sessionData;
