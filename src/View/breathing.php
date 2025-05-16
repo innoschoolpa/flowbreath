@@ -26,6 +26,7 @@
                     <div class="text-center mb-4">
                         <div id="breathingCircle" class="mx-auto" style="width: 200px; height: 200px; border-radius: 50%; background-color: #4CAF50; transition: all 1s ease-in-out;"></div>
                         <div id="timer" class="mt-3 h3">05:00</div>
+                        <div id="phaseText" class="mt-2 text-muted">준비</div>
                     </div>
 
                     <!-- 컨트롤 -->
@@ -56,6 +57,49 @@
 let currentSession = null;
 let timerInterval = null;
 let statusInterval = null;
+let audioContext = null;
+let oscillator = null;
+
+// 오디오 컨텍스트 초기화
+function initAudio() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+// 소리 재생
+function playSound(frequency = 440, duration = 0.5) {
+    if (!document.getElementById('soundEnabled').checked) return;
+    
+    try {
+        initAudio();
+        oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + duration);
+    } catch (error) {
+        console.error('Error playing sound:', error);
+    }
+}
+
+// 진동 실행
+function vibrate(duration = 500) {
+    if (!document.getElementById('vibrationEnabled').checked) return;
+    
+    if (navigator.vibrate) {
+        navigator.vibrate(duration);
+    }
+}
 
 // 호흡 패턴 가져오기
 async function getPatterns() {
@@ -98,12 +142,16 @@ async function startSession() {
             throw new Error('Failed to start session');
         }
 
-        currentSession = data.data.id;
+        currentSession = data.data.session_id;
         document.getElementById('startButton').disabled = true;
         document.getElementById('stopButton').disabled = false;
         
         startTimer(duration);
         startStatusUpdates();
+        
+        // 시작 소리
+        playSound(440, 0.5);
+        vibrate(500);
     } catch (error) {
         console.error('Error starting session:', error);
         alert('세션을 시작하는 중 오류가 발생했습니다.');
@@ -128,15 +176,32 @@ async function updateSessionStatus() {
 // 시각적 가이드 업데이트
 function updateVisualGuide(data) {
     const circle = document.getElementById('breathingCircle');
+    const phaseText = document.getElementById('phaseText');
+    
     if (!data || !data.visual_guide) {
         circle.style.transform = 'scale(1)';
         circle.style.backgroundColor = '#4CAF50';
+        phaseText.textContent = '준비';
         return;
     }
 
     const guide = data.visual_guide;
     circle.style.transform = `scale(${guide.circle_size})`;
     circle.style.backgroundColor = guide.color;
+    
+    // 단계 텍스트 업데이트
+    const phaseMap = {
+        'inhale': '들숨',
+        'hold': '참기',
+        'exhale': '날숨'
+    };
+    phaseText.textContent = phaseMap[data.current_phase.type] || '준비';
+    
+    // 소리와 진동
+    if (data.current_phase.time_remaining === data.current_phase.duration) {
+        playSound(440 + (data.current_phase.type === 'exhale' ? 220 : 0), 0.3);
+        vibrate(300);
+    }
 }
 
 // 타이머 시작
@@ -196,6 +261,11 @@ async function stopSession() {
         document.getElementById('timer').textContent = '00:00';
         document.getElementById('breathingCircle').style.transform = 'scale(1)';
         document.getElementById('breathingCircle').style.backgroundColor = '#4CAF50';
+        document.getElementById('phaseText').textContent = '준비';
+        
+        // 종료 소리
+        playSound(330, 0.5);
+        vibrate(500);
         
         // 성공 메시지 표시
         alert('호흡 운동이 종료되었습니다.');
