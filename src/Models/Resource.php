@@ -382,37 +382,18 @@ class Resource extends Model {
         try {
             $this->db->beginTransaction();
 
-            // 태그가 없으면 생성
-            $tag = $this->findTagByName($tag_name);
-            if (!$tag) {
-                $tag_id = $this->createTag($tag_name);
-            } else {
-                $tag_id = $tag['id'];
-            }
+            // 태그 찾기 또는 생성
+            $tag = $this->findOrCreateTag($tag_name);
 
             // 리소스에 태그 추가
             $sql = "INSERT IGNORE INTO resource_tags (resource_id, tag_id) VALUES (?, ?)";
-            $this->db->query($sql, [$resource_id, $tag_id]);
+            $this->db->query($sql, [$resource_id, $tag['id']]);
 
             $this->db->commit();
             return true;
         } catch (PDOException $e) {
             $this->db->rollback();
             error_log("Database error in addTag: " . $e->getMessage());
-            throw new Exception("태그를 추가하는 중 오류가 발생했습니다.");
-        }
-    }
-
-    /**
-     * 리소스에 기존 태그 추가
-     */
-    public function addExistingTag($resource_id, $tag_id) {
-        try {
-            $sql = "INSERT IGNORE INTO resource_tags (resource_id, tag_id) VALUES (?, ?)";
-            $this->db->query($sql, [$resource_id, $tag_id]);
-            return true;
-        } catch (PDOException $e) {
-            error_log("Database error in addExistingTag: " . $e->getMessage());
             throw new Exception("태그를 추가하는 중 오류가 발생했습니다.");
         }
     }
@@ -545,9 +526,7 @@ class Resource extends Model {
             // 기본 정보 업데이트 (title, content, description 제거)
             $updateFields = [];
             $params = [];
-            foreach (
-                $this->fillable as $field
-            ) {
+            foreach ($this->fillable as $field) {
                 if (isset($data[$field])) {
                     $updateFields[] = "$field = ?";
                     $params[] = $data[$field];
@@ -589,12 +568,7 @@ class Resource extends Model {
             }
             // 태그 업데이트
             if (isset($data['tags'])) {
-                $this->db->query("DELETE FROM resource_tags WHERE resource_id = ?", [$id]);
-                foreach ($data['tags'] as $tagId) {
-                    $sql = "INSERT INTO resource_tags (resource_id, tag_id) VALUES (?, ?)";
-                    $this->db->query($sql, [$id, $tagId]);
-                }
-                $this->db->query("UPDATE tags t SET count = (SELECT COUNT(*) FROM resource_tags rt WHERE rt.tag_id = t.id)");
+                $this->updateResourceTags($id, $data['tags']);
             }
             $this->db->commit();
             return $this->findById($id);
@@ -684,11 +658,11 @@ class Resource extends Model {
         try {
             $this->db->beginTransaction();
 
-            // 기존 태그 삭제
+            // 기존 태그 제거
             $sql = "DELETE FROM resource_tags WHERE resource_id = ?";
             $this->db->query($sql, [$resource_id]);
 
-            // 새로운 태그 추가
+            // 새 태그 추가
             if (!empty($tag_ids)) {
                 $values = [];
                 $params = [];
@@ -697,8 +671,7 @@ class Resource extends Model {
                     $params[] = $resource_id;
                     $params[] = $tag_id;
                 }
-                
-                $sql = "INSERT INTO resource_tags (resource_id, tag_id) VALUES " . implode(', ', $values);
+                $sql = "INSERT INTO resource_tags (resource_id, tag_id) VALUES " . implode(',', $values);
                 $this->db->query($sql, $params);
             }
 
@@ -706,8 +679,8 @@ class Resource extends Model {
             return true;
         } catch (PDOException $e) {
             $this->db->rollback();
-            error_log("Error in updateResourceTags: " . $e->getMessage());
-            throw new Exception("리소스의 태그를 업데이트하는 중 오류가 발생했습니다.");
+            error_log("Database error in updateResourceTags: " . $e->getMessage());
+            throw new Exception("태그를 업데이트하는 중 오류가 발생했습니다.");
         }
     }
 
@@ -1415,5 +1388,33 @@ class Resource extends Model {
      */
     public function getDb() {
         return $this->db;
+    }
+
+    /**
+     * 태그 이름으로 태그 찾기 또는 생성
+     */
+    public function findOrCreateTag($name) {
+        try {
+            $this->db->beginTransaction();
+
+            // 태그 찾기
+            $sql = "SELECT * FROM tags WHERE name = ?";
+            $tag = $this->db->fetch($sql, [$name]);
+
+            // 태그가 없으면 생성
+            if (!$tag) {
+                $sql = "INSERT INTO tags (name) VALUES (?)";
+                $this->db->query($sql, [$name]);
+                $tag_id = $this->db->lastInsertId();
+                $tag = ['id' => $tag_id, 'name' => $name];
+            }
+
+            $this->db->commit();
+            return $tag;
+        } catch (PDOException $e) {
+            $this->db->rollback();
+            error_log("Database error in findOrCreateTag: " . $e->getMessage());
+            throw new Exception("태그를 처리하는 중 오류가 발생했습니다.");
+        }
     }
 }

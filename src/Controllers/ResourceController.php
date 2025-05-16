@@ -394,7 +394,6 @@ class ResourceController extends BaseController {
                 'visibility' => $visibility,
                 'is_public' => $is_public,
                 'slug' => $slug,
-                'tags' => $tags,
                 'language_code' => $languageCode,
                 'link' => $_POST['link'] ?? ($resource['link'] ?? null),
                 'category' => $category
@@ -421,6 +420,19 @@ class ResourceController extends BaseController {
             }
             
             $this->resource->update($id, $resourceUpdateData);
+            
+            // 태그 업데이트
+            if (!empty($tags)) {
+                $tagIds = [];
+                foreach ($tags as $tagName) {
+                    $tag = $this->resource->findOrCreateTag($tagName);
+                    $tagIds[] = $tag['id'];
+                }
+                $this->resource->updateResourceTags($id, $tagIds);
+            } else {
+                // 태그가 비어있으면 모든 태그 제거
+                $this->resource->updateResourceTags($id, []);
+            }
             
             // 번역 테이블 업데이트
             if (!empty($_POST['title']) || !empty($_POST['content']) || !empty($_POST['description'])) {
