@@ -17,31 +17,52 @@ if (session_status() === PHP_SESSION_NONE) {
         }
         .navbar {
             background: #2d3e50;
+            padding: 1rem 0;
         }
         .navbar-brand {
             font-weight: bold;
             letter-spacing: 1px;
             color: #fff !important;
+            font-size: 1.5rem;
         }
         .nav-link {
             color: rgba(255,255,255,.85) !important;
             padding: 0.5rem 1rem !important;
             white-space: nowrap;
+            font-size: 1rem;
         }
         .nav-link:hover {
             color: #fff !important;
         }
-        #breathingCircle {
-            transition: all 1s ease-in-out;
-        }
         .navbar-nav {
             flex-wrap: nowrap;
+            align-items: center;
         }
         .navbar .container {
             flex-wrap: nowrap;
         }
         .navbar-collapse {
             flex-basis: auto;
+        }
+        .language-switch {
+            margin-left: 1rem;
+        }
+        .language-switch .nav-link {
+            padding: 0.25rem 0.5rem !important;
+            font-size: 0.9rem;
+        }
+        .auth-buttons {
+            margin-left: 1rem;
+        }
+        .auth-buttons .nav-link {
+            padding: 0.25rem 0.75rem !important;
+            border-radius: 4px;
+        }
+        .auth-buttons .nav-link:last-child {
+            background-color: rgba(255,255,255,0.1);
+        }
+        .auth-buttons .nav-link:last-child:hover {
+            background-color: rgba(255,255,255,0.2);
         }
     </style>
 </head>
@@ -67,19 +88,21 @@ if (session_status() === PHP_SESSION_NONE) {
                         <a class="nav-link" href="/api/docs">API 안내</a>
                     </li>
                 </ul>
-                <ul class="navbar-nav">
+                <ul class="navbar-nav language-switch">
                     <li class="nav-item">
                         <a class="nav-link" href="/language/switch/ko">한국어</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/language/switch/en">English</a>
                     </li>
+                </ul>
+                <ul class="navbar-nav auth-buttons">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="/login">로그인</a>
+                            <a class="nav-link" href="/profile">내 정보</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/register">회원가입</a>
+                            <a class="nav-link" href="/logout">로그아웃</a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
