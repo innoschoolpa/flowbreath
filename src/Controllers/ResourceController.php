@@ -419,6 +419,7 @@ class ResourceController extends BaseController {
                 }
             }
             
+            // 리소스 기본 정보 업데이트
             $this->resource->update($id, $resourceUpdateData);
             
             // 태그 업데이트
