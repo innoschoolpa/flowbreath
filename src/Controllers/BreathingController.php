@@ -6,8 +6,8 @@ use App\Services\BreathingService;
 use App\Models\BreathingPattern;
 use App\Models\BreathingSession;
 use App\Models\UserSettings;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use App\Core\Request;
+use App\Core\Response;
 use App\Core\View;
 
 class BreathingController
@@ -16,10 +16,9 @@ class BreathingController
     private $request;
     private $response;
 
-    public function __construct(Request $request, Response $response)
+    public function __construct(Request $request)
     {
         $this->request = $request;
-        $this->response = $response;
         $this->breathingService = new BreathingService();
     }
 
@@ -40,7 +39,7 @@ class BreathingController
 
     public function startSession()
     {
-        $data = $this->request->getParsedBody();
+        $data = $this->request->getJson();
         $session = $this->breathingService->startSession(
             $data['pattern'],
             $data['duration'] ?? 300,
@@ -92,7 +91,7 @@ class BreathingController
 
     public function updateSettings()
     {
-        $data = $this->request->getParsedBody();
+        $data = $this->request->getJson();
         $settings = $this->breathingService->updateUserSettings($data);
         return $this->jsonResponse([
             'success' => true,
@@ -102,9 +101,9 @@ class BreathingController
 
     private function jsonResponse($data)
     {
-        $this->response->getBody()->write(json_encode($data));
-        return $this->response
-            ->withHeader('Content-Type', 'application/json')
-            ->withStatus(200);
+        $response = new Response();
+        $response->setContentType('application/json');
+        $response->setContent(json_encode($data));
+        return $response;
     }
 } 

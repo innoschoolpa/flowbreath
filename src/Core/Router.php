@@ -38,7 +38,11 @@ class Router
         $method = strtoupper($method);
         $matchedRoute = null;
         
+        error_log("[DEBUG] Resolving route: {$method} {$path}");
+        
         foreach ($this->routes as $route) {
+            error_log("[DEBUG] Checking route: {$route['method']} {$route['path']}");
+            
             if ($route['method'] !== $method) {
                 continue;
             }
@@ -50,6 +54,7 @@ class Router
 
             if (preg_match('#^' . $route['pattern'] . '$#', $path, $matches)) {
                 $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+                error_log("[DEBUG] Route matched: {$route['method']} {$route['path']}");
                 return [
                     'handler' => $route['handler'],
                     'params' => $params,
@@ -60,6 +65,7 @@ class Router
 
         // 와일드카드 라우트가 있고 다른 라우트가 매칭되지 않은 경우
         if ($matchedRoute !== null) {
+            error_log("[DEBUG] Using wildcard route");
             return [
                 'handler' => $matchedRoute['handler'],
                 'params' => [],
@@ -67,6 +73,7 @@ class Router
             ];
         }
 
+        error_log("[DEBUG] No route found for: {$method} {$path}");
         return null;
     }
 
