@@ -64,11 +64,19 @@ class BreathingController
 
     public function endSession($sessionId)
     {
-        $this->breathingService->endSession($sessionId);
-        return $this->jsonResponse([
-            'success' => true,
-            'message' => 'Session ended successfully'
-        ]);
+        try {
+            $sessionData = $this->breathingService->endSession($sessionId);
+            return $this->jsonResponse([
+                'success' => true,
+                'data' => $sessionData,
+                'message' => 'Session ended successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->jsonResponse([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 
     public function getSessionGuide($sessionId)
