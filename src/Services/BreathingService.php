@@ -106,35 +106,34 @@ class BreathingService
         ];
     }
 
-    public function endSession($sessionId)
+    public function endSession($session_id)
     {
-        error_log("BreathingService::endSession called with ID: " . $sessionId);
+        error_log("BreathingService::endSession called with ID: " . $session_id);
         
-        if (empty($sessionId)) {
+        if (empty($session_id)) {
             throw new \InvalidArgumentException('Session ID is required');
         }
 
-        if (!isset($this->sessions[$sessionId])) {
-            error_log("Session not found: " . $sessionId);
+        if (!isset($this->sessions[$session_id])) {
+            error_log("Session not found: " . $session_id);
             throw new \InvalidArgumentException('Session not found');
         }
 
-        error_log("Found session: " . json_encode($this->sessions[$sessionId]));
+        error_log("Found session: " . json_encode($this->sessions[$session_id]));
         
-        $this->sessions[$sessionId]['status'] = 'completed';
-        $this->sessions[$sessionId]['ended_at'] = date('c');
+        $this->sessions[$session_id]['status'] = 'completed';
+        $this->sessions[$session_id]['ended_at'] = date('c');
         
         $sessionData = [
-            'session_id' => $sessionId,
+            'session_id' => $session_id,
             'status' => 'completed',
-            'ended_at' => $this->sessions[$sessionId]['ended_at'],
-            'duration' => $this->sessions[$sessionId]['duration'],
-            'pattern' => $this->sessions[$sessionId]['pattern']
+            'ended_at' => $this->sessions[$session_id]['ended_at'],
+            'duration' => $this->sessions[$session_id]['duration'],
+            'pattern' => $this->sessions[$session_id]['pattern']
         ];
         
         error_log("Session data to return: " . json_encode($sessionData));
         
-        // 세션 데이터 반환
         return $sessionData;
     }
 

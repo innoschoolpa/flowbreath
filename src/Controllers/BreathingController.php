@@ -62,15 +62,15 @@ class BreathingController
         ]);
     }
 
-    public function endSession($sessionId)
+    public function endSession($session_id)
     {
         try {
-            if (empty($sessionId)) {
+            if (empty($session_id)) {
                 throw new \InvalidArgumentException('Session ID is required');
             }
 
-            error_log("Attempting to end session: " . $sessionId);
-            $sessionData = $this->breathingService->endSession($sessionId);
+            error_log("Attempting to end session: " . $session_id);
+            $sessionData = $this->breathingService->endSession($session_id);
             error_log("Session ended successfully: " . json_encode($sessionData));
 
             return $this->jsonResponse([
