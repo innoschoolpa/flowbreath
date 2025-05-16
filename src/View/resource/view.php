@@ -19,7 +19,7 @@
                     </div>
                 </div>
                 <div>
-                    <?php if (!$resource['is_public']): ?>
+                    <?php if ($resource['visibility'] === 'private'): ?>
                         <span class="badge bg-warning"><?= __('resource.is_private') ?></span>
                     <?php endif; ?>
                     <?php if ($resource['is_pinned']): ?>

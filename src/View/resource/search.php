@@ -99,7 +99,7 @@
                                 <a href="/resource/view/<?= $resource['id'] ?>" class="text-decoration-none">
                                     <?= htmlspecialchars($resource['title']) ?>
                                 </a>
-                                <?php if (!$resource['is_public']): ?>
+                                <?php if ($resource['visibility'] === 'private'): ?>
                                     <span class="badge bg-warning">비공개</span>
                                 <?php endif; ?>
                             </h5>

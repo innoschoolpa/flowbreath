@@ -168,16 +168,16 @@ require_once __DIR__ . '/../layout/header.php'; ?>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="is_public" name="is_public" value="1"
-                                    <?= $resource['is_public'] ? 'checked' : '' ?>>
-                                <label class="form-check-label" for="is_public">공개</label>
+                                <input type="radio" class="form-check-input" id="visibility_public" name="visibility" value="public"
+                                <?= ($resource['visibility'] ?? '') === 'public' ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="visibility_public">공개</label>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="is_pinned" name="is_pinned" value="1"
-                                    <?= $resource['is_pinned'] ? 'checked' : '' ?>>
-                                <label class="form-check-label" for="is_pinned">상단 고정</label>
+                                <input type="radio" class="form-check-input" id="visibility_private" name="visibility" value="private"
+                                <?= ($resource['visibility'] ?? '') === 'private' ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="visibility_private">비공개</label>
                             </div>
                         </div>
                     </div>

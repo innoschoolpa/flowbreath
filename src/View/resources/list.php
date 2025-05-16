@@ -135,15 +135,13 @@ body { background: #f7fcfc; }
           <?php endforeach; ?>
         </select>
       </div>
-      <?php if (isset($user) && $user['is_admin']): ?>
-      <div class="form-group is_public">
-        <select name="is_public" class="form-select">
+      <div class="form-group">
+        <select name="visibility" class="form-select">
           <option value=""><?= $language->get('resources.visibility.all') ?></option>
-          <option value="1" <?= ($is_public ?? '') === '1' ? 'selected' : '' ?>><?= $language->get('resources.visibility.public') ?></option>
-          <option value="0" <?= ($is_public ?? '') === '0' ? 'selected' : '' ?>><?= $language->get('resources.visibility.private') ?></option>
+          <option value="public" <?= ($visibility ?? '') === 'public' ? 'selected' : '' ?>><?= $language->get('resources.visibility.public') ?></option>
+          <option value="private" <?= ($visibility ?? '') === 'private' ? 'selected' : '' ?>><?= $language->get('resources.visibility.private') ?></option>
         </select>
       </div>
-      <?php endif; ?>
       <div class="form-group button d-flex flex-row align-items-center gap-2" style="min-width:180px;">
         <button type="submit" class="btn btn-primary px-3 rounded-3" style="height:40px;min-width:90px;font-size:1rem;font-weight:500;">
           <?= $language->get('common.search') ?>

@@ -276,7 +276,7 @@ class ResourceController extends BaseController {
             
             $slug = $this->slugify($_POST['title']);
             $status = $_POST['status'] ?? 'draft';
-            $visibility = $_POST['visibility'] ?? 'public';
+            $visibility = $_POST['visibility'] ?? 'private';
             $languageCode = $_POST['language_code'] ?? 'ko';
             $category = $_POST['category'] ?? null;
             
@@ -383,7 +383,7 @@ class ResourceController extends BaseController {
             
             $slug = $this->slugify($_POST['title']);
             $status = $_POST['status'] ?? ($resource['status'] ?? 'draft');
-            $visibility = $_POST['visibility'] ?? ($resource['visibility'] ?? 'public');
+            $visibility = $_POST['visibility'] ?? ($resource['visibility'] ?? 'private');
             $is_public = isset($_POST['is_public']) ? 1 : ($resource['is_public'] ?? 0);
             $languageCode = $_POST['language_code'] ?? ($_SESSION['lang'] ?? 'ko');
             $category = $_POST['category'] ?? ($resource['category'] ?? null);

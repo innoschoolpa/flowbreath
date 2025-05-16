@@ -26,8 +26,11 @@ return [
         'created_at' => 'Created At',
         'updated_at' => 'Updated At',
         'tags' => 'Tags',
-        'is_public' => 'Public',
-        'is_private' => 'Private',
+        'visibility' => [
+            'all' => 'All',
+            'public' => 'Public',
+            'private' => 'Private'
+        ],
         'is_pinned' => 'Pinned',
         'initial_impression' => 'Initial Impression',
         'personal_connection' => 'Personal Connection',

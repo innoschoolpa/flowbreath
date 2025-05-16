@@ -258,7 +258,7 @@ $resources = [];
                                                 </a>
                                             </td>
                                             <td>
-                                                <?= isset($resource['is_public']) && $resource['is_public'] ? '공개' : '비공개' ?>
+                                                <?= $resource['visibility'] === 'public' ? '공개' : '비공개' ?>
                                             </td>
                                             <td><?= number_format($resource['view_count']) ?></td>
                                             <td><?= date('Y-m-d', strtotime($resource['created_at'])) ?></td>

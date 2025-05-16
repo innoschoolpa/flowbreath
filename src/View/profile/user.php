@@ -91,7 +91,7 @@
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <?php if ($resource['is_public']): ?>
+                                                <?php if ($resource['visibility'] === 'public'): ?>
                                                     <span class="badge bg-success">공개</span>
                                                 <?php else: ?>
                                                     <span class="badge bg-warning">비공개</span>

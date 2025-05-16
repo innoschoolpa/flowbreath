@@ -7,7 +7,7 @@
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <h2 class="card-title mb-0">
                     <?= htmlspecialchars($resource['title']) ?>
-                    <?php if (!$resource['is_public']): ?>
+                    <?php if ($resource['visibility'] === 'private'): ?>
                         <span class="badge bg-warning">비공개</span>
                     <?php endif; ?>
                 </h2>

@@ -71,11 +71,11 @@ function isChecked($currentValue, $optionValue) {
                 <option value="published" <?= ($resource['status'] ?? '') === 'published' ? 'selected' : '' ?>>발행</option>
             </select>
         </div>
-        <div class="mb-3">
-            <label for="visibility" class="form-label">공개 범위</label>
-            <select class="form-select" id="visibility" name="visibility">
-                <option value="public" <?= ($resource['visibility'] ?? 'public') === 'public' ? 'selected' : '' ?>>공개</option>
-                <option value="private" <?= ($resource['visibility'] ?? '') === 'private' ? 'selected' : '' ?>>비공개</option>
+        <div class="form-group">
+            <label for="visibility"><?= __('resources.visibility') ?></label>
+            <select name="visibility" id="visibility" class="form-select">
+                <option value="public" <?php echo ($resource['visibility'] ?? '') === 'public' ? 'selected' : ''; ?>>공개</option>
+                <option value="private" <?php echo ($resource['visibility'] ?? '') === 'private' ? 'selected' : ''; ?>>비공개</option>
             </select>
         </div>
         <div class="mb-3">

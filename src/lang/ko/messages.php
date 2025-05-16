@@ -26,8 +26,11 @@ return [
         'created_at' => '작성일',
         'updated_at' => '수정일',
         'tags' => '태그',
-        'is_public' => '공개',
-        'is_private' => '비공개',
+        'visibility' => [
+            'all' => '전체',
+            'public' => '공개',
+            'private' => '비공개'
+        ],
         'is_pinned' => '상단 고정',
         'initial_impression' => '초기 인상',
         'personal_connection' => '개인적 연관성',

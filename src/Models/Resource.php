@@ -19,7 +19,7 @@ class Resource extends Model {
     protected $fillable = [
         'user_id', 'url', 'visibility', 'status', 'view_count',
         'like_count', 'comment_count', 'published_at',
-        'file_path', 'slug', 'is_public',
+        'file_path', 'slug',
         'link', 'category', 'type'
     ];
 
@@ -456,7 +456,7 @@ class Resource extends Model {
             // 리소스 기본 정보 저장 (title, content, description 제외)
             $publishedAt = (isset($data['status']) && $data['status'] === 'published') ? date('Y-m-d H:i:s') : null;
             $sql = "INSERT INTO resources (
-                user_id, file_path, visibility, status, slug, is_public, published_at, link, category, type, created_at, updated_at
+                user_id, file_path, visibility, status, slug, published_at, link, category, type, created_at, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
             $params = [
@@ -465,7 +465,6 @@ class Resource extends Model {
                 $data['visibility'] ?? 'public',
                 $data['status'] ?? 'draft',
                 $data['slug'],
-                isset($data['is_public']) ? (int)$data['is_public'] : 0,
                 $publishedAt,
                 $data['link'] ?? null,
                 $data['category'] ?? null,
