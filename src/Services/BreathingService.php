@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\BreathingPattern;
 use App\Models\BreathingSession;
 use App\Models\UserSettings;
-use Ramsey\Uuid\Uuid;
 
 class BreathingService
 {
@@ -47,7 +46,7 @@ class BreathingService
             throw new \InvalidArgumentException('Invalid pattern ID');
         }
 
-        $sessionId = Uuid::uuid4()->toString();
+        $sessionId = uniqid('session_', true);
         $this->sessions[$sessionId] = [
             'id' => $sessionId,
             'pattern' => $patternId,
