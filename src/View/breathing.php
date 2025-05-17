@@ -130,6 +130,8 @@ async function startSession() {
         const sound = document.getElementById('soundEnabled').checked;
         const vibration = document.getElementById('vibrationEnabled').checked;
 
+        console.log('Starting session with:', { pattern, duration, sound, vibration });
+
         const response = await fetch('/api/breathing/sessions', {
             method: 'POST',
             headers: {
@@ -143,7 +145,17 @@ async function startSession() {
             })
         });
 
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+        }
+
         const data = await response.json();
+        console.log('Response data:', data);
+
         if (!data.success) {
             throw new Error(data.message || 'Failed to start session');
         }
@@ -211,15 +223,15 @@ function updateVisualGuide(data) {
         if (pattern === '4-7-8') {
             transitionDuration = {
                 'inhale': '4s',    // 들숨: 4초
-                'hold': '7s',   // 참기: 7초
+                'hold': '7s',      // 참기: 7초
                 'exhale': '8s'     // 날숨: 8초
             }[currentPhase] || '2s';
         } else { // box breathing
             transitionDuration = {
                 'inhale': '4s',    // 들숨: 4초
-                'hold_in': '4', // 들숨 후 참기: 거의 즉시
+                'hold_in': '4s',   // 들숨 후 참기: 4초
                 'exhale': '4s',    // 날숨: 4초
-                'hold_out': '4s // 날숨 후 참기: 거의 즉시
+                'hold_out': '4s'   // 날숨 후 참기: 4초
             }[currentPhase] || '2s';
         }
         
