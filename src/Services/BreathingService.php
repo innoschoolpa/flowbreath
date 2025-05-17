@@ -25,9 +25,9 @@ class BreathingService
             'description' => '4초 들숨, 4초 참기, 4초 날숨, 4초 참기',
             'phases' => [
                 ['type' => 'inhale', 'duration' => 4],
-                ['type' => 'hold', 'duration' => 4],
+                ['type' => 'hold_in', 'duration' => 4],
                 ['type' => 'exhale', 'duration' => 4],
-                ['type' => 'hold', 'duration' => 4]
+                ['type' => 'hold_out', 'duration' => 4]
             ]
         ]
     ];

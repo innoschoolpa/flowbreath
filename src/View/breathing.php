@@ -234,8 +234,11 @@ function updateVisualGuide(data) {
             }[currentPhase] || '2s';
         }
         
-        circle.style.transition = `all ${transitionDuration} cubic-bezier(0.4, 0, 0.2, 1)`;
-        lastPhase = currentPhase;
+        // 전환 시작 시 약간의 지연 추가
+        setTimeout(() => {
+            circle.style.transition = `all ${transitionDuration} cubic-bezier(0.4, 0, 0.2, 1)`;
+            lastPhase = currentPhase;
+        }, 50);
     }
 
     // 원의 크기 변화가 너무 급격하지 않도록 조정
