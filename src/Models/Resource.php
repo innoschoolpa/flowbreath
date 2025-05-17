@@ -437,7 +437,7 @@ class Resource extends Model {
         try {
             $this->db->beginTransaction();
 
-            // 리소스 기본 정보 저장 (title, content, description 제외)
+            // 리소스 기본 정보 저장
             $publishedAt = (isset($data['status']) && $data['status'] === 'published') ? date('Y-m-d H:i:s') : null;
             $sql = "INSERT INTO resources (
                 user_id, file_path, visibility, status, slug, published_at, link, category, type, created_at, updated_at
@@ -457,23 +457,36 @@ class Resource extends Model {
 
             error_log('[DEBUG] Resource INSERT SQL: ' . $sql);
             error_log('[DEBUG] Resource INSERT Params: ' . json_encode($params));
+            
             $this->db->query($sql, $params);
             $resourceId = $this->db->lastInsertId();
-            error_log('[DEBUG] Resource ID: ' . $resourceId);
+            
+            error_log('[DEBUG] Generated Resource ID: ' . $resourceId);
 
             if (!$resourceId) {
-                // slug로 재조회 시도
-                $checkSql = "SELECT id FROM resources WHERE slug = ? AND user_id = ?";
-                $row = $this->db->query($checkSql, [$data['slug'], $data['user_id']])->fetch();
-                if ($row && isset($row['id'])) {
-                    $resourceId = $row['id'];
-                    error_log('[DEBUG] Resource ID from slug check: ' . $resourceId);
-                }
+                throw new \Exception('리소스 ID를 생성할 수 없습니다.');
             }
 
-            if (!$resourceId) {
-                error_log('[ERROR] Resource insert failed. Params: ' . json_encode($params));
-                throw new \Exception('리소스 DB 저장 실패: ID를 가져올 수 없습니다.');
+            // 번역 데이터 저장
+            if (!empty($data['translations'])) {
+                foreach ($data['translations'] as $lang => $translation) {
+                    $translationSql = "INSERT INTO resource_translations (
+                        resource_id, language_code, title, content, description
+                    ) VALUES (?, ?, ?, ?, ?)";
+                    
+                    $translationParams = [
+                        $resourceId,
+                        $lang,
+                        $translation['title'],
+                        $translation['content'] ?? null,
+                        $translation['description'] ?? null
+                    ];
+                    
+                    error_log('[DEBUG] Translation INSERT SQL: ' . $translationSql);
+                    error_log('[DEBUG] Translation INSERT Params: ' . json_encode($translationParams));
+                    
+                    $this->db->query($translationSql, $translationParams);
+                }
             }
 
             // 태그 처리
