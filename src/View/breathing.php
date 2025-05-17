@@ -211,15 +211,15 @@ function updateVisualGuide(data) {
         if (pattern === '4-7-8') {
             transitionDuration = {
                 'inhale': '4s',    // 들숨: 4초
-                'hold': '0.1s',    // 참기: 거의 즉시
+                'hold': '7s',   // 참기: 7초
                 'exhale': '8s'     // 날숨: 8초
             }[currentPhase] || '2s';
         } else { // box breathing
             transitionDuration = {
                 'inhale': '4s',    // 들숨: 4초
-                'hold_in': '0.1s', // 들숨 후 참기: 거의 즉시
+                'hold_in': '4', // 들숨 후 참기: 거의 즉시
                 'exhale': '4s',    // 날숨: 4초
-                'hold_out': '0.1s' // 날숨 후 참기: 거의 즉시
+                'hold_out': '4s // 날숨 후 참기: 거의 즉시
             }[currentPhase] || '2s';
         }
         
