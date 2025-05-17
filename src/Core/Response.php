@@ -58,7 +58,8 @@ class Response
         $this->setContentType('application/json');
         $this->setStatusCode($statusCode);
         $this->setContent(json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-        $this->send();
+        // $this->send(); // Remove immediate send
+        return $this;
     }
 
     public function view($view, $data = [], $statusCode = 200)
