@@ -38,9 +38,9 @@ class HomeController extends BaseController
     public function index()
     {
         if ($this->session->isLoggedIn()) {
-            $this->renderMainPage();
+            return $this->renderMainPage();
         } else {
-            $this->renderLandingPage();
+            return $this->renderLandingPage();
         }
     }
 
