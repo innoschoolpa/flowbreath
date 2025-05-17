@@ -45,16 +45,26 @@ try {
 
     // 번역본 삭제
     $stmt = $db->prepare("DELETE FROM resource_translations WHERE resource_id = ? AND language_code = ?");
-    $stmt->execute([$resourceId, $languageCode]);
+    $deleteResult = $stmt->execute([$resourceId, $languageCode]);
+    
+    if (!$deleteResult) {
+        throw new Exception('번역본 삭제 중 오류가 발생했습니다.');
+    }
 
     // 번역본이 하나뿐이었다면 원본 리소스도 삭제
     if ($translationCount === 1) {
         $stmt = $db->prepare("UPDATE resources SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?");
-        $stmt->execute([$resourceId]);
+        $updateResult = $stmt->execute([$resourceId]);
+        
+        if (!$updateResult) {
+            throw new Exception('리소스 삭제 중 오류가 발생했습니다.');
+        }
     }
 
     // 트랜잭션 커밋
-    $db->commit();
+    if (!$db->commit()) {
+        throw new Exception('트랜잭션 커밋 중 오류가 발생했습니다.');
+    }
 
     echo json_encode([
         'success' => true,
@@ -68,7 +78,11 @@ try {
 
 } catch (Exception $e) {
     // 오류 발생 시 롤백
-    $db->rollBack();
+    try {
+        $db->rollBack();
+    } catch (Exception $rollbackError) {
+        error_log("Rollback error: " . $rollbackError->getMessage());
+    }
     
     error_log("Translation deletion error: " . $e->getMessage());
     
