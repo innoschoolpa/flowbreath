@@ -219,8 +219,9 @@ class BreathingService
     {
         $guides = [
             'inhale' => ['circle_size' => 1.5, 'color' => '#4CAF50'],
-            'hold' => ['circle_size' => 1.5, 'color' => '#2196F3'],
-            'exhale' => ['circle_size' => 0.5, 'color' => '#FFC107']
+            'hold_in' => ['circle_size' => 1.5, 'color' => '#2196F3'],
+            'exhale' => ['circle_size' => 0.5, 'color' => '#FFC107'],
+            'hold_out' => ['circle_size' => 0.5, 'color' => '#FFC107']
         ];
 
         return $guides[$phaseType] ?? $guides['inhale'];
@@ -230,8 +231,9 @@ class BreathingService
     {
         $animations = [
             'inhale' => 'expand',
-            'hold' => 'pulse',
-            'exhale' => 'contract'
+            'hold_in' => 'pulse',
+            'exhale' => 'contract',
+            'hold_out' => 'pulse'
         ];
 
         return $animations[$phaseType] ?? 'expand';
