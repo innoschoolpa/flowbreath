@@ -743,67 +743,46 @@ class ResourceController extends BaseController {
         }
     }
 
-    public function deleteTranslation(Request $request, $id) {
+    /**
+     * 특정 언어의 번역본 삭제
+     */
+    public function deleteTranslation($id) {
         try {
+            // 사용자 인증 확인
             $user = $this->auth->user();
             if (!$user) {
-                return $this->response->json(['error' => '로그인이 필요합니다.'], 401);
+                return $this->response->json(['error' => 'Unauthorized'], 401);
             }
 
+            // 리소스 존재 여부 확인
             $resource = $this->resource->findById($id);
             if (!$resource) {
-                return $this->response->json(['error' => '리소스를 찾을 수 없습니다.'], 404);
+                return $this->response->json(['error' => 'Resource not found'], 404);
             }
 
             // 권한 확인
-            if ($resource['user_id'] !== $user['id'] && !$user['is_admin']) {
-                return $this->response->json(['error' => '삭제 권한이 없습니다.'], 403);
+            if ($resource['user_id'] != $user['id']) {
+                return $this->response->json(['error' => 'Permission denied'], 403);
             }
 
-            // 요청 본문에서 language_code 가져오기
+            // 요청에서 언어 코드 가져오기
             $requestBody = json_decode(file_get_contents('php://input'), true);
             $languageCode = $requestBody['language_code'] ?? null;
-            
             if (!$languageCode) {
-                return $this->response->json(['error' => '언어 코드가 필요합니다.'], 400);
+                return $this->response->json(['error' => 'Language code is required'], 400);
             }
 
-            // 번역본 개수 확인
-            $translationCount = $this->resource->getDb()->fetch(
-                "SELECT COUNT(*) as count FROM resource_translations WHERE resource_id = ?",
-                [$id]
-            )['count'];
-
-            // 번역본 삭제 시도
+            // 번역본 삭제
             $result = $this->resource->deleteTranslation($id, $languageCode);
             
-            if ($result) {
-                // 마지막 번역본이었다면 전체 리소스가 삭제된 것
-                if ($translationCount <= 1) {
-                    return $this->response->json([
-                        'message' => '마지막 번역본이 삭제되어 리소스가 완전히 삭제되었습니다.',
-                        'success' => true,
-                        'resource_deleted' => true
-                    ]);
-                }
-                
-                return $this->response->json([
-                    'message' => '번역본이 성공적으로 삭제되었습니다.',
-                    'success' => true,
-                    'resource_deleted' => false
-                ]);
+            if ($result === true) {
+                return $this->response->json(['message' => 'Translation deleted successfully']);
+            } else {
+                return $this->response->json(['error' => 'Failed to delete translation'], 500);
             }
-
-            return $this->response->json([
-                'error' => '번역본 삭제에 실패했습니다.',
-                'success' => false
-            ], 500);
         } catch (\Exception $e) {
             error_log("Error in deleteTranslation: " . $e->getMessage());
-            return $this->response->json([
-                'error' => $e->getMessage(),
-                'success' => false
-            ], 500);
+            return $this->response->json(['error' => $e->getMessage()], 500);
         }
     }
 }
