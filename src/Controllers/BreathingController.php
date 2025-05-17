@@ -9,6 +9,7 @@ use App\Models\UserSettings;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\View;
+use App\Core\Language;
 
 class BreathingController
 {
@@ -24,8 +25,9 @@ class BreathingController
 
     public function index()
     {
+        $language = Language::getInstance();
         $view = new View();
-        return $view->render('breathing');
+        return $view->render('breathing', ['language' => $language]);
     }
 
     public function getPatterns()
