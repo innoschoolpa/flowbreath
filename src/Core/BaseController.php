@@ -6,6 +6,13 @@ use App\Models\User;
 
 class BaseController
 {
+    protected $language;
+
+    public function __construct()
+    {
+        $this->language = Language::getInstance();
+    }
+
     protected function view($view, $data = [])
     {
         // 뷰 파일 경로 설정
@@ -79,7 +86,6 @@ class BaseController
 
     protected function lang($key)
     {
-        $language = \App\Core\Language::getInstance();
-        return $language->get($key);
+        return $this->language->get($key);
     }
 } 
