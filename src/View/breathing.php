@@ -217,9 +217,9 @@ function updateVisualGuide(data) {
         } else { // box breathing
             transitionDuration = {
                 'inhale': '4s',    // 들숨: 4초
-                'hold': '0.1s',    // 참기: 거의 즉시
+                'hold_in': '0.1s', // 들숨 후 참기: 거의 즉시
                 'exhale': '4s',    // 날숨: 4초
-                'rest': '0.1s'     // 휴식: 거의 즉시
+                'hold_out': '0.1s' // 날숨 후 참기: 거의 즉시
             }[currentPhase] || '2s';
         }
         
@@ -242,9 +242,9 @@ function updateVisualGuide(data) {
     // 단계 텍스트 업데이트
     const phaseMap = {
         'inhale': '들숨',
-        'hold': '참기',
+        'hold_in': '들숨 후 참기',
         'exhale': '날숨',
-        'rest': '휴식'
+        'hold_out': '날숨 후 참기'
     };
     phaseText.textContent = phaseMap[currentPhase] || '준비';
     
@@ -286,37 +286,63 @@ function startStatusUpdates() {
 
 // 세션 정지
 async function stopSession() {
-    if (!currentSession) return;
+    if (!currentSession) {
+        console.log('No active session to stop');
+        return;
+    }
+
+    console.log('Stopping session:', currentSession);
 
     try {
-        const response = await fetch(`/api/breathing/sessions/${currentSession}`, {
-            method: 'DELETE'
+        const response = await fetch(`/api/breathing/sessions/${currentSession}/end`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
 
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Response data:', data);
+
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to end session');
         }
 
+        // 타이머와 상태 업데이트 중지
         clearInterval(timerInterval);
         clearInterval(statusInterval);
         
+        // UI 초기화
+        currentSession = null;
         document.getElementById('startButton').disabled = false;
         document.getElementById('stopButton').disabled = true;
+        document.getElementById('timer').textContent = '00:00';
         
+        // 원 애니메이션 초기화
         const circle = document.getElementById('breathingCircle');
-        circle.style.transform = 'scale(1)';
-        circle.style.backgroundColor = '#4CAF50';
+        requestAnimationFrame(() => {
+            circle.style.transform = 'scale(1)';
+            circle.style.backgroundColor = '#4CAF50';
+        });
         document.getElementById('phaseText').textContent = '준비';
         
-        currentSession = null;
-        lastPhase = null;
-        lastCircleSize = 1;
+        // 종료 소리
+        playSound(330, 0.5);
+        vibrate(500);
         
-        // 정지 소리
-        playSound(220, 0.3);
-        vibrate(200);
+        // 성공 메시지 표시
+        alert('호흡 운동이 종료되었습니다.');
     } catch (error) {
         console.error('Error stopping session:', error);
+        alert('세션을 종료하는 중 오류가 발생했습니다: ' + error.message);
     }
 }
 
