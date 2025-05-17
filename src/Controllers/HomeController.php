@@ -2,72 +2,92 @@
 
 namespace App\Controllers;
 
+use App\Core\BaseController;
 use App\Core\Response;
 use App\Core\Request;
 use App\Core\Language;
 use App\Core\Database;
+use App\Core\Session;
+use App\Core\View;
 use App\Models\Resource;
 use App\Models\Tag;
+use App\Models\User;
 
-class HomeController
+class HomeController extends BaseController
 {
+    private $db;
     private $request;
+    private $session;
+    private $view;
+    private $resourceModel;
+    private $tagModel;
+    private $userModel;
 
-    public function __construct(Request $request)
+    public function __construct()
     {
-        $this->request = $request;
+        parent::__construct();
+        $this->db = Database::getInstance();
+        $this->request = new Request();
+        $this->session = new Session();
+        $this->view = new View();
+        $this->resourceModel = new Resource();
+        $this->tagModel = new Tag();
+        $this->userModel = new User();
     }
 
     public function index()
     {
-        // Clear any previous output
-        if (ob_get_level()) {
-            ob_end_clean();
+        if ($this->session->isLoggedIn()) {
+            $this->renderMainPage();
+        } else {
+            $this->renderLandingPage();
         }
+    }
 
-        // Language 객체 생성
-        $language = Language::getInstance();
-
-        // 최근 리소스
-        $resourceModel = new Resource();
-        $lang = isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko';
-        $recentResources = $resourceModel->getRecentPublic(4,$lang);
-
-        // 인기 태그
-        $tagModel = new Tag();
-        $popularTags = $tagModel->getPopularTags(8);
-
-        // 로그인 상태
-        $isLoggedIn = isset($_SESSION['user_id']);
-        $user = $isLoggedIn ? [
-            'id' => $_SESSION['user_id'],
-            'name' => $_SESSION['user_name'] ?? '',
-            'email' => $_SESSION['user_email'] ?? '',
-            'profile_image' => $_SESSION['user_avatar'] ?? null,
-            'bio' => $_SESSION['user_bio'] ?? '',
-            'social_links' => $_SESSION['user_social_links'] ?? ''
-        ] : null;
-
-        // 검색 처리
-        $searchQuery = isset($_GET['q']) ? trim($_GET['q']) : '';
-        $searchResults = [];
-        if ($searchQuery !== '') {
-            try {
-                $searchResults = $resourceModel->searchResources($searchQuery, 10, 0);
-            } catch (\Exception $e) {
-                error_log("Search error: " . $e->getMessage());
-                $searchResults = [];
-            }
-        }
-
-        // 메인 페이지 HTML 생성
-        $html = $this->renderMainPage($language, $recentResources, $popularTags, $isLoggedIn, $user, $searchQuery, $searchResults);
+    private function renderMainPage()
+    {
+        $userId = $this->session->get('user_id');
+        $user = $this->userModel->findById($userId);
         
-        $response = new Response();
-        $response->setContentType('text/html; charset=UTF-8');
-        $response->setStatusCode(200);
-        $response->setContent($html);
-        return $response;
+        if (!$user) {
+            $this->session->set('error', 'User not found');
+            $this->redirect('/logout');
+            return;
+        }
+
+        $page = $this->request->get('page', 1);
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $search = $this->request->get('search', '');
+        $tagId = $this->request->get('tag_id');
+        $sort = $this->request->get('sort', 'latest');
+        $filter = $this->request->get('filter', 'all');
+
+        $resources = $this->resourceModel->getResourcesForUser($userId, $search, $tagId, $sort, $filter, $limit, $offset);
+        $totalResources = $this->resourceModel->getTotalResourcesForUser($userId, $search, $tagId, $filter);
+        $totalPages = ceil($totalResources / $limit);
+
+        $popularTags = $this->tagModel->getPopularTags($userId, 10);
+        $recentTags = $this->tagModel->getRecentTags($userId, 10);
+
+        $this->view->render('home', [
+            'user' => $user,
+            'resources' => $resources,
+            'popularTags' => $popularTags,
+            'recentTags' => $recentTags,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'search' => $search,
+            'tagId' => $tagId,
+            'sort' => $sort,
+            'filter' => $filter
+        ]);
+    }
+
+    private function renderLandingPage()
+    {
+        $this->view->render('landing');
     }
 
     public function notFound()
@@ -97,13 +117,6 @@ class HomeController
         $response->setStatusCode(200);
         $response->setContent($this->renderApiDocsPage($language));
         return $response;
-    }
-
-    private function renderMainPage($language, $recentResources, $popularTags, $isLoggedIn, $user, $searchQuery, $searchResults)
-    {
-        ob_start();
-        include dirname(__DIR__) . '/View/home.php';
-        return ob_get_clean();
     }
 
     private function renderNotFoundPage()
