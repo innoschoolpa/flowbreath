@@ -9,9 +9,29 @@
                     <div class="mb-4">
                         <label class="form-label">호흡 패턴</label>
                         <select class="form-select" id="breathingPattern">
+                            <option value="danjeon">단전 호흡</option>
                             <option value="4-7-8">4-7-8 호흡법</option>
                             <option value="box">박스 호흡법</option>
                         </select>
+                    </div>
+
+                    <!-- 호흡 시간 설정 -->
+                    <div class="mb-4" id="breathingTimeSettings">
+                        <label class="form-label">호흡 시간 (초)</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">들숨</label>
+                                    <input type="number" class="form-control" id="inhaleTime" value="4" min="2" max="10">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">날숨</label>
+                                    <input type="number" class="form-control" id="exhaleTime" value="4" min="2" max="10">
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- 운동 시간 설정 -->
@@ -121,6 +141,12 @@ async function getPatterns() {
     }
 }
 
+// 호흡 패턴 변경 시 시간 설정 표시/숨김
+document.getElementById('breathingPattern').addEventListener('change', function() {
+    const timeSettings = document.getElementById('breathingTimeSettings');
+    timeSettings.style.display = this.value === 'danjeon' ? 'block' : 'none';
+});
+
 // 세션 시작
 async function startSession() {
     try {
@@ -129,19 +155,27 @@ async function startSession() {
         const sound = document.getElementById('soundEnabled').checked;
         const vibration = document.getElementById('vibrationEnabled').checked;
 
-        console.log('Starting session with:', { pattern, duration, sound, vibration });
+        let sessionData = {
+            pattern,
+            duration,
+            sound,
+            vibration
+        };
+
+        // 단전 호흡인 경우 시간 설정 추가
+        if (pattern === 'danjeon') {
+            sessionData.inhaleTime = parseInt(document.getElementById('inhaleTime').value);
+            sessionData.exhaleTime = parseInt(document.getElementById('exhaleTime').value);
+        }
+
+        console.log('Starting session with:', sessionData);
 
         const response = await fetch('/api/breathing/sessions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                pattern,
-                duration,
-                sound,
-                vibration
-            })
+            body: JSON.stringify(sessionData)
         });
 
         console.log('Response status:', response.status);

@@ -46,7 +46,9 @@ class BreathingController
             $data['pattern'],
             $data['duration'] ?? 300,
             $data['sound'] ?? true,
-            $data['vibration'] ?? true
+            $data['vibration'] ?? true,
+            $data['inhaleTime'] ?? null,
+            $data['exhaleTime'] ?? null
         );
 
         return $this->jsonResponse([

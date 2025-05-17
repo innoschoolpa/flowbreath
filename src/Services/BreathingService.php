@@ -9,6 +9,15 @@ use App\Models\UserSettings;
 class BreathingService
 {
     private $patterns = [
+        'danjeon' => [
+            'id' => 'danjeon',
+            'name' => '단전 호흡',
+            'description' => '들숨-날숨 반복',
+            'phases' => [
+                ['type' => 'inhale', 'duration' => 4],
+                ['type' => 'exhale', 'duration' => 4]
+            ]
+        ],
         '4-7-8' => [
             'id' => '4-7-8',
             'name' => '4-7-8 호흡법',
@@ -66,10 +75,16 @@ class BreathingService
         return array_values($this->patterns);
     }
 
-    public function startSession($patternId, $duration, $sound, $vibration)
+    public function startSession($patternId, $duration, $sound, $vibration, $inhaleTime = null, $exhaleTime = null)
     {
         if (!isset($this->patterns[$patternId])) {
             throw new \InvalidArgumentException('Invalid pattern ID');
+        }
+
+        // 단전 호흡의 경우 시간 설정 적용
+        if ($patternId === 'danjeon' && $inhaleTime && $exhaleTime) {
+            $this->patterns['danjeon']['phases'][0]['duration'] = $inhaleTime;
+            $this->patterns['danjeon']['phases'][1]['duration'] = $exhaleTime;
         }
 
         $sessionId = uniqid('session_', true);
