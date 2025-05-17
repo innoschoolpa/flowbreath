@@ -36,7 +36,7 @@ body { background: #f7fcfc; }
 }
 .resource-search-form .form-group.sort,
 .resource-search-form .form-group.type,
-.resource-search-form .form-group.is_public {
+.resource-search-form .form-group.visibility {
   min-width: 120px;
   flex: 0 1 120px;
 }
@@ -135,7 +135,7 @@ body { background: #f7fcfc; }
           <?php endforeach; ?>
         </select>
       </div>
-      <div class="form-group">
+      <div class="form-group visibility">
         <select name="visibility" class="form-select">
           <option value=""><?= $language->get('resources.visibility.all') ?></option>
           <option value="public" <?= ($visibility ?? '') === 'public' ? 'selected' : '' ?>><?= $language->get('resources.visibility.public') ?></option>

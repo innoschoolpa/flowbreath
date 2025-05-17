@@ -1128,9 +1128,9 @@ class Resource extends Model {
             }
 
             // 공개 여부 필터
-            if (isset($params['is_public']) && $params['is_public'] !== '') {
+            if (isset($params['visibility']) && $params['visibility'] !== '') {
                 $where[] = "r.visibility = ?";
-                $sqlParams[] = $params['is_public'] == '1' ? 'public' : 'private';
+                $sqlParams[] = $params['visibility'];
             }
 
             // 태그 필터
@@ -1209,9 +1209,9 @@ class Resource extends Model {
                 $where[] = "r.type = ?";
                 $sqlParams[] = $params['type'];
             }
-            if (isset($params['is_public']) && $params['is_public'] !== '') {
+            if (isset($params['visibility']) && $params['visibility'] !== '') {
                 $where[] = "r.visibility = ?";
-                $sqlParams[] = $params['is_public'] == '1' ? 'public' : 'private';
+                $sqlParams[] = $params['visibility'];
             }
             if (!empty($params['tag_ids'])) {
                 $placeholders = str_repeat('?,', count($params['tag_ids']) - 1) . '?';
@@ -1278,7 +1278,7 @@ class Resource extends Model {
 
     public function findPublicByUserId($userId)
     {
-        $sql = "SELECT * FROM resources WHERE user_id = :user_id AND is_public = 1 ORDER BY created_at DESC";
+        $sql = "SELECT * FROM resources WHERE user_id = :user_id AND visibility = 'public' ORDER BY created_at DESC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['user_id' => $userId]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);

@@ -110,7 +110,7 @@ class ProfileController extends Controller
             $stats = [
                 'total_resources' => count($resources),
                 'public_resources' => count(array_filter($resources, function($r) { 
-                    return $r['is_public'] == 1 && $r['deleted_at'] === null; 
+                    return $r['visibility'] === 'public' && $r['deleted_at'] === null; 
                 })),
                 'total_views' => array_sum(array_column($resources, 'view_count')),
                 'total_likes' => array_sum(array_column($resources, 'like_count')),

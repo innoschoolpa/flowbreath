@@ -52,7 +52,7 @@ class ResourceController extends BaseController {
         $selected_tags = $request->get('tags', []);
         $sort = $request->get('sort', 'created_desc');
         $type = $request->get('type', '');
-        $is_public = $request->get('is_public', null);
+        $visibility = $request->get('visibility', null);
         $page = max(1, (int)$request->get('page', 1));
         $limit = 12;
         $offset = ($page - 1) * $limit;
@@ -68,7 +68,7 @@ class ResourceController extends BaseController {
             'limit' => $limit,
             'offset' => $offset,
             'type' => $type,
-            'is_public' => $is_public,
+            'visibility' => $visibility,
             'language_code' => (isset($_SESSION['lang']) && $_SESSION['lang'] === 'en') ? 'en' : null,
         ];
 
@@ -107,7 +107,7 @@ class ResourceController extends BaseController {
                 'keyword' => $keyword,
                 'sort' => $sort,
                 'type' => $type,
-                'is_public' => $is_public,
+                'visibility' => $visibility,
                 'current_page' => $page,
                 'total_pages' => $total_pages,
                 'user' => $user,
@@ -124,7 +124,7 @@ class ResourceController extends BaseController {
                 'keyword' => $keyword,
                 'sort' => $sort,
                 'type' => $type,
-                'is_public' => $is_public,
+                'visibility' => $visibility,
                 'current_page' => $page,
                 'total_pages' => 1,
                 'user' => $user,
@@ -609,7 +609,7 @@ class ResourceController extends BaseController {
                 'keyword' => '',
                 'sort' => 'created_desc',
                 'type' => '',
-                'is_public' => null,
+                'visibility' => null,
                 'current_page' => 1,
                 'total_pages' => $total_pages,
                 'title' => "태그: {$tagInfo['name']}",
