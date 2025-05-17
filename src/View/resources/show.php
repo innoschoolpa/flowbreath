@@ -223,7 +223,7 @@ $title = $title ?? '리소스 상세';
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    if (data.resource_deleted) {
+                    if (data.data.original_deleted) {
                         // 리소스가 완전히 삭제된 경우 리소스 목록으로 이동
                         window.location.href = '/resources';
                     } else {
