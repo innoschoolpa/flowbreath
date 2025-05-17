@@ -29,10 +29,14 @@ class View
         if (file_exists($layoutFile)) {
             ob_start();
             require $layoutFile;
-            return ob_get_clean();
+            $content = ob_get_clean();
         }
 
-        return $content;
+        $response = new Response();
+        $response->setContentType('text/html; charset=UTF-8');
+        $response->setStatusCode(200);
+        $response->setContent($content);
+        return $response;
     }
 
     public function setLayout($layout)
