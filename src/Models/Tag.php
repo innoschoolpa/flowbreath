@@ -93,6 +93,27 @@ class Tag extends Model {
             throw new \Exception("인기 태그를 조회하는 중 오류가 발생했습니다.");
         }
     }
+
+    /**
+     * 최근 사용된 태그 가져오기
+     */
+    public function getRecentTags($userId, $limit = 10)
+    {
+        try {
+            $sql = "SELECT DISTINCT t.*
+                    FROM tags t
+                    JOIN resource_tags rt ON t.id = rt.tag_id
+                    JOIN resources r ON rt.resource_id = r.id
+                    WHERE r.user_id = ?
+                    ORDER BY r.created_at DESC
+                    LIMIT ?";
+            
+            return $this->db->fetchAll($sql, [$userId, $limit]);
+        } catch (\PDOException $e) {
+            error_log("Error in getRecentTags: " . $e->getMessage());
+            throw new \Exception("최근 태그를 조회하는 중 오류가 발생했습니다.");
+        }
+    }
     
     /**
      * 리소스에 연결된 태그 가져오기
