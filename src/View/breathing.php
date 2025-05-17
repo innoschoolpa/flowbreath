@@ -21,10 +21,12 @@
                     </div>
 
                     <!-- 시각적 가이드 -->
-                    <div class="text-center mb-4">
+                    <div class="text-center mb-4 position-relative">
                         <div id="breathingCircle" class="mx-auto" style="width: 200px; height: 200px; border-radius: 50%; background-color: #4CAF50; transition: all 4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-                        <div id="timer" class="mt-3 h3">05:00</div>
-                        <div id="phaseText" class="mt-2 text-muted">준비</div>
+                        <div class="position-absolute top-50 start-50 translate-middle text-center" style="width: 100%;">
+                            <div id="timer" class="h3 mb-2" style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">05:00</div>
+                            <div id="phaseText" class="text-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">준비</div>
+                        </div>
                     </div>
 
                     <!-- 컨트롤 -->
@@ -189,6 +191,7 @@ async function updateSessionStatus() {
 function updateVisualGuide(data) {
     const circle = document.getElementById('breathingCircle');
     const phaseText = document.getElementById('phaseText');
+    const pattern = document.getElementById('breathingPattern').value;
     
     if (!data || !data.visual_guide) {
         circle.style.transform = 'scale(1)';
@@ -204,11 +207,21 @@ function updateVisualGuide(data) {
     
     // 단계가 변경되었을 때만 transition 시간 조정
     if (currentPhase !== lastPhase) {
-        const transitionDuration = {
-            'inhale': '4s',    // 들숨: 4초
-            'hold': '0.1s',    // 참기: 거의 즉시
-            'exhale': '8s'     // 날숨: 8초
-        }[currentPhase] || '2s';
+        let transitionDuration;
+        if (pattern === '4-7-8') {
+            transitionDuration = {
+                'inhale': '4s',    // 들숨: 4초
+                'hold': '0.1s',    // 참기: 거의 즉시
+                'exhale': '8s'     // 날숨: 8초
+            }[currentPhase] || '2s';
+        } else { // box breathing
+            transitionDuration = {
+                'inhale': '4s',    // 들숨: 4초
+                'hold': '0.1s',    // 참기: 거의 즉시
+                'exhale': '4s',    // 날숨: 4초
+                'rest': '0.1s'     // 휴식: 거의 즉시
+            }[currentPhase] || '2s';
+        }
         
         circle.style.transition = `all ${transitionDuration} cubic-bezier(0.4, 0, 0.2, 1)`;
         lastPhase = currentPhase;
@@ -230,7 +243,8 @@ function updateVisualGuide(data) {
     const phaseMap = {
         'inhale': '들숨',
         'hold': '참기',
-        'exhale': '날숨'
+        'exhale': '날숨',
+        'rest': '휴식'
     };
     phaseText.textContent = phaseMap[currentPhase] || '준비';
     
