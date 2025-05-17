@@ -199,5 +199,17 @@ return [
         'cancel' => 'Cancel',
         'submit' => 'Submit',
         'update' => 'Update'
+    ],
+
+    // Navigation
+    'nav' => [
+        'breathing' => 'Breathing Exercise',
+        'resources' => 'Resources',
+        'tags' => 'Tags',
+        'api_docs' => 'API Guide',
+        'my_info' => 'My Profile',
+        'login' => 'Login',
+        'register' => 'Register',
+        'logout' => 'Logout'
     ]
 ]; 

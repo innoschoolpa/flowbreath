@@ -123,16 +123,16 @@ if (session_status() === PHP_SESSION_NONE) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/breathing">호흡 운동</a>
+                        <a class="nav-link" href="/breathing"><?= __('nav.breathing') ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/resources">자료</a>
+                        <a class="nav-link" href="/resources"><?= __('nav.resources') ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/tags">태그</a>
+                        <a class="nav-link" href="/tags"><?= __('nav.tags') ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/api/docs">API 안내</a>
+                        <a class="nav-link" href="/api/docs"><?= __('nav.api_docs') ?></a>
                     </li>
                 </ul>
                 <ul class="navbar-nav language-switch">
@@ -146,17 +146,17 @@ if (session_status() === PHP_SESSION_NONE) {
                 <ul class="navbar-nav auth-buttons">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="/profile">내 정보</a>
+                            <a class="nav-link" href="/profile"><?= __('nav.my_info') ?></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/logout">로그아웃</a>
+                            <a class="nav-link" href="/logout"><?= __('nav.logout') ?></a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="/login">로그인</a>
+                            <a class="nav-link" href="/login"><?= __('nav.login') ?></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/register">회원가입</a>
+                            <a class="nav-link" href="/register"><?= __('nav.register') ?></a>
                         </li>
                     <?php endif; ?>
                 </ul>
