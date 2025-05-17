@@ -259,13 +259,15 @@ function updateVisualGuide(data) {
                 'hold': '7s',      // 참기: 7초
                 'exhale': '8s'     // 날숨: 8초
             }[currentPhase] || '2s';
-        } else { // box breathing
+        } else if (pattern === 'box') {
             transitionDuration = {
                 'inhale': '4s',    // 들숨: 4초
                 'hold_in': '4s',   // 들숨 후 참기: 4초
                 'exhale': '4s',    // 날숨: 4초
                 'hold_out': '4s'   // 날숨 후 참기: 4초
             }[currentPhase] || '2s';
+        } else { // danjeon
+            transitionDuration = `${guide.duration}s`;
         }
         
         // 전환 시작 시 약간의 지연 추가

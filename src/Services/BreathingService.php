@@ -133,6 +133,9 @@ class BreathingService
 
         $nextPhase = $pattern['phases'][($session['current_phase'] + 1) % count($pattern['phases'])];
 
+        $visualGuide = $this->getVisualGuide($currentPhase['type']);
+        $visualGuide['duration'] = $currentPhase['duration'];
+
         return [
             'session_id' => $session_id,
             'status' => $session['status'],
@@ -146,7 +149,7 @@ class BreathingService
                 'duration' => $nextPhase['duration']
             ],
             'progress' => $elapsed / $session['duration'],
-            'visual_guide' => $this->getVisualGuide($currentPhase['type'])
+            'visual_guide' => $visualGuide
         ];
     }
 
