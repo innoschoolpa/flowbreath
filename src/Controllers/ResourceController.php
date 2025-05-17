@@ -779,20 +779,38 @@ class ResourceController extends BaseController {
             error_log("[DEBUG] Request body: " . print_r($requestBody, true));
             
             $languageCode = $requestBody['language_code'] ?? null;
-            if (!$languageCode) {
-                error_log("[DEBUG] Language code not provided");
-                return new \App\Core\Response(['error' => 'Language code is required'], 400);
+            if (!$languageCode || !in_array($languageCode, ['ko', 'en'])) {
+                error_log("[DEBUG] Invalid language code: " . $languageCode);
+                return new \App\Core\Response(['error' => 'Invalid language code'], 400);
             }
 
             error_log("[DEBUG] Attempting to delete translation for language: " . $languageCode);
+            
+            // 해당 리소스의 전체 번역본 개수 확인
+            $translationCount = $this->resource->getTranslationCount($id);
+            error_log("[DEBUG] Total translation count: " . $translationCount);
             
             // 번역본 삭제
             $result = $this->resource->deleteTranslation($id, $languageCode);
             error_log("[DEBUG] Delete translation result: " . ($result ? "success" : "failed"));
             
             if ($result === true) {
+                // 번역본이 하나뿐이었다면 원본 리소스도 삭제
+                if ($translationCount === 1) {
+                    error_log("[DEBUG] Deleting original resource as it was the last translation");
+                    $this->resource->delete($id);
+                }
+                
                 error_log("[DEBUG] Translation deleted successfully");
-                return new \App\Core\Response(['message' => 'Translation deleted successfully']);
+                return new \App\Core\Response([
+                    'success' => true,
+                    'message' => '번역본이 성공적으로 삭제되었습니다.',
+                    'data' => [
+                        'resource_id' => $id,
+                        'language_code' => $languageCode,
+                        'original_deleted' => $translationCount === 1
+                    ]
+                ]);
             } else {
                 error_log("[DEBUG] Failed to delete translation");
                 return new \App\Core\Response(['error' => 'Failed to delete translation'], 500);

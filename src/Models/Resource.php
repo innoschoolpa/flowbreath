@@ -1478,4 +1478,18 @@ class Resource extends Model {
             throw $e;
         }
     }
+
+    /**
+     * 리소스의 번역본 개수를 반환
+     */
+    public function getTranslationCount($resourceId) {
+        try {
+            $sql = "SELECT COUNT(*) as count FROM resource_translations WHERE resource_id = ?";
+            $result = $this->db->fetch($sql, [$resourceId]);
+            return (int)($result['count'] ?? 0);
+        } catch (PDOException $e) {
+            error_log("Database error in getTranslationCount: " . $e->getMessage());
+            throw new Exception("번역본 개수를 조회하는 중 오류가 발생했습니다.");
+        }
+    }
 }
