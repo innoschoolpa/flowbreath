@@ -1604,4 +1604,35 @@ class Resource extends Model {
             throw new Exception("사용자의 리소스 총 개수를 조회하는 중 오류가 발생했습니다.");
         }
     }
+
+    /**
+     * 최근 리소스 가져오기
+     */
+    public function getRecentResources($userId, $limit = 6)
+    {
+        try {
+            $sql = "SELECT r.*, u.name as username, 
+                    GROUP_CONCAT(t.name) as tags
+                    FROM resources r
+                    LEFT JOIN users u ON r.user_id = u.id
+                    LEFT JOIN resource_tags rt ON r.id = rt.resource_id
+                    LEFT JOIN tags t ON rt.tag_id = t.id
+                    WHERE r.user_id = ?
+                    GROUP BY r.id
+                    ORDER BY r.created_at DESC
+                    LIMIT ?";
+            
+            $resources = $this->db->fetchAll($sql, [$userId, $limit]);
+            
+            // 태그 문자열을 배열로 변환
+            foreach ($resources as &$resource) {
+                $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
+            }
+            
+            return $resources;
+        } catch (\PDOException $e) {
+            error_log("Error in getRecentResources: " . $e->getMessage());
+            return [];
+        }
+    }
 }

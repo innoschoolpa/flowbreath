@@ -70,12 +70,14 @@ class HomeController extends BaseController
 
         $popularTags = $this->tagModel->getPopularTags($userId, 10);
         $recentTags = $this->tagModel->getRecentTags($userId, 10);
+        $recentResources = $this->resourceModel->getRecentResources($userId, 6);
 
         $language = Language::getInstance();
 
         $this->view->render('home', [
             'user' => $user,
             'resources' => $resources,
+            'recentResources' => $recentResources,
             'popularTags' => $popularTags,
             'recentTags' => $recentTags,
             'currentPage' => $page,
