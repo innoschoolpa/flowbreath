@@ -2,6 +2,8 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+require_once __DIR__ . '/../../helpers/lang.php';
 ?>
 <!DOCTYPE html>
 <html lang="<?= $_SESSION['lang'] ?? 'ko' ?>">
