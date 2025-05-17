@@ -224,4 +224,9 @@ class Session
         $sensitiveKeys = ['user_id', 'username', 'user_email', 'user_role', 'profile_image'];
         return in_array($key, $sensitiveKeys);
     }
+
+    public function isLoggedIn()
+    {
+        return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+    }
 } 
