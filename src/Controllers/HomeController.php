@@ -91,10 +91,11 @@ class HomeController
             ob_end_clean();
         }
         
+        $language = Language::getInstance();
         $response = new Response();
         $response->setContentType('text/html; charset=UTF-8');
         $response->setStatusCode(200);
-        $response->setContent($this->renderApiDocsPage());
+        $response->setContent($this->renderApiDocsPage($language));
         return $response;
     }
 
@@ -167,7 +168,7 @@ class HomeController
 HTML;
     }
 
-    private function renderApiDocsPage()
+    private function renderApiDocsPage($language)
     {
         ob_start();
         include dirname(__DIR__) . '/View/api/docs.php';

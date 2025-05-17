@@ -10,6 +10,7 @@ use App\Core\ResourceManager;
 use App\Core\MemoryManager;
 use App\Core\SQLFileProcessor;
 use App\Core\FileValidator;
+use App\Core\Language;
 
 class ResourceController extends BaseController {
     protected $resource;
@@ -574,8 +575,10 @@ class ResourceController extends BaseController {
         $tags = array_filter($tags, function($tag) {
             return ($tag['resource_count'] ?? 0) > 0;
         });
+        $language = Language::getInstance();
         return $this->view('resources/tags', [
-            'tags' => $tags
+            'tags' => $tags,
+            'language' => $language
         ]);
     }
 
