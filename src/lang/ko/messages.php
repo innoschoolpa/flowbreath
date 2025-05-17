@@ -144,6 +144,28 @@ return [
             'submit' => '로그인',
             'register' => '회원가입',
             'google_login' => '구글로 로그인'
+        ],
+        'stats' => [
+            'title' => '활동 통계',
+            'resources' => '리소스',
+            'likes' => '좋아요',
+            'views' => '조회수',
+            'comments' => '댓글',
+            'total_resources' => '전체 리소스',
+            'public_resources' => '공개 리소스',
+            'total_likes' => '받은 좋아요',
+            'total_views' => '총 조회수',
+            'avg_views' => '평균 조회수',
+            'total_comments' => '총 댓글수'
+        ],
+        'edit' => [
+            'title' => '프로필 수정',
+            'image_change' => '프로필 이미지 변경',
+            'select_image' => '이미지 선택',
+            'change' => '변경하기',
+            'bio_placeholder' => '자기소개를 작성해주세요.',
+            'account_settings' => '계정 설정',
+            'completion' => '프로필 완성도'
         ]
     ],
 

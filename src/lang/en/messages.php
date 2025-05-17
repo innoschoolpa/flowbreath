@@ -144,6 +144,28 @@ return [
             'submit' => 'Login',
             'register' => 'Register',
             'google_login' => 'Sign in with Google'
+        ],
+        'stats' => [
+            'title' => 'Activity Statistics',
+            'resources' => 'Resources',
+            'likes' => 'Likes',
+            'views' => 'Views',
+            'comments' => 'Comments',
+            'total_resources' => 'Total Resources',
+            'public_resources' => 'Public Resources',
+            'total_likes' => 'Total Likes',
+            'total_views' => 'Total Views',
+            'avg_views' => 'Average Views',
+            'total_comments' => 'Total Comments'
+        ],
+        'edit' => [
+            'title' => 'Edit Profile',
+            'image_change' => 'Change Profile Image',
+            'select_image' => 'Select Image',
+            'change' => 'Change',
+            'bio_placeholder' => 'Write your bio here.',
+            'account_settings' => 'Account Settings',
+            'completion' => 'Profile Completion'
         ]
     ],
 

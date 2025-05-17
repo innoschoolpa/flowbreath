@@ -15,7 +15,7 @@ $userData = $userModel->findById((int)$_SESSION['user_id']);
 // 사용자 데이터가 없거나 null인 경우 기본값 설정
 $user = [
     'id' => $_SESSION['user_id'],
-    'name' => $userData['name'] ?? $_SESSION['user_name'] ?? '사용자',
+    'name' => $userData['name'] ?? $_SESSION['user_name'] ?? __('profile.name'),
     'email' => $userData['email'] ?? $_SESSION['user_email'] ?? '',
     'profile_image' => $userData['profile_image'] ?? null,
     'bio' => $userData['bio'] ?? '',
@@ -48,7 +48,7 @@ $resources = [];
                 <div class="card-body text-center">
                     <div class="position-relative d-inline-block mb-3">
                         <?php if (isset($user['profile_image']) && $user['profile_image']): ?>
-                            <img src="<?= htmlspecialchars($user['profile_image']) ?>" alt="Profile" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                            <img src="<?= htmlspecialchars($user['profile_image']) ?>" alt="<?= __('profile.profile_image') ?>" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
                         <?php else: ?>
                             <i class="fa fa-user-circle" style="font-size: 150px; color: #6c757d;"></i>
                         <?php endif; ?>
@@ -63,7 +63,7 @@ $resources = [];
                     <?php if (isset($user['bio']) && $user['bio']): ?>
                         <p class="mb-3"><?= nl2br(htmlspecialchars($user['bio'])) ?></p>
                     <?php else: ?>
-                        <p class="text-muted mb-3">자기소개를 작성해주세요.</p>
+                        <p class="text-muted mb-3"><?= __('profile.edit.bio_placeholder') ?></p>
                     <?php endif; ?>
 
                     <!-- 프로필 완성도 -->
@@ -131,10 +131,10 @@ $resources = [];
 
                     <div class="d-grid gap-2">
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#profileEditModal">
-                            <i class="fas fa-edit me-2"></i>프로필 수정
+                            <i class="fas fa-edit me-2"></i><?= __('profile.edit.title') ?>
                         </button>
                         <a href="/settings" class="btn btn-outline-secondary">
-                            <i class="fas fa-cog me-2"></i>계정 설정
+                            <i class="fas fa-cog me-2"></i><?= __('profile.edit.account_settings') ?>
                         </a>
                     </div>
                 </div>
@@ -143,23 +143,23 @@ $resources = [];
             <!-- 활동 통계 -->
             <div class="card mt-3">
                 <div class="card-body">
-                    <h5 class="card-title mb-3">활동 통계</h5>
+                    <h5 class="card-title mb-3"><?= __('profile.stats.title') ?></h5>
                     <div class="row text-center">
                         <div class="col">
                             <h4 class="mb-1"><?= number_format($stats['total_resources']) ?></h4>
-                            <small class="text-muted">리소스</small>
+                            <small class="text-muted"><?= __('profile.stats.resources') ?></small>
                         </div>
                         <div class="col">
                             <h4 class="mb-1"><?= number_format($stats['total_likes']) ?></h4>
-                            <small class="text-muted">좋아요</small>
+                            <small class="text-muted"><?= __('profile.stats.likes') ?></small>
                         </div>
                         <div class="col">
                             <h4 class="mb-1"><?= number_format($stats['total_views']) ?></h4>
-                            <small class="text-muted">조회수</small>
+                            <small class="text-muted"><?= __('profile.stats.views') ?></small>
                         </div>
                         <div class="col">
                             <h4 class="mb-1"><?= number_format($stats['total_comments']) ?></h4>
-                            <small class="text-muted">댓글</small>
+                            <small class="text-muted"><?= __('profile.stats.comments') ?></small>
                         </div>
                     </div>
                 </div>
@@ -290,17 +290,17 @@ $resources = [];
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">프로필 이미지 변경</h5>
+                <h5 class="modal-title"><?= __('profile.edit.image_change') ?></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="profileImageForm" action="/profile/update-image" method="POST" enctype="multipart/form-data">
                     <div class="mb-3">
-                        <label for="profileImage" class="form-label">이미지 선택</label>
+                        <label for="profileImage" class="form-label"><?= __('profile.edit.select_image') ?></label>
                         <input type="file" class="form-control" id="profileImage" name="profile_image" accept="image/*">
                     </div>
                     <div class="text-center">
-                        <button type="submit" class="btn btn-primary">변경하기</button>
+                        <button type="submit" class="btn btn-primary"><?= __('profile.edit.change') ?></button>
                     </div>
                 </form>
             </div>
