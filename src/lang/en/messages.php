@@ -111,6 +111,7 @@ return [
 
     // Profile
     'profile' => [
+        'title' => 'My Profile',
         'edit_title' => 'Edit Profile',
         'profile_image' => 'Profile Image',
         'name' => 'Name',
@@ -134,7 +135,16 @@ return [
         'wrong_password' => 'Current password is incorrect.',
         'image_upload_error' => 'An error occurred while uploading the image.',
         'image_type_error' => 'Unsupported image format.',
-        'image_size_error' => 'Image size cannot exceed 2MB.'
+        'image_size_error' => 'Image size cannot exceed 2MB.',
+        'login' => [
+            'title' => 'Login',
+            'email' => 'Email',
+            'password' => 'Password',
+            'remember_me' => 'Remember me',
+            'submit' => 'Login',
+            'register' => 'Register',
+            'google_login' => 'Sign in with Google'
+        ]
     ],
 
     // Admin

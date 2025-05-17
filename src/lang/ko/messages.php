@@ -111,6 +111,7 @@ return [
 
     // 프로필
     'profile' => [
+        'title' => '내 정보',
         'edit_title' => '프로필 수정',
         'profile_image' => '프로필 이미지',
         'name' => '이름',
@@ -134,7 +135,16 @@ return [
         'wrong_password' => '현재 비밀번호가 올바르지 않습니다.',
         'image_upload_error' => '이미지 업로드 중 오류가 발생했습니다.',
         'image_type_error' => '지원하지 않는 이미지 형식입니다.',
-        'image_size_error' => '이미지 크기는 2MB를 초과할 수 없습니다.'
+        'image_size_error' => '이미지 크기는 2MB를 초과할 수 없습니다.',
+        'login' => [
+            'title' => '로그인',
+            'email' => '이메일',
+            'password' => '비밀번호',
+            'remember_me' => '로그인 상태 유지',
+            'submit' => '로그인',
+            'register' => '회원가입',
+            'google_login' => '구글로 로그인'
+        ]
     ],
 
     // 관리자
