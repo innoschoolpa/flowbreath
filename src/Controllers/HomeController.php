@@ -31,7 +31,7 @@ class HomeController
         // 최근 리소스
         $resourceModel = new Resource();
         $lang = isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko';
-        $recentResources = $resourceModel->getRecentPublic(3, $lang);
+        $recentResources = $resourceModel->getRecentPublic(4 $lang);
 
         // 인기 태그
         $tagModel = new Tag();
