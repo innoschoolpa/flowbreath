@@ -25,14 +25,13 @@
                         <div id="breathingCircle" class="mx-auto" style="width: 200px; height: 200px; border-radius: 50%; background-color: #4CAF50; transition: all 4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                         <div class="position-absolute top-50 start-50 translate-middle text-center" style="width: 100%;">
                             <div id="timer" class="h3 mb-2" style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">05:00</div>
-                            <div id="phaseText" class="text-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">준비</div>
+                            <div id="phaseText" class="text-white mb-3" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">준비</div>
+                            <!-- 컨트롤 -->
+                            <div class="d-flex justify-content-center gap-3">
+                                <button class="btn btn-primary" id="startButton">시작</button>
+                                <button class="btn btn-secondary" id="stopButton" disabled>정지</button>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- 컨트롤 -->
-                    <div class="d-flex justify-content-center gap-3">
-                        <button class="btn btn-primary" id="startButton">시작</button>
-                        <button class="btn btn-secondary" id="stopButton" disabled>정지</button>
                     </div>
                 </div>
             </div>
