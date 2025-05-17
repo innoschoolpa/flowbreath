@@ -458,13 +458,33 @@ class Resource extends Model {
             error_log('[DEBUG] Resource INSERT SQL: ' . $sql);
             error_log('[DEBUG] Resource INSERT Params: ' . json_encode($params));
             
-            $this->db->query($sql, $params);
-            $resourceId = $this->db->lastInsertId();
+            // 쿼리 실행 및 결과 확인
+            $stmt = $this->db->prepare($sql);
+            $result = $stmt->execute($params);
             
+            if (!$result) {
+                error_log('[ERROR] Resource insert failed. Error: ' . json_encode($stmt->errorInfo()));
+                throw new \Exception('리소스 저장 실패: ' . implode(', ', $stmt->errorInfo()));
+            }
+
+            // 생성된 ID 확인
+            $resourceId = $this->db->lastInsertId();
             error_log('[DEBUG] Generated Resource ID: ' . $resourceId);
 
             if (!$resourceId) {
-                throw new \Exception('리소스 ID를 생성할 수 없습니다.');
+                // ID가 없는 경우 slug로 재시도
+                $checkSql = "SELECT id FROM resources WHERE slug = ? AND user_id = ? ORDER BY id DESC LIMIT 1";
+                $checkStmt = $this->db->prepare($checkSql);
+                $checkStmt->execute([$data['slug'], $data['user_id']]);
+                $row = $checkStmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($row && isset($row['id'])) {
+                    $resourceId = $row['id'];
+                    error_log('[DEBUG] Retrieved Resource ID from slug: ' . $resourceId);
+                } else {
+                    error_log('[ERROR] Failed to get resource ID. Slug: ' . $data['slug']);
+                    throw new \Exception('리소스 ID를 생성할 수 없습니다.');
+                }
             }
 
             // 번역 데이터 저장
@@ -485,7 +505,13 @@ class Resource extends Model {
                     error_log('[DEBUG] Translation INSERT SQL: ' . $translationSql);
                     error_log('[DEBUG] Translation INSERT Params: ' . json_encode($translationParams));
                     
-                    $this->db->query($translationSql, $translationParams);
+                    $translationStmt = $this->db->prepare($translationSql);
+                    $translationResult = $translationStmt->execute($translationParams);
+                    
+                    if (!$translationResult) {
+                        error_log('[ERROR] Translation insert failed. Error: ' . json_encode($translationStmt->errorInfo()));
+                        throw new \Exception('번역 데이터 저장 실패: ' . implode(', ', $translationStmt->errorInfo()));
+                    }
                 }
             }
 
@@ -494,17 +520,26 @@ class Resource extends Model {
                 foreach ($data['tags'] as $tagName) {
                     // 태그 생성 또는 조회
                     $tagSql = "INSERT IGNORE INTO tags (name, created_at) VALUES (?, NOW())";
-                    $this->db->query($tagSql, [$tagName]);
+                    $tagStmt = $this->db->prepare($tagSql);
+                    $tagStmt->execute([$tagName]);
                     
                     // 태그 ID 조회
                     $tagIdSql = "SELECT id FROM tags WHERE name = ?";
-                    $tagResult = $this->db->query($tagIdSql, [$tagName])->fetch();
+                    $tagIdStmt = $this->db->prepare($tagIdSql);
+                    $tagIdStmt->execute([$tagName]);
+                    $tagResult = $tagIdStmt->fetch(PDO::FETCH_ASSOC);
                     
                     if ($tagResult && isset($tagResult['id'])) {
                         $tagId = $tagResult['id'];
                         // 리소스-태그 관계 생성
                         $relationSql = "INSERT IGNORE INTO resource_tags (resource_id, tag_id) VALUES (?, ?)";
-                        $this->db->query($relationSql, [$resourceId, $tagId]);
+                        $relationStmt = $this->db->prepare($relationSql);
+                        $relationResult = $relationStmt->execute([$resourceId, $tagId]);
+                        
+                        if (!$relationResult) {
+                            error_log('[ERROR] Tag relation insert failed. Error: ' . json_encode($relationStmt->errorInfo()));
+                            throw new \Exception('태그 관계 저장 실패: ' . implode(', ', $relationStmt->errorInfo()));
+                        }
                     }
                 }
             }
