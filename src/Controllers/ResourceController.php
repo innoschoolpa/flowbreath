@@ -748,41 +748,59 @@ class ResourceController extends BaseController {
      */
     public function deleteTranslation($id) {
         try {
+            error_log("[DEBUG] Starting deleteTranslation for resource ID: " . $id);
+            
             // 사용자 인증 확인
             $user = $this->auth->user();
+            error_log("[DEBUG] User authentication result: " . ($user ? "success" : "failed"));
+            
             if (!$user) {
-                return $this->response->json(['error' => 'Unauthorized'], 401);
+                error_log("[DEBUG] User not authenticated");
+                return new \App\Core\Response(['error' => 'Unauthorized'], 401);
             }
 
             // 리소스 존재 여부 확인
             $resource = $this->resource->findById($id);
+            error_log("[DEBUG] Resource lookup result: " . ($resource ? "found" : "not found"));
+            
             if (!$resource) {
-                return $this->response->json(['error' => 'Resource not found'], 404);
+                error_log("[DEBUG] Resource not found");
+                return new \App\Core\Response(['error' => 'Resource not found'], 404);
             }
 
             // 권한 확인
             if ($resource['user_id'] != $user['id']) {
-                return $this->response->json(['error' => 'Permission denied'], 403);
+                error_log("[DEBUG] Permission denied - user_id: {$user['id']}, resource_user_id: {$resource['user_id']}");
+                return new \App\Core\Response(['error' => 'Permission denied'], 403);
             }
 
             // 요청에서 언어 코드 가져오기
             $requestBody = json_decode(file_get_contents('php://input'), true);
+            error_log("[DEBUG] Request body: " . print_r($requestBody, true));
+            
             $languageCode = $requestBody['language_code'] ?? null;
             if (!$languageCode) {
-                return $this->response->json(['error' => 'Language code is required'], 400);
+                error_log("[DEBUG] Language code not provided");
+                return new \App\Core\Response(['error' => 'Language code is required'], 400);
             }
 
+            error_log("[DEBUG] Attempting to delete translation for language: " . $languageCode);
+            
             // 번역본 삭제
             $result = $this->resource->deleteTranslation($id, $languageCode);
+            error_log("[DEBUG] Delete translation result: " . ($result ? "success" : "failed"));
             
             if ($result === true) {
-                return $this->response->json(['message' => 'Translation deleted successfully']);
+                error_log("[DEBUG] Translation deleted successfully");
+                return new \App\Core\Response(['message' => 'Translation deleted successfully']);
             } else {
-                return $this->response->json(['error' => 'Failed to delete translation'], 500);
+                error_log("[DEBUG] Failed to delete translation");
+                return new \App\Core\Response(['error' => 'Failed to delete translation'], 500);
             }
         } catch (\Exception $e) {
-            error_log("Error in deleteTranslation: " . $e->getMessage());
-            return $this->response->json(['error' => $e->getMessage()], 500);
+            error_log("[ERROR] Exception in deleteTranslation: " . $e->getMessage());
+            error_log("[ERROR] Stack trace: " . $e->getTraceAsString());
+            return new \App\Core\Response(['error' => $e->getMessage()], 500);
         }
     }
 }
