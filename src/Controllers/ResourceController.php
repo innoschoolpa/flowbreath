@@ -792,12 +792,12 @@ class ResourceController extends BaseController {
                     'success' => true,
                     'resource_deleted' => false
                 ]);
-            } else {
-                return $this->response->json([
-                    'error' => '번역본 삭제에 실패했습니다.',
-                    'success' => false
-                ], 500);
             }
+
+            return $this->response->json([
+                'error' => '번역본 삭제에 실패했습니다.',
+                'success' => false
+            ], 500);
         } catch (\Exception $e) {
             error_log("Error in deleteTranslation: " . $e->getMessage());
             return $this->response->json([

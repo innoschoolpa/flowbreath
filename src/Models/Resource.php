@@ -1432,6 +1432,12 @@ class Resource extends Model {
      */
     public function deleteTranslation($resourceId, $languageCode) {
         try {
+            // 이미 진행 중인 트랜잭션이 있는지 확인
+            $pdo = $this->db->getConnection();
+            if (method_exists($pdo, 'inTransaction') && $pdo->inTransaction()) {
+                $this->db->rollBack();
+            }
+
             $this->db->beginTransaction();
 
             // 해당 리소스의 번역본 개수 확인
@@ -1443,6 +1449,7 @@ class Resource extends Model {
 
             // 번역본이 1개뿐이면 리소스 전체를 삭제
             if ($translationCount <= 1) {
+                $this->db->rollBack(); // 현재 트랜잭션 롤백
                 return $this->delete($resourceId);
             }
 
@@ -1459,7 +1466,9 @@ class Resource extends Model {
             $this->db->commit();
             return true;
         } catch (\Exception $e) {
-            $this->db->rollBack();
+            if (method_exists($pdo, 'inTransaction') && $pdo->inTransaction()) {
+                $this->db->rollBack();
+            }
             error_log("Error in deleteTranslation: " . $e->getMessage());
             throw $e;
         }
