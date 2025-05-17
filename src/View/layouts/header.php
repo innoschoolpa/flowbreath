@@ -4,16 +4,19 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="<?= $_SESSION['lang'] ?? 'ko' ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowBreath - 호흡 운동</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title><?= $title ?? 'FlowBreath - 호흡 운동' ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
             background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         .navbar {
             background: #2d3e50;
@@ -63,6 +66,50 @@ if (session_status() === PHP_SESSION_NONE) {
         }
         .auth-buttons .nav-link:last-child:hover {
             background-color: rgba(255,255,255,0.2);
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #3498db, #2ecc71);
+            color: #fff;
+            padding: 3rem 0 2rem 0;
+            text-align: center;
+        }
+        .search-box {
+            max-width: 500px;
+            margin: 2rem auto 0 auto;
+        }
+        .card-resource {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            transition: box-shadow 0.2s;
+        }
+        .card-resource:hover {
+            box-shadow: 0 4px 16px rgba(52,152,219,0.15);
+        }
+        .tag-badge {
+            background: #3498db;
+            color: #fff;
+            border-radius: 20px;
+            padding: 0.3em 1em;
+            margin: 0.1em;
+            font-size: 0.95em;
+        }
+        .popular-tags .tag-badge {
+            background: #2ecc71;
+        }
+        .resource-meta {
+            color: #888;
+            font-size: 0.95em;
+        }
+        .footer {
+            background: #2d3e50;
+            color: #fff;
+            padding: 2rem 0;
+            margin-top: auto;
+        }
+        main {
+            flex: 1;
+            padding: 2rem 0;
         }
     </style>
 </head>
@@ -133,7 +180,7 @@ if (session_status() === PHP_SESSION_NONE) {
         <?php unset($_SESSION['error']); ?>
     <?php endif; ?>
 
-    <main class="py-4">
+    <main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 

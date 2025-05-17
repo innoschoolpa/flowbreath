@@ -1,12 +1,10 @@
-<footer class="footer mt-5 py-3 bg-light">
-    <div class="container text-center">
-        <span class="text-muted">
-            &copy; <?= date('Y') ?> FlowBreath.io
-            <?php if (isset($language) && $language): ?>
-                | <?= $language->get('footer.slogan') ?>
-            <?php else: ?>
-                | 호흡 건강을 위한 최고의 자료 플랫폼
-            <?php endif; ?>
-        </span>
-    </div>
-</footer> 
+    </main>
+    <footer class="footer">
+        <div class="container text-center">
+            <div class="mb-2"><?= $language->get('footer.copyright', ['year' => date('Y')]) ?></div>
+            <div><?= $language->get('footer.description') ?></div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
