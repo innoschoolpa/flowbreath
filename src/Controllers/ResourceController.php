@@ -760,16 +760,50 @@ class ResourceController extends BaseController {
                 return $this->response->json(['error' => '삭제 권한이 없습니다.'], 403);
             }
 
-            $languageCode = $request->get('language_code');
+            // 요청 본문에서 language_code 가져오기
+            $requestBody = json_decode(file_get_contents('php://input'), true);
+            $languageCode = $requestBody['language_code'] ?? null;
+            
             if (!$languageCode) {
                 return $this->response->json(['error' => '언어 코드가 필요합니다.'], 400);
             }
 
-            $this->resource->deleteTranslation($id, $languageCode);
+            // 번역본 개수 확인
+            $translationCount = $this->resource->getDb()->fetch(
+                "SELECT COUNT(*) as count FROM resource_translations WHERE resource_id = ?",
+                [$id]
+            )['count'];
 
-            return $this->response->json(['message' => '번역본이 삭제되었습니다.']);
+            // 번역본 삭제 시도
+            $result = $this->resource->deleteTranslation($id, $languageCode);
+            
+            if ($result) {
+                // 마지막 번역본이었다면 전체 리소스가 삭제된 것
+                if ($translationCount <= 1) {
+                    return $this->response->json([
+                        'message' => '마지막 번역본이 삭제되어 리소스가 완전히 삭제되었습니다.',
+                        'success' => true,
+                        'resource_deleted' => true
+                    ]);
+                }
+                
+                return $this->response->json([
+                    'message' => '번역본이 성공적으로 삭제되었습니다.',
+                    'success' => true,
+                    'resource_deleted' => false
+                ]);
+            } else {
+                return $this->response->json([
+                    'error' => '번역본 삭제에 실패했습니다.',
+                    'success' => false
+                ], 500);
+            }
         } catch (\Exception $e) {
-            return $this->response->json(['error' => $e->getMessage()], 500);
+            error_log("Error in deleteTranslation: " . $e->getMessage());
+            return $this->response->json([
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
         }
     }
 }

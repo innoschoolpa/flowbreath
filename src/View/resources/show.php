@@ -210,29 +210,33 @@ $title = $title ?? '리소스 상세';
     });
 
     function confirmDelete(resourceId, languageCode) {
-        if (confirm('이 번역본을 삭제하시겠습니까?')) {
+        if (confirm('정말로 이 번역본을 삭제하시겠습니까?')) {
             fetch(`/api/resources/${resourceId}/translation`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '<?php echo $_SESSION['csrf_token'] ?? ''; ?>'
+                    'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
                 },
-                body: JSON.stringify({
-                    language_code: languageCode
-                })
+                body: JSON.stringify({ language_code: languageCode })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
+                if (data.success) {
                     alert(data.message);
-                    window.location.href = '/resources';
+                    if (data.resource_deleted) {
+                        // 리소스가 완전히 삭제된 경우 리소스 목록으로 이동
+                        window.location.href = '/resources';
+                    } else {
+                        // 번역본만 삭제된 경우 현재 페이지 새로고침
+                        window.location.reload();
+                    }
+                } else {
+                    alert(data.error || '삭제 중 오류가 발생했습니다.');
                 }
             })
             .catch(error => {
-                alert('삭제 중 오류가 발생했습니다.');
                 console.error('Error:', error);
+                alert('삭제 중 오류가 발생했습니다.');
             });
         }
     }

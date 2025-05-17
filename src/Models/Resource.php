@@ -1430,34 +1430,38 @@ class Resource extends Model {
     /**
      * 특정 언어의 번역본만 삭제
      */
-    public function deleteTranslation($id, $languageCode): bool
-    {
+    public function deleteTranslation($resourceId, $languageCode) {
         try {
             $this->db->beginTransaction();
 
-            // 해당 리소스의 번역본 수 확인
-            $translationCount = $this->db->fetch(
-                "SELECT COUNT(*) as count FROM resource_translations WHERE resource_id = ?",
-                [$id]
-            )['count'];
+            // 해당 리소스의 번역본 개수 확인
+            $sql = "SELECT COUNT(*) as translation_count FROM resource_translations WHERE resource_id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$resourceId]);
+            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $translationCount = $result['translation_count'];
 
-            // 번역본이 하나뿐이면 리소스 전체를 삭제
+            // 번역본이 1개뿐이면 리소스 전체를 삭제
             if ($translationCount <= 1) {
-                return $this->delete($id);
+                return $this->delete($resourceId);
             }
 
-            // 특정 언어의 번역본만 삭제
-            $this->db->query(
-                "DELETE FROM resource_translations WHERE resource_id = ? AND language_code = ?",
-                [$id, $languageCode]
-            );
+            // 특정 언어의 번역본 삭제
+            $sql = "DELETE FROM resource_translations WHERE resource_id = ? AND language_code = ?";
+            $stmt = $this->db->prepare($sql);
+            $result = $stmt->execute([$resourceId, $languageCode]);
+
+            if (!$result) {
+                $this->db->rollBack();
+                throw new \Exception('번역본 삭제에 실패했습니다.');
+            }
 
             $this->db->commit();
             return true;
-        } catch (Exception $e) {
-            $this->db->rollback();
-            error_log("Error in Resource::deleteTranslation: " . $e->getMessage());
-            throw new Exception("번역본 삭제 중 오류가 발생했습니다.");
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            error_log("Error in deleteTranslation: " . $e->getMessage());
+            throw $e;
         }
     }
 }
