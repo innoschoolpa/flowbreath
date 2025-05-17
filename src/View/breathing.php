@@ -7,27 +7,27 @@
                 <div class="card-body">
                     <!-- 호흡 패턴 선택 -->
                     <div class="mb-4">
-                        <label class="form-label">호흡 패턴</label>
+                        <label class="form-label"><?= __('breathing.patterns.title') ?></label>
                         <select class="form-select" id="breathingPattern">
-                            <option value="danjeon">단전 호흡</option>
-                            <option value="4-7-8">4-7-8 호흡법</option>
-                            <option value="box">박스 호흡법</option>
+                            <option value="danjeon"><?= __('breathing.patterns.danjeon') ?></option>
+                            <option value="4-7-8"><?= __('breathing.patterns.478') ?></option>
+                            <option value="box"><?= __('breathing.patterns.box') ?></option>
                         </select>
                     </div>
 
                     <!-- 호흡 시간 설정 -->
                     <div class="mb-4" id="breathingTimeSettings">
-                        <label class="form-label">호흡 시간 (초)</label>
+                        <label class="form-label"><?= __('breathing.timer.title') ?></label>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-2">
-                                    <label class="form-label">들숨</label>
+                                    <label class="form-label"><?= __('breathing.timer.inhale') ?></label>
                                     <input type="number" class="form-control" id="inhaleTime" value="4" min="2" max="10">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-2">
-                                    <label class="form-label">날숨</label>
+                                    <label class="form-label"><?= __('breathing.timer.exhale') ?></label>
                                     <input type="number" class="form-control" id="exhaleTime" value="4" min="2" max="10">
                                 </div>
                             </div>
@@ -36,7 +36,7 @@
 
                     <!-- 운동 시간 설정 -->
                     <div class="mb-4">
-                        <label class="form-label">운동 시간 (초)</label>
+                        <label class="form-label"><?= __('breathing.timer.duration') ?></label>
                         <input type="number" class="form-control" id="duration" value="300" min="60" max="3600">
                     </div>
 
@@ -45,11 +45,11 @@
                         <div id="breathingCircle" class="mx-auto" style="width: 200px; height: 200px; border-radius: 50%; background-color: #4CAF50; transition: all 4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                         <div class="position-absolute top-50 start-50 translate-middle text-center" style="width: 100%;">
                             <div id="timer" class="h3 mb-2" style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">05:00</div>
-                            <div id="phaseText" class="text-white mb-3" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">준비</div>
+                            <div id="phaseText" class="text-white mb-3" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><?= __('breathing.controls.ready') ?></div>
                             <!-- 컨트롤 -->
                             <div class="d-flex justify-content-center gap-3">
-                                <button class="btn btn-primary" id="startButton">시작</button>
-                                <button class="btn btn-secondary" id="stopButton" disabled>정지</button>
+                                <button class="btn btn-primary" id="startButton"><?= __('breathing.controls.start') ?></button>
+                                <button class="btn btn-secondary" id="stopButton" disabled><?= __('breathing.controls.stop') ?></button>
                             </div>
                         </div>
                     </div>
@@ -59,16 +59,16 @@
             <!-- 설정 -->
             <div class="card mt-4">
                 <div class="card-header">
-                    <h3 class="h5 mb-0">설정</h3>
+                    <h3 class="h5 mb-0"><?= __('breathing.settings.title') ?></h3>
                 </div>
                 <div class="card-body">
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="checkbox" id="soundEnabled" checked>
-                        <label class="form-check-label" for="soundEnabled">소리</label>
+                        <label class="form-check-label" for="soundEnabled"><?= __('breathing.settings.sound') ?></label>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="vibrationEnabled" checked>
-                        <label class="form-check-label" for="vibrationEnabled">진동</label>
+                        <label class="form-check-label" for="vibrationEnabled"><?= __('breathing.settings.vibration') ?></label>
                     </div>
                 </div>
             </div>

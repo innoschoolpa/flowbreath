@@ -210,5 +210,32 @@ return [
         'login' => '로그인',
         'register' => '회원가입',
         'logout' => '로그아웃'
+    ],
+
+    // 호흡 운동
+    'breathing' => [
+        'title' => '호흡 운동',
+        'patterns' => [
+            'title' => '호흡 패턴',
+            'danjeon' => '단전 호흡',
+            '478' => '4-7-8 호흡법',
+            'box' => '박스 호흡법'
+        ],
+        'settings' => [
+            'title' => '설정',
+            'sound' => '소리',
+            'vibration' => '진동'
+        ],
+        'timer' => [
+            'title' => '호흡 시간 (초)',
+            'inhale' => '들숨',
+            'exhale' => '날숨',
+            'duration' => '운동 시간 (초)'
+        ],
+        'controls' => [
+            'ready' => '준비',
+            'start' => '시작',
+            'stop' => '정지'
+        ]
     ]
 ]; 

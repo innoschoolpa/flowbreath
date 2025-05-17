@@ -211,5 +211,32 @@ return [
         'login' => 'Login',
         'register' => 'Register',
         'logout' => 'Logout'
+    ],
+
+    // Breathing Exercise
+    'breathing' => [
+        'title' => 'Breathing Exercise',
+        'patterns' => [
+            'title' => 'Breathing Patterns',
+            'danjeon' => 'Danjeon Breathing',
+            '478' => '4-7-8 Breathing',
+            'box' => 'Box Breathing'
+        ],
+        'settings' => [
+            'title' => 'Settings',
+            'sound' => 'Sound',
+            'vibration' => 'Vibration'
+        ],
+        'timer' => [
+            'title' => 'Breathing Time (seconds)',
+            'inhale' => 'Inhale',
+            'exhale' => 'Exhale',
+            'duration' => 'Exercise Duration (seconds)'
+        ],
+        'controls' => [
+            'ready' => 'Ready',
+            'start' => 'Start',
+            'stop' => 'Stop'
+        ]
     ]
 ]; 
