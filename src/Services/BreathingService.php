@@ -82,9 +82,17 @@ class BreathingService
         }
 
         // 단전 호흡의 경우 시간 설정 적용
-        if ($patternId === 'danjeon' && $inhaleTime && $exhaleTime) {
-            $this->patterns['danjeon']['phases'][0]['duration'] = $inhaleTime;
-            $this->patterns['danjeon']['phases'][1]['duration'] = $exhaleTime;
+        if ($patternId === 'danjeon') {
+            $inhaleTime = $inhaleTime ?? 4;  // 기본값 4초
+            $exhaleTime = $exhaleTime ?? 4;  // 기본값 4초
+            
+            // 패턴 복사본 생성
+            $pattern = $this->patterns['danjeon'];
+            $pattern['phases'] = [
+                ['type' => 'inhale', 'duration' => $inhaleTime],
+                ['type' => 'exhale', 'duration' => $exhaleTime]
+            ];
+            $this->patterns['danjeon'] = $pattern;
         }
 
         $sessionId = uniqid('session_', true);
