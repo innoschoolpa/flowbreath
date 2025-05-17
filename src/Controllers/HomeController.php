@@ -74,7 +74,7 @@ class HomeController extends BaseController
 
         $language = Language::getInstance();
 
-        $this->view->render('home', [
+        return $this->view->render('home', [
             'user' => $user,
             'resources' => $resources,
             'recentResources' => $recentResources,
