@@ -1442,11 +1442,10 @@ class Resource extends Model {
             // 새로운 트랜잭션 시작
             $this->db->beginTransaction();
 
-            // 해당 리소스의 번역본 개수 확인 (FOR UPDATE로 잠금)
+            // 해당 리소스의 번역본 개수 확인
             $sql = "SELECT COUNT(*) as translation_count 
                     FROM resource_translations 
-                    WHERE resource_id = ? 
-                    FOR UPDATE";
+                    WHERE resource_id = ?";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([$resourceId]);
             $result = $stmt->fetch(\PDO::FETCH_ASSOC);
