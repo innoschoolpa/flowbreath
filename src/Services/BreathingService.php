@@ -83,16 +83,20 @@ class BreathingService
 
         // 단전 호흡의 경우 시간 설정 적용
         if ($patternId === 'danjeon') {
+            error_log("Starting danjeon breathing with times - inhale: " . $inhaleTime . ", exhale: " . $exhaleTime);
+            
             $inhaleTime = $inhaleTime ?? 4;  // 기본값 4초
             $exhaleTime = $exhaleTime ?? 4;  // 기본값 4초
             
             // 패턴 복사본 생성
             $pattern = $this->patterns['danjeon'];
             $pattern['phases'] = [
-                ['type' => 'inhale', 'duration' => $inhaleTime],
-                ['type' => 'exhale', 'duration' => $exhaleTime]
+                ['type' => 'inhale', 'duration' => (int)$inhaleTime],
+                ['type' => 'exhale', 'duration' => (int)$exhaleTime]
             ];
             $this->patterns['danjeon'] = $pattern;
+            
+            error_log("Updated danjeon pattern: " . json_encode($pattern));
         }
 
         $sessionId = uniqid('session_', true);
@@ -105,16 +109,21 @@ class BreathingService
             'started_at' => date('c'),
             'status' => 'in_progress',
             'current_phase' => 0,
-            'current_phase_start' => time()
+            'current_phase_start' => time(),
+            'inhale_time' => $inhaleTime,
+            'exhale_time' => $exhaleTime
         ];
 
         $this->saveSessions();
+        error_log("Created session: " . json_encode($this->sessions[$sessionId]));
 
         return [
             'session_id' => $sessionId,
             'pattern' => $patternId,
             'duration' => $duration,
-            'started_at' => $this->sessions[$sessionId]['started_at']
+            'started_at' => $this->sessions[$sessionId]['started_at'],
+            'inhale_time' => $inhaleTime,
+            'exhale_time' => $exhaleTime
         ];
     }
 
@@ -126,6 +135,15 @@ class BreathingService
 
         $session = $this->sessions[$session_id];
         $pattern = $this->patterns[$session['pattern']];
+        
+        // 단전 호흡의 경우 저장된 시간 사용
+        if ($session['pattern'] === 'danjeon' && isset($session['inhale_time']) && isset($session['exhale_time'])) {
+            $pattern['phases'] = [
+                ['type' => 'inhale', 'duration' => (int)$session['inhale_time']],
+                ['type' => 'exhale', 'duration' => (int)$session['exhale_time']]
+            ];
+        }
+        
         $currentPhase = $pattern['phases'][$session['current_phase']];
         $elapsed = time() - $session['current_phase_start'];
         $remaining = $currentPhase['duration'] - $elapsed;
@@ -143,6 +161,8 @@ class BreathingService
 
         $visualGuide = $this->getVisualGuide($currentPhase['type']);
         $visualGuide['duration'] = $currentPhase['duration'];
+
+        error_log("Session status - Phase: " . $currentPhase['type'] . ", Duration: " . $currentPhase['duration']);
 
         return [
             'session_id' => $session_id,
