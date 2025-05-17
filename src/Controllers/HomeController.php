@@ -81,6 +81,7 @@ class HomeController extends BaseController
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'search' => $search,
+            'searchQuery' => $search,
             'tagId' => $tagId,
             'sort' => $sort,
             'filter' => $filter,
