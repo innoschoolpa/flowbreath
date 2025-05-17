@@ -16,7 +16,7 @@ class BaseController
     protected function view($view, $data = [])
     {
         // 뷰 파일 경로 설정
-        $viewPath = $_SERVER['DOCUMENT_ROOT'] . '/src/Views/' . $view . '.php';
+        $viewPath = $_SERVER['DOCUMENT_ROOT'] . '/src/View/' . $view . '.php';
         
         // 레이아웃 파일 경로 설정
         $headerPath = $_SERVER['DOCUMENT_ROOT'] . '/src/View/layouts/header.php';
