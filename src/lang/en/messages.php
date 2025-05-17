@@ -12,6 +12,18 @@ return [
     'yes' => 'Yes',
     'no' => 'No',
 
+    // Navigation
+    'nav' => [
+        'breathing' => 'Breathing Exercise',
+        'resources' => 'Resources',
+        'tags' => 'Tags',
+        'api_docs' => 'API Guide',
+        'profile' => 'My Profile',
+        'logout' => 'Logout',
+        'login' => 'Login',
+        'register' => 'Register'
+    ],
+
     // Resources
     'resource' => [
         'list' => 'Resource List',

@@ -198,5 +198,17 @@ return [
         'reply' => '답글',
         'submit' => '등록',
         'update' => '수정'
+    ],
+
+    // Navigation
+    'nav' => [
+        'breathing' => '호흡 운동',
+        'resources' => '자료',
+        'tags' => '태그',
+        'api_docs' => 'API 안내',
+        'profile' => '내 정보',
+        'logout' => '로그아웃',
+        'login' => '로그인',
+        'register' => '회원가입'
     ]
 ]; 

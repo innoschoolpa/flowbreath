@@ -116,23 +116,23 @@ if (session_status() === PHP_SESSION_NONE) {
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="/">FlowBreath</a>
+            <a class="navbar-brand" href="/"><?= $this->lang('app_name') ?></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/breathing">호흡 운동</a>
+                        <a class="nav-link" href="/breathing"><?= $this->lang('nav.breathing') ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/resources">자료</a>
+                        <a class="nav-link" href="/resources"><?= $this->lang('nav.resources') ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/tags">태그</a>
+                        <a class="nav-link" href="/tags"><?= $this->lang('nav.tags') ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/api/docs">API 안내</a>
+                        <a class="nav-link" href="/api-docs"><?= $this->lang('nav.api_docs') ?></a>
                     </li>
                 </ul>
                 <ul class="navbar-nav language-switch">
@@ -146,17 +146,17 @@ if (session_status() === PHP_SESSION_NONE) {
                 <ul class="navbar-nav auth-buttons">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="/profile">내 정보</a>
+                            <a class="nav-link" href="/profile"><?= $this->lang('nav.profile') ?></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/logout">로그아웃</a>
+                            <a class="nav-link" href="/logout"><?= $this->lang('nav.logout') ?></a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="/login">로그인</a>
+                            <a class="nav-link" href="/login"><?= $this->lang('nav.login') ?></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/register">회원가입</a>
+                            <a class="nav-link" href="/register"><?= $this->lang('nav.register') ?></a>
                         </li>
                     <?php endif; ?>
                 </ul>
