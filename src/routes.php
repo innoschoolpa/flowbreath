@@ -39,6 +39,7 @@ return function (Router $router) {
     $router->add('GET', '/resources/edit/{id}', [ResourceController::class, 'edit']);
     $router->add('PUT', '/resources/{id}', [ResourceController::class, 'update']);
     $router->add('DELETE', '/resources/{id}', [ResourceController::class, 'delete']);
+    $router->add('DELETE', '/api/resources/{id}/translation', [ResourceController::class, 'deleteTranslation']);
     $router->add('GET', '/resources/search', [ResourceController::class, 'search']);
     $router->add('POST', '/resources/toggle-visibility/{id}', [ResourceController::class, 'toggleVisibility']);
     $router->add('GET', '/resources/view/{id}', [ResourceController::class, 'show']);

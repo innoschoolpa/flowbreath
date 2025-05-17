@@ -1426,4 +1426,38 @@ class Resource extends Model {
     public function getDb() {
         return $this->db;
     }
+
+    /**
+     * 특정 언어의 번역본만 삭제
+     */
+    public function deleteTranslation($id, $languageCode): bool
+    {
+        try {
+            $this->db->beginTransaction();
+
+            // 해당 리소스의 번역본 수 확인
+            $translationCount = $this->db->fetch(
+                "SELECT COUNT(*) as count FROM resource_translations WHERE resource_id = ?",
+                [$id]
+            )['count'];
+
+            // 번역본이 하나뿐이면 리소스 전체를 삭제
+            if ($translationCount <= 1) {
+                return $this->delete($id);
+            }
+
+            // 특정 언어의 번역본만 삭제
+            $this->db->query(
+                "DELETE FROM resource_translations WHERE resource_id = ? AND language_code = ?",
+                [$id, $languageCode]
+            );
+
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollback();
+            error_log("Error in Resource::deleteTranslation: " . $e->getMessage());
+            throw new Exception("번역본 삭제 중 오류가 발생했습니다.");
+        }
+    }
 }

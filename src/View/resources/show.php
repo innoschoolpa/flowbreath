@@ -77,13 +77,9 @@ $title = $title ?? '리소스 상세';
                             <a href="/resources/edit/<?php echo htmlspecialchars($resource['id']); ?>" class="btn btn-primary btn-sm">
                                 <i class="fas fa-edit"></i> 수정
                             </a>
-                            <form action="/resources/<?php echo htmlspecialchars($resource['id']); ?>" method="POST" class="d-inline" onsubmit="return confirm('정말로 이 리소스를 삭제하시겠습니까?');">
-                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
-                                <input type="hidden" name="_method" value="DELETE">
-                                <button type="submit" class="btn btn-danger btn-sm">
-                                    <i class="fas fa-trash"></i> 삭제
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('<?php echo htmlspecialchars($resource['id']); ?>', '<?php echo htmlspecialchars($resource['language_code']); ?>')">
+                                <i class="fas fa-trash"></i> 삭제
+                            </button>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -179,13 +175,9 @@ $title = $title ?? '리소스 상세';
                         <a href="/resources/edit/<?php echo htmlspecialchars($resource['id']); ?>" class="btn btn-primary">
                             <i class="fas fa-edit"></i> 수정
                         </a>
-                        <form action="/resources/<?php echo htmlspecialchars($resource['id']); ?>" method="POST" class="d-inline" onsubmit="return confirm('정말로 이 리소스를 삭제하시겠습니까?');">
-                            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
-                            <input type="hidden" name="_method" value="DELETE">
-                            <button type="submit" class="btn btn-danger">
-                                <i class="fas fa-trash"></i> 삭제
-                            </button>
-                        </form>
+                        <button type="button" class="btn btn-danger" onclick="confirmDelete('<?php echo htmlspecialchars($resource['id']); ?>', '<?php echo htmlspecialchars($resource['language_code']); ?>')">
+                            <i class="fas fa-trash"></i> 삭제
+                        </button>
                     <?php endif; ?>
                 </div>
             </div>
@@ -216,6 +208,34 @@ $title = $title ?? '리소스 상세';
             }
         });
     });
+
+    function confirmDelete(resourceId, languageCode) {
+        if (confirm('이 번역본을 삭제하시겠습니까?')) {
+            fetch(`/api/resources/${resourceId}/translation`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '<?php echo $_SESSION['csrf_token'] ?? ''; ?>'
+                },
+                body: JSON.stringify({
+                    language_code: languageCode
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert(data.message);
+                    window.location.href = '/resources';
+                }
+            })
+            .catch(error => {
+                alert('삭제 중 오류가 발생했습니다.');
+                console.error('Error:', error);
+            });
+        }
+    }
     </script>
 </body>
 </html>

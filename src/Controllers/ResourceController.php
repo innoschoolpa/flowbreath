@@ -738,4 +738,34 @@ class ResourceController extends BaseController {
             return $this->response->redirect("/resources/{$id}");
         }
     }
+
+    public function deleteTranslation(Request $request, $id) {
+        try {
+            $user = $this->auth->user();
+            if (!$user) {
+                return $this->response->json(['error' => '로그인이 필요합니다.'], 401);
+            }
+
+            $resource = $this->resource->findById($id);
+            if (!$resource) {
+                return $this->response->json(['error' => '리소스를 찾을 수 없습니다.'], 404);
+            }
+
+            // 권한 확인
+            if ($resource['user_id'] !== $user['id'] && !$user['is_admin']) {
+                return $this->response->json(['error' => '삭제 권한이 없습니다.'], 403);
+            }
+
+            $languageCode = $request->get('language_code');
+            if (!$languageCode) {
+                return $this->response->json(['error' => '언어 코드가 필요합니다.'], 400);
+            }
+
+            $this->resource->deleteTranslation($id, $languageCode);
+
+            return $this->response->json(['message' => '번역본이 삭제되었습니다.']);
+        } catch (\Exception $e) {
+            return $this->response->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }
