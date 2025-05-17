@@ -116,23 +116,23 @@ if (session_status() === PHP_SESSION_NONE) {
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="/"><?= $this->lang('app_name') ?></a>
+            <a class="navbar-brand" href="/"><?= $language->get('app_name') ?></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/breathing"><?= $this->lang('nav.breathing') ?></a>
+                        <a class="nav-link" href="/breathing"><?= $language->get('nav.breathing') ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/resources"><?= $this->lang('nav.resources') ?></a>
+                        <a class="nav-link" href="/resources"><?= $language->get('nav.resources') ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/tags"><?= $this->lang('nav.tags') ?></a>
+                        <a class="nav-link" href="/tags"><?= $language->get('nav.tags') ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/api-docs"><?= $this->lang('nav.api_docs') ?></a>
+                        <a class="nav-link" href="/api-docs"><?= $language->get('nav.api_docs') ?></a>
                     </li>
                 </ul>
                 <ul class="navbar-nav language-switch">
@@ -146,17 +146,17 @@ if (session_status() === PHP_SESSION_NONE) {
                 <ul class="navbar-nav auth-buttons">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="/profile"><?= $this->lang('nav.profile') ?></a>
+                            <a class="nav-link" href="/profile"><?= $language->get('nav.profile') ?></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/logout"><?= $this->lang('nav.logout') ?></a>
+                            <a class="nav-link" href="/logout"><?= $language->get('nav.logout') ?></a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="/login"><?= $this->lang('nav.login') ?></a>
+                            <a class="nav-link" href="/login"><?= $language->get('nav.login') ?></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/register"><?= $this->lang('nav.register') ?></a>
+                            <a class="nav-link" href="/register"><?= $language->get('nav.register') ?></a>
                         </li>
                     <?php endif; ?>
                 </ul>
