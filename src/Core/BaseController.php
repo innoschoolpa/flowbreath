@@ -1,6 +1,8 @@
 <?php
 
-namespace Core;
+namespace App\Core;
+
+use App\Models\User;
 
 class BaseController
 {
@@ -50,7 +52,7 @@ class BaseController
     protected function getCurrentUser()
     {
         if (isset($_SESSION['user_id'])) {
-            $userModel = new \App\Models\User();
+            $userModel = new User();
             return $userModel->findById($_SESSION['user_id']);
         }
         return null;
@@ -73,5 +75,11 @@ class BaseController
     protected function post($key, $default = null)
     {
         return $_POST[$key] ?? $default;
+    }
+
+    protected function lang($key)
+    {
+        $language = \App\Core\Language::getInstance();
+        return $language->get($key);
     }
 } 
