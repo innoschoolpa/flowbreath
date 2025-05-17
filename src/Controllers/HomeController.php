@@ -93,7 +93,7 @@ class HomeController extends BaseController
 
     private function renderLandingPage()
     {
-        $this->view->render('landing');
+        return $this->view->render('landing');
     }
 
     public function notFound()
