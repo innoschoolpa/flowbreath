@@ -781,8 +781,15 @@ class ResourceController extends BaseController {
             }
 
             // 요청에서 언어 코드 가져오기
-            $requestBody = json_decode(file_get_contents('php://input'), true);
+            $requestBody = $this->request->getJson();
             error_log("[DEBUG] Request body: " . print_r($requestBody, true));
+            
+            if (!$requestBody) {
+                error_log("[DEBUG] Invalid JSON request body");
+                $response = $this->response->json(['success' => false, 'error' => 'Invalid JSON request body'], 400);
+                $response->send();
+                return;
+            }
             
             $languageCode = $requestBody['language_code'] ?? null;
             if (!$languageCode || !in_array($languageCode, ['ko', 'en'])) {
