@@ -148,6 +148,10 @@ class ResourceController extends BaseController {
 
             // DB 원본 정보에 작성자 이름 추가
             $resource['author_name'] = $resource['author_name'] ?? 'Unknown';
+            
+            // 언어 코드 설정
+            $resource['translation_language_code'] = $resource['translation_language_code'] ?? $lang;
+            $resource['language_code'] = $lang;
 
             if ($request->wantsJson() || $request->isAjax()) {
                 return $this->response->json($resource);

@@ -77,7 +77,7 @@ $title = $title ?? '리소스 상세';
                             <a href="/resources/edit/<?php echo htmlspecialchars($resource['id']); ?>" class="btn btn-primary btn-sm">
                                 <i class="fas fa-edit"></i> 수정
                             </a>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('<?php echo htmlspecialchars($resource['id']); ?>', '<?php echo htmlspecialchars($resource['language_code']); ?>')">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('<?php echo htmlspecialchars($resource['id']); ?>', '<?php echo htmlspecialchars($resource['translation_language_code'] ?? $resource['language_code'] ?? 'ko'); ?>')">
                                 <i class="fas fa-trash"></i> 삭제
                             </button>
                         <?php endif; ?>
@@ -175,7 +175,7 @@ $title = $title ?? '리소스 상세';
                         <a href="/resources/edit/<?php echo htmlspecialchars($resource['id']); ?>" class="btn btn-primary">
                             <i class="fas fa-edit"></i> 수정
                         </a>
-                        <button type="button" class="btn btn-danger" onclick="confirmDelete('<?php echo htmlspecialchars($resource['id']); ?>', '<?php echo htmlspecialchars($resource['language_code']); ?>')">
+                        <button type="button" class="btn btn-danger" onclick="confirmDelete('<?php echo htmlspecialchars($resource['id']); ?>', '<?php echo htmlspecialchars($resource['translation_language_code'] ?? $resource['language_code'] ?? 'ko'); ?>')">
                             <i class="fas fa-trash"></i> 삭제
                         </button>
                     <?php endif; ?>
