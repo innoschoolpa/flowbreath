@@ -18,12 +18,12 @@ function get_language() {
  * 언어 파일 로드
  */
 function load_language_file($lang) {
-    $file = __DIR__ . "/../Lang/{$lang}/messages.php";
+    $file = __DIR__ . "/../lang/{$lang}/messages.php";
     if (file_exists($file)) {
         return require $file;
     }
     // 기본 언어(한국어) 파일 로드
-    return require __DIR__ . "/../Lang/ko/messages.php";
+    return require __DIR__ . "/../lang/ko/messages.php";
 }
 
 /**
