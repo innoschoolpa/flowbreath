@@ -219,24 +219,31 @@ $title = $title ?? '리소스 상세';
                 },
                 body: JSON.stringify({ language_code: languageCode })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('서버 응답이 올바르지 않습니다.');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
+                    // 성공 메시지 표시
                     alert(data.message);
-                    if (data.data.original_deleted) {
-                        // 리소스가 완전히 삭제된 경우 리소스 목록으로 이동
+                    
+                    // 리소스가 완전히 삭제되었는지 확인
+                    if (data.data && data.data.original_deleted) {
                         window.location.href = '/resources';
                     } else {
-                        // 번역본만 삭제된 경우 현재 페이지 새로고침
                         window.location.reload();
                     }
                 } else {
-                    alert(data.error || '삭제 중 오류가 발생했습니다.');
+                    // 서버에서 반환된 에러 메시지 표시
+                    throw new Error(data.error || '알 수 없는 오류가 발생했습니다.');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('삭제 중 오류가 발생했습니다.');
+                alert(error.message || '삭제 중 오류가 발생했습니다.');
             });
         }
     }
