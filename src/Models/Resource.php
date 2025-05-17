@@ -1611,18 +1611,21 @@ class Resource extends Model {
     public function getRecentResources($userId, $limit = 6)
     {
         try {
+            $lang = Language::getInstance()->getCurrentLanguage();
             $sql = "SELECT r.*, u.name as username, 
+                    rt.title, rt.content, rt.description,
                     GROUP_CONCAT(t.name) as tags
                     FROM resources r
                     LEFT JOIN users u ON r.user_id = u.id
-                    LEFT JOIN resource_tags rt ON r.id = rt.resource_id
-                    LEFT JOIN tags t ON rt.tag_id = t.id
+                    LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
+                    LEFT JOIN resource_tags rt2 ON r.id = rt2.resource_id
+                    LEFT JOIN tags t ON rt2.tag_id = t.id
                     WHERE r.user_id = ?
                     GROUP BY r.id
                     ORDER BY r.created_at DESC
                     LIMIT ?";
             
-            $resources = $this->db->fetchAll($sql, [$userId, $limit]);
+            $resources = $this->db->fetchAll($sql, [$lang, $userId, $limit]);
             
             // 태그 문자열을 배열로 변환
             foreach ($resources as &$resource) {
