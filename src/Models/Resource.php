@@ -1111,7 +1111,8 @@ class Resource extends Model {
 
         if (!empty($filters['keyword'])) {
             $where[] = "(title LIKE :keyword OR description LIKE :keyword)";
-            $params[':keyword'] = '%' . $filters['keyword'] . '%';
+            $sqlParams[] = '%' . $filters['keyword'] . '%';
+            $sqlParams[] = '%' . $filters['keyword'] . '%';
         }
 
         if (!empty($filters['tag_ids'])) {
@@ -1490,6 +1491,117 @@ class Resource extends Model {
         } catch (PDOException $e) {
             error_log("Database error in getTranslationCount: " . $e->getMessage());
             throw new Exception("번역본 개수를 조회하는 중 오류가 발생했습니다.");
+        }
+    }
+
+    public function getResourcesForUser($userId, $search = '', $tagId = null, $sort = 'latest', $filter = 'all', $limit = 10, $offset = 0)
+    {
+        try {
+            $lang = Language::getInstance()->getCurrentLanguage();
+            $select = $this->translationSelect('r', $lang);
+            
+            $sql = "SELECT r.*, {$select[0]}, {$select[1]}, {$select[2]}, GROUP_CONCAT(t.name) as tags
+                    FROM {$this->table} r
+                    {$select[3]}
+                    LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id
+                    LEFT JOIN tags t ON rtag.tag_id = t.id
+                    WHERE r.user_id = ?";
+
+            $params = [$lang, $userId];
+
+            // Add search condition
+            if (!empty($search)) {
+                $sql .= " AND (rt.title LIKE ? OR rt.content LIKE ? OR rt.description LIKE ?)";
+                $searchTerm = '%' . $search . '%';
+                $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
+            }
+
+            // Add tag filter
+            if ($tagId) {
+                $sql .= " AND r.id IN (SELECT resource_id FROM resource_tags WHERE tag_id = ?)";
+                $params[] = $tagId;
+            }
+
+            // Add visibility filter
+            if ($filter === 'public') {
+                $sql .= " AND r.visibility = 'public'";
+            } elseif ($filter === 'private') {
+                $sql .= " AND r.visibility = 'private'";
+            }
+
+            $sql .= " GROUP BY r.id";
+
+            // Add sorting
+            switch ($sort) {
+                case 'oldest':
+                    $sql .= " ORDER BY r.created_at ASC";
+                    break;
+                case 'title':
+                    $sql .= " ORDER BY rt.title ASC";
+                    break;
+                case 'latest':
+                default:
+                    $sql .= " ORDER BY r.created_at DESC";
+                    break;
+            }
+
+            // Add pagination
+            $sql .= " LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+
+            $resources = $this->db->fetchAll($sql, $params);
+
+            foreach ($resources as &$resource) {
+                $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
+            }
+
+            return $resources;
+        } catch (PDOException $e) {
+            error_log("Database error in getResourcesForUser: " . $e->getMessage());
+            throw new Exception("사용자의 리소스를 조회하는 중 오류가 발생했습니다.");
+        }
+    }
+
+    public function getTotalResourcesForUser($userId, $search = '', $tagId = null, $filter = 'all')
+    {
+        try {
+            $lang = Language::getInstance()->getCurrentLanguage();
+            $select = $this->translationSelect('r', $lang);
+            
+            $sql = "SELECT COUNT(DISTINCT r.id) as total
+                    FROM {$this->table} r
+                    {$select[3]}
+                    LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id
+                    WHERE r.user_id = ?";
+
+            $params = [$lang, $userId];
+
+            // Add search condition
+            if (!empty($search)) {
+                $sql .= " AND (rt.title LIKE ? OR rt.content LIKE ? OR rt.description LIKE ?)";
+                $searchTerm = '%' . $search . '%';
+                $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
+            }
+
+            // Add tag filter
+            if ($tagId) {
+                $sql .= " AND r.id IN (SELECT resource_id FROM resource_tags WHERE tag_id = ?)";
+                $params[] = $tagId;
+            }
+
+            // Add visibility filter
+            if ($filter === 'public') {
+                $sql .= " AND r.visibility = 'public'";
+            } elseif ($filter === 'private') {
+                $sql .= " AND r.visibility = 'private'";
+            }
+
+            $result = $this->db->fetch($sql, $params);
+            return $result['total'] ?? 0;
+        } catch (PDOException $e) {
+            error_log("Database error in getTotalResourcesForUser: " . $e->getMessage());
+            throw new Exception("사용자의 리소스 총 개수를 조회하는 중 오류가 발생했습니다.");
         }
     }
 }
