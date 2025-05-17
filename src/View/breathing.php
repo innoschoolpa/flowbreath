@@ -22,7 +22,7 @@
 
                     <!-- 시각적 가이드 -->
                     <div class="text-center mb-4">
-                        <div id="breathingCircle" class="mx-auto" style="width: 200px; height: 200px; border-radius: 50%; background-color: #4CAF50; transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                        <div id="breathingCircle" class="mx-auto" style="width: 200px; height: 200px; border-radius: 50%; background-color: #4CAF50; transition: all 4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                         <div id="timer" class="mt-3 h3">05:00</div>
                         <div id="phaseText" class="mt-2 text-muted">준비</div>
                     </div>
@@ -61,6 +61,8 @@ let timerInterval = null;
 let statusInterval = null;
 let audioContext = null;
 let oscillator = null;
+let lastPhase = null;
+let lastCircleSize = 1;
 
 // 오디오 컨텍스트 초기화
 function initAudio() {
@@ -192,14 +194,37 @@ function updateVisualGuide(data) {
         circle.style.transform = 'scale(1)';
         circle.style.backgroundColor = '#4CAF50';
         phaseText.textContent = '준비';
+        lastPhase = null;
+        lastCircleSize = 1;
         return;
     }
 
     const guide = data.visual_guide;
-    requestAnimationFrame(() => {
-        circle.style.transform = `scale(${guide.circle_size})`;
-        circle.style.backgroundColor = guide.color;
-    });
+    const currentPhase = data.current_phase.type;
+    
+    // 단계가 변경되었을 때만 transition 시간 조정
+    if (currentPhase !== lastPhase) {
+        const transitionDuration = {
+            'inhale': '4s',    // 들숨: 4초
+            'hold': '0.1s',    // 참기: 거의 즉시
+            'exhale': '8s'     // 날숨: 8초
+        }[currentPhase] || '2s';
+        
+        circle.style.transition = `all ${transitionDuration} cubic-bezier(0.4, 0, 0.2, 1)`;
+        lastPhase = currentPhase;
+    }
+
+    // 원의 크기 변화가 너무 급격하지 않도록 조정
+    const targetSize = guide.circle_size;
+    const sizeDiff = Math.abs(targetSize - lastCircleSize);
+    
+    if (sizeDiff > 0.1) {
+        requestAnimationFrame(() => {
+            circle.style.transform = `scale(${targetSize})`;
+            circle.style.backgroundColor = guide.color;
+        });
+        lastCircleSize = targetSize;
+    }
     
     // 단계 텍스트 업데이트
     const phaseMap = {
@@ -207,11 +232,11 @@ function updateVisualGuide(data) {
         'hold': '참기',
         'exhale': '날숨'
     };
-    phaseText.textContent = phaseMap[data.current_phase.type] || '준비';
+    phaseText.textContent = phaseMap[currentPhase] || '준비';
     
     // 소리와 진동
     if (data.current_phase.time_remaining === data.current_phase.duration) {
-        playSound(440 + (data.current_phase.type === 'exhale' ? 220 : 0), 0.3);
+        playSound(440 + (currentPhase === 'exhale' ? 220 : 0), 0.3);
         vibrate(300);
     }
 }
@@ -247,72 +272,43 @@ function startStatusUpdates() {
 
 // 세션 정지
 async function stopSession() {
-    if (!currentSession) {
-        console.log('No active session to stop');
-        return;
-    }
-
-    console.log('Stopping session:', currentSession);
+    if (!currentSession) return;
 
     try {
-        const response = await fetch(`/api/breathing/sessions/${currentSession}/end`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        const response = await fetch(`/api/breathing/sessions/${currentSession}`, {
+            method: 'DELETE'
         });
 
-        console.log('Response status:', response.status);
-        
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error response:', errorText);
-            throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
-        }
-        
-        const data = await response.json();
-        console.log('Response data:', data);
-
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to end session');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        // 타이머와 상태 업데이트 중지
         clearInterval(timerInterval);
         clearInterval(statusInterval);
         
-        // UI 초기화
-        currentSession = null;
         document.getElementById('startButton').disabled = false;
         document.getElementById('stopButton').disabled = true;
-        document.getElementById('timer').textContent = '00:00';
         
-        // 원 애니메이션 초기화
         const circle = document.getElementById('breathingCircle');
-        requestAnimationFrame(() => {
-            circle.style.transform = 'scale(1)';
-            circle.style.backgroundColor = '#4CAF50';
-        });
+        circle.style.transform = 'scale(1)';
+        circle.style.backgroundColor = '#4CAF50';
         document.getElementById('phaseText').textContent = '준비';
         
-        // 종료 소리
-        playSound(330, 0.5);
-        vibrate(500);
+        currentSession = null;
+        lastPhase = null;
+        lastCircleSize = 1;
         
-        // 성공 메시지 표시
-        alert('호흡 운동이 종료되었습니다.');
+        // 정지 소리
+        playSound(220, 0.3);
+        vibrate(200);
     } catch (error) {
         console.error('Error stopping session:', error);
-        alert('세션을 종료하는 중 오류가 발생했습니다: ' + error.message);
     }
 }
 
-// 이벤트 리스너
+// 이벤트 리스너 설정
 document.getElementById('startButton').addEventListener('click', startSession);
 document.getElementById('stopButton').addEventListener('click', stopSession);
-
-// 초기 상태 설정
-updateVisualGuide();
 </script>
 
 <?php require_once __DIR__ . '/layouts/footer.php'; ?> 
