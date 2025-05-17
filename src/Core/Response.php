@@ -54,11 +54,20 @@ class Response
             throw new \RuntimeException('Cannot send response after it has been sent');
         }
 
+        // Clear any previous output
         $this->clearOutputBuffer();
-        $this->setContentType('application/json');
+        
+        // Set headers
+        $this->setContentType('application/json; charset=UTF-8');
         $this->setStatusCode($statusCode);
-        $this->setContent(json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-        // $this->send(); // Remove immediate send
+        
+        // Encode JSON with error checking
+        $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($json === false) {
+            throw new \RuntimeException('JSON encoding failed: ' . json_last_error_msg());
+        }
+        
+        $this->setContent($json);
         return $this;
     }
 
@@ -127,8 +136,10 @@ class Response
             throw new \RuntimeException('Response has already been sent');
         }
 
+        // Clear any remaining output
         $this->clearOutputBuffer();
 
+        // Send headers
         if (!headers_sent()) {
             foreach ($this->headers as $name => $value) {
                 header("$name: $value", true);
@@ -136,8 +147,14 @@ class Response
             http_response_code((int)$this->statusCode);
         }
 
+        // Send content
         echo $this->content;
         $this->sent = true;
+        
+        // Ensure no more output
+        if (ob_get_level()) {
+            ob_end_flush();
+        }
     }
 
     public function isSent()

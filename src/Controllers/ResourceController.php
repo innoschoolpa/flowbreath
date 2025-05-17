@@ -756,7 +756,8 @@ class ResourceController extends BaseController {
             
             if (!$user) {
                 error_log("[DEBUG] User not authenticated");
-                $this->response->json(['success' => false, 'error' => 'Unauthorized'], 401)->send();
+                $response = $this->response->json(['success' => false, 'error' => 'Unauthorized'], 401);
+                $response->send();
                 return;
             }
 
@@ -766,14 +767,16 @@ class ResourceController extends BaseController {
             
             if (!$resource) {
                 error_log("[DEBUG] Resource not found");
-                $this->response->json(['success' => false, 'error' => 'Resource not found'], 404)->send();
+                $response = $this->response->json(['success' => false, 'error' => 'Resource not found'], 404);
+                $response->send();
                 return;
             }
 
             // 권한 확인
             if ($resource['user_id'] != $user['id']) {
                 error_log("[DEBUG] Permission denied - user_id: {$user['id']}, resource_user_id: {$resource['user_id']}");
-                $this->response->json(['success' => false, 'error' => 'Permission denied'], 403)->send();
+                $response = $this->response->json(['success' => false, 'error' => 'Permission denied'], 403);
+                $response->send();
                 return;
             }
 
@@ -784,7 +787,8 @@ class ResourceController extends BaseController {
             $languageCode = $requestBody['language_code'] ?? null;
             if (!$languageCode || !in_array($languageCode, ['ko', 'en'])) {
                 error_log("[DEBUG] Invalid language code: " . $languageCode);
-                $this->response->json(['success' => false, 'error' => 'Invalid language code'], 400)->send();
+                $response = $this->response->json(['success' => false, 'error' => 'Invalid language code'], 400);
+                $response->send();
                 return;
             }
 
@@ -806,7 +810,7 @@ class ResourceController extends BaseController {
                 }
                 
                 error_log("[DEBUG] Translation deleted successfully");
-                $this->response->json([
+                $response = $this->response->json([
                     'success' => true,
                     'message' => '번역본이 성공적으로 삭제되었습니다.',
                     'data' => [
@@ -814,17 +818,20 @@ class ResourceController extends BaseController {
                         'language_code' => $languageCode,
                         'original_deleted' => $translationCount === 1
                     ]
-                ])->send();
+                ]);
+                $response->send();
                 return;
             } else {
                 error_log("[DEBUG] Failed to delete translation");
-                $this->response->json(['success' => false, 'error' => 'Failed to delete translation'], 500)->send();
+                $response = $this->response->json(['success' => false, 'error' => 'Failed to delete translation'], 500);
+                $response->send();
                 return;
             }
         } catch (\Exception $e) {
             error_log("[ERROR] Exception in deleteTranslation: " . $e->getMessage());
             error_log("[ERROR] Stack trace: " . $e->getTraceAsString());
-            $this->response->json(['success' => false, 'error' => $e->getMessage()], 500)->send();
+            $response = $this->response->json(['success' => false, 'error' => $e->getMessage()], 500);
+            $response->send();
             return;
         }
     }
