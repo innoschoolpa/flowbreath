@@ -238,7 +238,7 @@ $title = $title ?? '리소스 상세';
                     }
                 } else {
                     // 서버에서 반환된 에러 메시지 표시
-                    throw new Error(data.error || '알 수 없는 오류가 발생했습니다.');
+                    alert(data.error || '알 수 없는 오류가 발생했습니다.');
                 }
             })
             .catch(error => {
