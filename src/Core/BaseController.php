@@ -22,6 +22,9 @@ class BaseController
         $headerPath = $_SERVER['DOCUMENT_ROOT'] . '/src/View/layouts/header.php';
         $footerPath = $_SERVER['DOCUMENT_ROOT'] . '/src/View/layouts/footer.php';
         
+        // 데이터에 language 인스턴스 추가
+        $data['language'] = $this->language;
+        
         // 데이터 추출
         extract($data);
         
