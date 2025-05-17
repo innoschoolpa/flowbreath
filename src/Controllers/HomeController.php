@@ -71,6 +71,8 @@ class HomeController extends BaseController
         $popularTags = $this->tagModel->getPopularTags($userId, 10);
         $recentTags = $this->tagModel->getRecentTags($userId, 10);
 
+        $language = Language::getInstance();
+
         $this->view->render('home', [
             'user' => $user,
             'resources' => $resources,
@@ -81,7 +83,8 @@ class HomeController extends BaseController
             'search' => $search,
             'tagId' => $tagId,
             'sort' => $sort,
-            'filter' => $filter
+            'filter' => $filter,
+            'language' => $language
         ]);
     }
 
