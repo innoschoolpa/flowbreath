@@ -101,7 +101,7 @@ class HomeController
     private function renderMainPage($language, $recentResources, $popularTags, $isLoggedIn, $user, $searchQuery, $searchResults)
     {
         ob_start();
-        include dirname(__DIR__, 2) . '/templates/home.php';
+        include dirname(__DIR__) . '/View/home.php';
         return ob_get_clean();
     }
 
