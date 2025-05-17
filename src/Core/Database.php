@@ -88,7 +88,9 @@ class Database
                     '/domains/flowbreath.io/public_html/config/database.php',
                     '/domains/flowbreath.io/public_html/src/Config/database.php',
                     $_SERVER['DOCUMENT_ROOT'] . '/config/database.php',
-                    dirname($_SERVER['DOCUMENT_ROOT']) . '/config/database.php'
+                    dirname($_SERVER['DOCUMENT_ROOT']) . '/config/database.php',
+                    __DIR__ . '/../../config/database.php',
+                    __DIR__ . '/../Config/database.php',
                 ];
 
                 $dbConfigPath = null;

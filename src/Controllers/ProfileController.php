@@ -110,7 +110,7 @@ class ProfileController extends Controller
             $stats = [
                 'total_resources' => count($resources),
                 'public_resources' => count(array_filter($resources, function($r) { 
-                    return $r['visibility'] === 'public' && $r['deleted_at'] === null; 
+                    return ($r['visibility'] === 'public') && (!isset($r['deleted_at']) || $r['deleted_at'] === null); 
                 })),
                 'total_views' => array_sum(array_column($resources, 'view_count')),
                 'total_likes' => array_sum(array_column($resources, 'like_count')),
@@ -119,12 +119,12 @@ class ProfileController extends Controller
 
             // 최근 활동 가져오기 (삭제되지 않은 리소스만)
             $recentActivity = array_filter($resourceModel->getRecentActivityByUserId($userId, 5), function($activity) {
-                return $activity['deleted_at'] === null;
+                return !isset($activity['deleted_at']) || $activity['deleted_at'] === null;
             });
 
             // 인기 리소스 가져오기 (삭제되지 않은 리소스만)
             $popularResources = array_filter($resourceModel->getPopularResourcesByUserId($userId, 3), function($resource) {
-                return $resource['deleted_at'] === null;
+                return !isset($resource['deleted_at']) || $resource['deleted_at'] === null;
             });
 
             // 리소스 타입별 통계
