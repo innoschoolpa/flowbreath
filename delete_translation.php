@@ -7,12 +7,30 @@ use App\Core\Database;
 // 데이터베이스 연결
 $db = Database::getInstance();
 
+// 요청 메소드 확인
+$method = $_SERVER['REQUEST_METHOD'];
+
 // 리소스 ID와 언어 코드를 받음
-$resourceId = filter_input(INPUT_POST, 'resource_id', FILTER_VALIDATE_INT);
-$languageCode = filter_input(INPUT_POST, 'language_code', FILTER_SANITIZE_STRING);
+$resourceId = null;
+$languageCode = null;
+
+if ($method === 'POST') {
+    $resourceId = filter_input(INPUT_POST, 'resource_id', FILTER_VALIDATE_INT);
+    $languageCode = filter_input(INPUT_POST, 'language_code', FILTER_SANITIZE_STRING);
+} elseif ($method === 'DELETE') {
+    // URL에서 resource_id 추출
+    $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $segments = explode('/', trim($path, '/'));
+    $resourceId = filter_var($segments[array_search('resources', $segments) + 1], FILTER_VALIDATE_INT);
+    
+    // 요청 본문에서 language_code 추출
+    $input = json_decode(file_get_contents('php://input'), true);
+    $languageCode = $input['language_code'] ?? null;
+}
 
 // 입력값 검증
 if (!$resourceId || !$languageCode || !in_array($languageCode, ['ko', 'en'])) {
+    http_response_code(400);
     die(json_encode([
         'success' => false,
         'message' => '유효하지 않은 리소스 ID 또는 언어 코드입니다.'
@@ -66,6 +84,7 @@ try {
         throw new Exception('트랜잭션 커밋 중 오류가 발생했습니다.');
     }
 
+    http_response_code(200);
     echo json_encode([
         'success' => true,
         'message' => '번역본이 성공적으로 삭제되었습니다.',
@@ -86,6 +105,7 @@ try {
     
     error_log("Translation deletion error: " . $e->getMessage());
     
+    http_response_code(500);
     echo json_encode([
         'success' => false,
         'message' => $e->getMessage(),
