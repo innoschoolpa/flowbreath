@@ -112,7 +112,7 @@ function uploadImage(file) {
     .then(data => {
         if (data.success) {
             return {
-                url: data.url
+                default: data.url
             };
         } else {
             throw new Error(data.error || '이미지 업로드에 실패했습니다.');
@@ -172,7 +172,10 @@ ClassicEditor
                 'imageStyle:inline',
                 'imageStyle:block',
                 'imageStyle:side'
-            ]
+            ],
+            upload: {
+                types: ['jpeg', 'png', 'gif', 'jpg']
+            }
         },
         table: {
             contentToolbar: [
