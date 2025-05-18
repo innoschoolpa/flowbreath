@@ -214,8 +214,6 @@ $title = $title ?? '리소스 상세';
                             <li><b>유형:</b> <?= htmlspecialchars($resource['type'] ?? '-') ?></li>
                             <li><b>슬러그:</b> <?= htmlspecialchars($resource['slug'] ?? '-') ?></li>
                             <li><b>파일:</b> <?= htmlspecialchars($resource['file_path'] ?? '-') ?></li>
-                            <li><b>설명(description):</b> <?= htmlspecialchars($resource['description'] ?? '-') ?></li>
-                            <!-- 필요시 추가 필드 -->
                         </ul>
                         <button id="toggle-meta-btn" class="btn btn-sm btn-outline-secondary mt-2">더보기</button>
                     </div>
@@ -255,17 +253,20 @@ $title = $title ?? '리소스 상세';
         let expanded = false;
 
         // 초기 상태 설정
-        metaList.style.maxHeight = '120px';
+        const initialHeight = '120px';
+        const expandedHeight = metaList.scrollHeight + 'px';
+        
+        metaList.style.maxHeight = initialHeight;
         metaList.style.overflow = 'hidden';
         metaList.style.transition = 'max-height 0.3s ease-in-out';
 
         toggleBtn.addEventListener('click', function() {
             expanded = !expanded;
             if (expanded) {
-                metaList.style.maxHeight = metaList.scrollHeight + 'px';
+                metaList.style.maxHeight = expandedHeight;
                 toggleBtn.textContent = '접기';
             } else {
-                metaList.style.maxHeight = '120px';
+                metaList.style.maxHeight = initialHeight;
                 toggleBtn.textContent = '더보기';
             }
         });
