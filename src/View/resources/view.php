@@ -20,13 +20,11 @@
     </div>
 
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div class="content-wrapper" style="max-width: 100%; margin: 0 auto;">
-            <div class="content-area prose" style="max-width: 100%;">
-                <div class="resource-content" style="max-width: 100%; overflow-x: hidden;">
-                    <?= $resource['content'] ?>
-                </div>
+        <article class="prose prose-lg max-w-none">
+            <div class="resource-content">
+                <?= $resource['content'] ?>
             </div>
-        </div>
+        </article>
     </div>
 
     <div class="bg-white rounded-lg shadow-md p-6">
@@ -53,51 +51,62 @@
 </div>
 
 <style>
-.content-wrapper {
-    width: 100%;
-    box-sizing: border-box;
+/* Tailwind prose 스타일 오버라이드 */
+.prose {
+    max-width: 100% !important;
 }
 
-.content-area {
-    width: 100%;
-    box-sizing: border-box;
+.prose img {
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 1rem auto !important;
 }
 
+.prose figure {
+    max-width: 100% !important;
+    margin: 1rem 0 !important;
+}
+
+.prose figure img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* 이미지 스타일 */
 .resource-content {
     width: 100%;
-    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .resource-content img {
-    max-width: 100%;
-    height: auto;
+    max-width: 100% !important;
+    height: auto !important;
     display: block;
     margin: 1rem auto;
 }
 
 .resource-content figure {
-    max-width: 100%;
+    max-width: 100% !important;
     margin: 1rem 0;
-    box-sizing: border-box;
 }
 
 .resource-content figure img {
-    max-width: 100%;
-    height: auto;
+    max-width: 100% !important;
+    height: auto !important;
 }
 
 .resource-content .image-style-block {
-    max-width: 100%;
+    max-width: 100% !important;
     margin: 1rem 0;
 }
 
 .resource-content .image-style-inline {
-    max-width: 45%;
+    max-width: 45% !important;
     margin: 0.5rem;
 }
 
 .resource-content .image-style-side {
-    max-width: 30%;
+    max-width: 30% !important;
     float: right;
     margin: 0.5rem 0 0.5rem 1rem;
 }
@@ -105,18 +114,18 @@
 .resource-content .image-style-align-left {
     float: left;
     margin: 0.5rem 1rem 0.5rem 0;
-    max-width: 45%;
+    max-width: 45% !important;
 }
 
 .resource-content .image-style-align-center {
     margin: 1rem auto;
-    max-width: 100%;
+    max-width: 100% !important;
 }
 
 .resource-content .image-style-align-right {
     float: right;
     margin: 0.5rem 0 0.5rem 1rem;
-    max-width: 45%;
+    max-width: 45% !important;
 }
 
 @media (max-width: 768px) {
@@ -124,7 +133,7 @@
     .resource-content .image-style-inline,
     .resource-content .image-style-align-left,
     .resource-content .image-style-align-right {
-        max-width: 100%;
+        max-width: 100% !important;
         float: none;
         margin: 1rem 0;
     }
