@@ -21,7 +21,7 @@
 
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <div class="content-area prose max-w-none">
-            <div class="resource-content">
+            <div class="resource-content" style="max-width: 100%; overflow-x: hidden;">
                 <?= $resource['content'] ?>
             </div>
         </div>
