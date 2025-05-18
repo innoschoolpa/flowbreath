@@ -25,6 +25,62 @@ $title = $title ?? '리소스 상세';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
+    <style>
+    /* 컨텐츠 영역 스타일 */
+    .card-text {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    /* 이미지 컨테이너 */
+    .card-text figure {
+        max-width: 100%;
+        margin: 1rem 0;
+        box-sizing: border-box;
+        clear: both;
+    }
+
+    /* 이미지 스타일 */
+    .card-text img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 1rem auto;
+        box-sizing: border-box;
+        object-fit: contain;
+    }
+
+    /* 이미지 정렬 */
+    .card-text .image-align-left {
+        float: left;
+        margin: 0.5rem 1rem 0.5rem 0;
+        max-width: 45%;
+    }
+
+    .card-text .image-align-center {
+        margin: 1rem auto;
+        max-width: 100%;
+    }
+
+    .card-text .image-align-right {
+        float: right;
+        margin: 0.5rem 0 0.5rem 1rem;
+        max-width: 45%;
+    }
+
+    /* 반응형 이미지 */
+    @media (max-width: 768px) {
+        .card-text .image-align-left,
+        .card-text .image-align-right {
+            max-width: 100%;
+            float: none;
+            margin: 1rem 0;
+        }
+    }
+    </style>
+
     <!-- SEO Meta Tags -->
     <meta name="description" content="<?php echo htmlspecialchars($description); ?>">
     <meta name="keywords" content="<?php echo !empty($resource['tags']) ? htmlspecialchars(implode(', ', $resource['tags'])) : ''; ?>">
