@@ -55,31 +55,16 @@ class UploadController {
 
             // 상대 URL 반환
             $url = '/uploads/images/' . $filename;
-            $responseData = json_encode([
+            return new Response([
                 'success' => true,
                 'url' => $url
-            ]);
-
-            if ($responseData === false) {
-                throw new \Exception('Failed to encode response data: ' . json_last_error_msg());
-            }
-
-            return new Response($responseData, 200, ['Content-Type' => 'application/json']);
+            ], 200, ['Content-Type' => 'application/json']);
 
         } catch (\Exception $e) {
-            $responseData = json_encode([
+            return new Response([
                 'success' => false,
                 'error' => $e->getMessage()
-            ]);
-
-            if ($responseData === false) {
-                $responseData = json_encode([
-                    'success' => false,
-                    'error' => 'Failed to encode error message'
-                ]);
-            }
-
-            return new Response($responseData, 400, ['Content-Type' => 'application/json']);
+            ], 400, ['Content-Type' => 'application/json']);
         }
     }
 } 

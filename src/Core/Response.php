@@ -9,6 +9,24 @@ class Response
     private $content = '';
     private $sent = false;
 
+    public function __construct($content = '', $statusCode = 200, array $headers = [])
+    {
+        $this->statusCode = $statusCode;
+        $this->headers = $headers;
+        
+        // 배열이나 객체인 경우 JSON으로 인코딩
+        if (is_array($content) || is_object($content)) {
+            $json = json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if ($json === false) {
+                throw new \RuntimeException('JSON encoding failed: ' . json_last_error_msg());
+            }
+            $this->content = $json;
+            $this->setContentType('application/json; charset=UTF-8');
+        } else {
+            $this->content = $content;
+        }
+    }
+
     public function setHeader($name, $value)
     {
         if ($this->sent) {
