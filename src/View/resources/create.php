@@ -173,6 +173,31 @@ ClassicEditor
                 'imageStyle:block',
                 'imageStyle:side'
             ],
+            styles: [
+                'full',
+                'side',
+                'alignLeft',
+                'alignCenter',
+                'alignRight'
+            ],
+            resizeOptions: [
+                {
+                    name: 'imageResize:original',
+                    value: null,
+                    label: 'Original'
+                },
+                {
+                    name: 'imageResize:50',
+                    value: '50',
+                    label: '50%'
+                },
+                {
+                    name: 'imageResize:75',
+                    value: '75',
+                    label: '75%'
+                }
+            ],
+            resizeUnit: '%',
             upload: {
                 types: ['jpeg', 'png', 'gif', 'jpg']
             }
