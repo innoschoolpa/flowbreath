@@ -5,8 +5,17 @@ RewriteBase /
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# 정적 파일 요청은 PHP 라우터로 전달하지 않음
-RewriteCond %{REQUEST_URI} !^/uploads/
+# 정적 파일 처리
+RewriteCond %{REQUEST_URI} \.(jpg|jpeg|png|gif|ico|css|js)$ [NC]
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# 업로드된 파일 처리
+RewriteCond %{REQUEST_URI} ^/uploads/ [NC]
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# 나머지 요청은 PHP로 전달
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [QSA,L]
@@ -16,7 +25,7 @@ Header set X-Content-Type-Options "nosniff"
 Header set X-Frame-Options "SAMEORIGIN"
 Header set X-XSS-Protection "1; mode=block"
 Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
-Header set Content-Security-Policy "default-src 'self'"
+Header set Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https:; img-src 'self' data: https:;"
 Header set Referrer-Policy "strict-origin-when-cross-origin"
 
 # PHP 설정
