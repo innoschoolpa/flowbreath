@@ -98,53 +98,6 @@
 <script>
 let ckeditorInstance;
 
-ClassicEditor
-    .create(document.querySelector('#content'), {
-        toolbar: {
-            items: [
-                'heading',
-                '|',
-                'bold',
-                'italic',
-                'link',
-                'bulletedList',
-                'numberedList',
-                '|',
-                'outdent',
-                'indent',
-                '|',
-                'imageUpload',
-                'blockQuote',
-                'insertTable',
-                'undo',
-                'redo'
-            ]
-        },
-        image: {
-            toolbar: [
-                'imageTextAlternative',
-                'imageStyle:inline',
-                'imageStyle:block',
-                'imageStyle:side'
-            ]
-        },
-        table: {
-            contentToolbar: [
-                'tableColumn',
-                'tableRow',
-                'mergeTableCells'
-            ]
-        },
-        language: 'ko'
-    })
-    .then(editor => {
-        ckeditorInstance = editor;
-        console.log('Editor initialized');
-    })
-    .catch(error => {
-        console.error(error);
-    });
-
 // 이미지 업로드 핸들러
 function uploadImage(file) {
     const formData = new FormData();
@@ -189,14 +142,50 @@ function CustomUploadAdapterPlugin(editor) {
     };
 }
 
-// CKEditor에 업로드 어댑터 플러그인 추가
+// CKEditor 초기화 (한 번만 실행)
 ClassicEditor
     .create(document.querySelector('#content'), {
         extraPlugins: [CustomUploadAdapterPlugin],
-        // ... 기존 설정 ...
+        toolbar: {
+            items: [
+                'heading',
+                '|',
+                'bold',
+                'italic',
+                'link',
+                'bulletedList',
+                'numberedList',
+                '|',
+                'outdent',
+                'indent',
+                '|',
+                'imageUpload',
+                'blockQuote',
+                'insertTable',
+                'undo',
+                'redo'
+            ]
+        },
+        image: {
+            toolbar: [
+                'imageTextAlternative',
+                'imageStyle:inline',
+                'imageStyle:block',
+                'imageStyle:side'
+            ]
+        },
+        table: {
+            contentToolbar: [
+                'tableColumn',
+                'tableRow',
+                'mergeTableCells'
+            ]
+        },
+        language: 'ko'
     })
     .then(editor => {
         ckeditorInstance = editor;
+        console.log('Editor initialized');
     })
     .catch(error => {
         console.error(error);
