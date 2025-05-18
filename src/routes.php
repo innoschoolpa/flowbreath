@@ -110,6 +110,19 @@ return function (Router $router) {
     // 이미지 업로드
     $router->add('POST', '/upload/image', ['App\Controllers\UploadController', 'uploadImage']);
 
+    // 정적 파일 제공을 위한 라우트
+    $router->add('GET', '/uploads/images/{filename}', function($params) {
+        $filePath = 'public/uploads/images/' . $params['filename'];
+        if (file_exists($filePath)) {
+            $mimeType = mime_content_type($filePath);
+            header('Content-Type: ' . $mimeType);
+            readfile($filePath);
+            exit;
+        }
+        http_response_code(404);
+        exit;
+    });
+
     // 404 처리 라우트 (모든 경로에 대해)
     $router->add('GET', '*', [HomeController::class, 'notFound']);
 }; 
