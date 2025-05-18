@@ -5,13 +5,13 @@ RewriteBase /
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# 정적 파일 처리
-RewriteCond %{REQUEST_URI} \.(jpg|jpeg|png|gif|ico|css|js)$ [NC]
+# 업로드된 이미지 파일 처리 - 이 규칙을 가장 먼저 처리
+RewriteCond %{REQUEST_URI} ^/uploads/images/ [NC]
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
 
-# 업로드된 이미지 파일 처리
-RewriteCond %{REQUEST_URI} ^/uploads/images/ [NC]
+# 정적 파일 처리
+RewriteCond %{REQUEST_URI} \.(jpg|jpeg|png|gif|ico|css|js)$ [NC]
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
 
@@ -58,4 +58,7 @@ ServerSignature Off
     php_value post_max_size 10M
     php_value max_execution_time 300
     php_value max_input_time 300
-</IfModule> 
+</IfModule>
+
+# Enable CORS
+Header set Access-Control-Allow-Origin "*" 
