@@ -156,7 +156,7 @@ class ResourceController extends BaseController {
             if ($request->wantsJson() || $request->isAjax()) {
                 return $this->response->json($resource);
             }
-            return $this->view('resources/show', [
+            return $this->view('resources/view', [
                 'resource' => $resource,
                 'title' => $resource['title']
             ]);
