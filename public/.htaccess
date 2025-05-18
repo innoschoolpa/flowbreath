@@ -5,7 +5,8 @@ RewriteBase /
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# 실제 파일이나 디렉토리가 아닌 경우 index.php로 리다이렉트
+# 정적 파일 요청은 PHP 라우터로 전달하지 않음
+RewriteCond %{REQUEST_URI} !^/uploads/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [QSA,L]
@@ -16,6 +17,7 @@ Header set X-Frame-Options "SAMEORIGIN"
 Header set X-XSS-Protection "1; mode=block"
 Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 Header set Content-Security-Policy "default-src 'self'"
+Header set Referrer-Policy "strict-origin-when-cross-origin"
 
 # PHP 설정
 php_flag display_errors off
@@ -31,4 +33,15 @@ php_value memory_limit 512M
 Options -Indexes
 
 # 기본 문자셋 설정
-AddDefaultCharset UTF-8 
+AddDefaultCharset UTF-8
+
+# 보안 설정
+ServerSignature Off
+
+# PHP 설정
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule> 
