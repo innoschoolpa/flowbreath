@@ -1,6 +1,8 @@
 <?php
 namespace App\Controllers;
 
+use App\Core\Response;
+
 class UploadController {
     private $uploadDir;
     private $allowedTypes;
@@ -19,9 +21,6 @@ class UploadController {
 
     public function uploadImage() {
         try {
-            // JSON 응답 헤더 설정
-            header('Content-Type: application/json');
-
             // CSRF 토큰 검증
             if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
                 throw new \Exception('Invalid CSRF token');
@@ -56,18 +55,16 @@ class UploadController {
 
             // 상대 URL 반환
             $url = '/uploads/images/' . $filename;
-            $response = ['success' => true, 'url' => $url];
-            echo json_encode($response);
-            return $response;
+            return new Response([
+                'success' => true,
+                'url' => $url
+            ], 200, ['Content-Type' => 'application/json']);
 
         } catch (\Exception $e) {
-            http_response_code(400);
-            $response = [
+            return new Response([
                 'success' => false,
                 'error' => $e->getMessage()
-            ];
-            echo json_encode($response);
-            return $response;
+            ], 400, ['Content-Type' => 'application/json']);
         }
     }
 } 
