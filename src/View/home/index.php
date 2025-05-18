@@ -120,7 +120,7 @@ load_view('layout/header', ['title' => $page_title ?? 'FlowBreath.io']);
                                 <?php echo date('Y-m-d', strtotime($resource['date_added'])); ?> 등록
                             </small>
                         </p>
-                        <a href="/resources/show/<?php echo $resource['resource_id']; ?>" class="btn btn-outline-primary btn-sm">상세보기</a>
+                        <a href="/resources/view/<?php echo $resource['resource_id']; ?>" class="btn btn-outline-primary btn-sm">상세보기</a>
                     </div>
                 </div>
             </div>

@@ -44,7 +44,7 @@
                             <?php foreach ($recent_resources as $res): ?>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <span>
-                                        <a href="/resources/show/<?php echo $res['resource_id']; ?>">
+                                        <a href="/resources/view/<?php echo $res['resource_id']; ?>">
                                             <?php echo htmlspecialchars($res['title']); ?>
                                         </a>
                                         <small class="text-muted ms-2"><?php echo htmlspecialchars($res['date_added']); ?></small>

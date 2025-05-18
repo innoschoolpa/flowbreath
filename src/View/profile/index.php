@@ -177,7 +177,7 @@ $resources = [];
                                     <h6 class="mb-1">
                                         <?php if ($activity['type'] === 'resource'): ?>
                                             <i class="fas fa-file-alt text-primary me-2"></i>
-                                            <a href="/resources/<?= $activity['id'] ?>"><?= htmlspecialchars($activity['title']) ?></a>
+                                            <a href="/resources/view/<?= $activity['id'] ?>"><?= htmlspecialchars($activity['title']) ?></a>
                                         <?php else: ?>
                                             <i class="fas fa-comment text-success me-2"></i>
                                             <?= htmlspecialchars(mb_substr($activity['title'], 0, 50)) ?>
@@ -202,7 +202,7 @@ $resources = [];
                             <div class="list-group-item">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-1">
-                                        <a href="/resources/<?= $resource['id'] ?>"><?= htmlspecialchars($resource['title']) ?></a>
+                                        <a href="/resources/view/<?= $resource['id'] ?>"><?= htmlspecialchars($resource['title']) ?></a>
                                     </h6>
                                     <small class="text-muted">
                                         <i class="fas fa-heart text-danger"></i> <?= number_format($resource['like_count']) ?>
