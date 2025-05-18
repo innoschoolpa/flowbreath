@@ -1,0 +1,80 @@
+/* 컨텐츠 영역 제한 */
+.content-area {
+    max-width: 100%;
+    overflow-x: hidden;
+    word-wrap: break-word;
+}
+
+/* 이미지 크기 제어 */
+.content-area img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1rem auto;
+    box-sizing: border-box;
+}
+
+.content-area figure.image {
+    max-width: 100%;
+    margin: 1rem auto;
+    box-sizing: border-box;
+}
+
+.content-area figure.image img {
+    max-width: 100%;
+    height: auto;
+    box-sizing: border-box;
+}
+
+/* 이미지 스타일 */
+.content-area .image-style-block {
+    max-width: 100%;
+    margin: 1rem auto;
+    box-sizing: border-box;
+}
+
+.content-area .image-style-inline {
+    max-width: 50%;
+    margin: 0.5rem;
+    box-sizing: border-box;
+}
+
+.content-area .image-style-side {
+    max-width: 30%;
+    float: right;
+    margin: 0.5rem 0 0.5rem 1rem;
+    box-sizing: border-box;
+}
+
+/* 이미지 정렬 */
+.content-area .image-style-align-left {
+    float: left;
+    margin: 0.5rem 1rem 0.5rem 0;
+    max-width: 50%;
+    box-sizing: border-box;
+}
+
+.content-area .image-style-align-center {
+    margin: 1rem auto;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.content-area .image-style-align-right {
+    float: right;
+    margin: 0.5rem 0 0.5rem 1rem;
+    max-width: 50%;
+    box-sizing: border-box;
+}
+
+/* 반응형 이미지 */
+@media (max-width: 768px) {
+    .content-area .image-style-side,
+    .content-area .image-style-inline,
+    .content-area .image-style-align-left,
+    .content-area .image-style-align-right {
+        max-width: 100%;
+        float: none;
+        margin: 1rem auto;
+    }
+} 

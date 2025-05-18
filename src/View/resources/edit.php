@@ -349,7 +349,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     'imageTextAlternative',
                     'imageStyle:inline',
                     'imageStyle:block',
-                    'imageStyle:side'
+                    'imageStyle:side',
+                    '|',
+                    'resizeImage'
                 ],
                 styles: [
                     'full',
@@ -363,6 +365,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         name: 'imageResize:original',
                         value: null,
                         label: 'Original'
+                    },
+                    {
+                        name: 'imageResize:25',
+                        value: '25',
+                        label: '25%'
                     },
                     {
                         name: 'imageResize:50',
@@ -389,6 +396,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         'side'
                     ]
                 }
+            },
+            table: {
+                contentToolbar: [
+                    'tableColumn',
+                    'tableRow',
+                    'mergeTableCells'
+                ]
             }
         })
         .catch(error => {
