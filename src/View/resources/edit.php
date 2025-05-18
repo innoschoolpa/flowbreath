@@ -405,6 +405,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 ]
             }
         })
+        .then(editor => {
+            // 에디터 컨텐츠 영역에 스타일 적용
+            const editorElement = editor.editing.view.document.getRoot();
+            editorElement.setStyle('max-width', '100%');
+            editorElement.setStyle('overflow-x', 'hidden');
+            
+            // 이미지 업로드 후 자동 크기 조절
+            editor.plugins.get('FileRepository').on('change:isUploading', (evt, data, isUploading) => {
+                if (!isUploading) {
+                    const images = editor.editing.view.document.getRoot().queryAll('img');
+                    images.forEach(img => {
+                        const width = img.getStyle('width');
+                        if (width && parseInt(width) > 100) {
+                            img.setStyle('width', '100%');
+                        }
+                    });
+                }
+            });
+        })
         .catch(error => {
             console.error(error);
         });
