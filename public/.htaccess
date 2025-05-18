@@ -10,6 +10,11 @@ RewriteCond %{REQUEST_URI} \.(jpg|jpeg|png|gif|ico|css|js)$ [NC]
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
 
+# 업로드된 이미지 파일 처리
+RewriteCond %{REQUEST_URI} ^/uploads/images/ [NC]
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
 # 업로드된 파일 처리
 RewriteCond %{REQUEST_URI} ^/uploads/ [NC]
 RewriteCond %{REQUEST_FILENAME} -f
