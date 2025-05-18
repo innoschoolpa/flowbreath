@@ -51,18 +51,19 @@
 <style>
 .resource-content {
     width: 100%;
-    box-sizing: border-box;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .resource-content img {
     max-width: 100%;
     height: auto;
-    display: block;
 }
 
 .resource-content p {
     width: 100%;
-    box-sizing: border-box;
+    max-width: 100%;
+    overflow: hidden;
 }
 </style>
 
