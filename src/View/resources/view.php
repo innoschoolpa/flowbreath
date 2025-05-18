@@ -20,8 +20,10 @@
     </div>
 
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div class="prose max-w-none">
-            <p class="text-gray-600 mb-4"><?= nl2br(htmlspecialchars($resource['description'])) ?></p>
+        <div class="content-area prose max-w-none">
+            <div class="resource-content">
+                <?= $resource['content'] ?>
+            </div>
         </div>
     </div>
 
@@ -47,6 +49,74 @@
         </dl>
     </div>
 </div>
+
+<style>
+.content-area {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.content-area img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1rem auto;
+}
+
+.content-area figure {
+    max-width: 100%;
+    margin: 1rem 0;
+}
+
+.content-area figure img {
+    max-width: 100%;
+    height: auto;
+}
+
+.content-area .image-style-block {
+    max-width: 100%;
+    margin: 1rem 0;
+}
+
+.content-area .image-style-inline {
+    max-width: 45%;
+    margin: 0.5rem;
+}
+
+.content-area .image-style-side {
+    max-width: 30%;
+    float: right;
+    margin: 0.5rem 0 0.5rem 1rem;
+}
+
+.content-area .image-style-align-left {
+    float: left;
+    margin: 0.5rem 1rem 0.5rem 0;
+    max-width: 45%;
+}
+
+.content-area .image-style-align-center {
+    margin: 1rem auto;
+    max-width: 100%;
+}
+
+.content-area .image-style-align-right {
+    float: right;
+    margin: 0.5rem 0 0.5rem 1rem;
+    max-width: 45%;
+}
+
+@media (max-width: 768px) {
+    .content-area .image-style-side,
+    .content-area .image-style-inline,
+    .content-area .image-style-align-left,
+    .content-area .image-style-align-right {
+        max-width: 100%;
+        float: none;
+        margin: 1rem 0;
+    }
+}
+</style>
 
 <script>
 async function toggleBookmark() {
