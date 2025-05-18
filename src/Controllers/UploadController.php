@@ -18,49 +18,52 @@ class UploadController {
     }
 
     public function uploadImage() {
-        // CSRF 토큰 검증
-        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'error' => 'Invalid CSRF token']);
-            return;
-        }
+        try {
+            // JSON 응답 헤더 설정
+            header('Content-Type: application/json');
 
-        // 파일이 업로드되었는지 확인
-        if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'No file uploaded or upload error']);
-            return;
-        }
+            // CSRF 토큰 검증
+            if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+                throw new \Exception('Invalid CSRF token');
+            }
 
-        $file = $_FILES['image'];
+            // 파일이 업로드되었는지 확인
+            if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+                throw new \Exception('No file uploaded or upload error');
+            }
 
-        // 파일 타입 검증
-        if (!in_array($file['type'], $this->allowedTypes)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Invalid file type. Only JPEG, PNG, and GIF are allowed.']);
-            return;
-        }
+            $file = $_FILES['image'];
 
-        // 파일 크기 검증
-        if ($file['size'] > $this->maxFileSize) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'File size exceeds the limit of 5MB.']);
-            return;
-        }
+            // 파일 타입 검증
+            if (!in_array($file['type'], $this->allowedTypes)) {
+                throw new \Exception('Invalid file type. Only JPEG, PNG, and GIF are allowed.');
+            }
 
-        // 고유한 파일명 생성
-        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $filename = uniqid() . '_' . time() . '.' . $extension;
-        $filepath = $this->uploadDir . $filename;
+            // 파일 크기 검증
+            if ($file['size'] > $this->maxFileSize) {
+                throw new \Exception('File size exceeds the limit of 5MB.');
+            }
 
-        // 파일 이동
-        if (move_uploaded_file($file['tmp_name'], $filepath)) {
+            // 고유한 파일명 생성
+            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filename = uniqid() . '_' . time() . '.' . $extension;
+            $filepath = $this->uploadDir . $filename;
+
+            // 파일 이동
+            if (!move_uploaded_file($file['tmp_name'], $filepath)) {
+                throw new \Exception('Failed to save the uploaded file.');
+            }
+
             // 상대 URL 반환
             $url = '/uploads/images/' . $filename;
             echo json_encode(['success' => true, 'url' => $url]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => 'Failed to save the uploaded file.']);
+
+        } catch (\Exception $e) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
         }
     }
 } 
