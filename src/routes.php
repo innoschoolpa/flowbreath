@@ -12,6 +12,7 @@ use App\Controllers\AuthController;
 use App\Controllers\SettingsController;
 use App\Controllers\ProfileController;
 use App\Controllers\BreathingController;
+use App\Controllers\UploadController;
 
 return function (Router $router) {
     // 홈 라우트
@@ -105,6 +106,9 @@ return function (Router $router) {
     $router->add('GET', '/api/breathing/sessions/{session_id}/guide', ['App\Controllers\BreathingController', 'getSessionGuide']);
     $router->add('GET', '/api/breathing/settings', ['App\Controllers\BreathingController', 'getSettings']);
     $router->add('POST', '/api/breathing/settings', ['App\Controllers\BreathingController', 'updateSettings']);
+
+    // 이미지 업로드
+    $router->add('POST', '/upload/image', ['App\Controllers\UploadController', 'uploadImage']);
 
     // 404 처리 라우트 (모든 경로에 대해)
     $router->add('GET', '*', [HomeController::class, 'notFound']);

@@ -98,76 +98,162 @@
 <script>
 let ckeditorInstance;
 
-document.addEventListener('DOMContentLoaded', function() {
-    ClassicEditor
-        .create(document.querySelector('#content'), {
-            language: 'ko',
-            toolbar: [
-                'heading', '|', 'bold', 'italic', 'underline', 'link', 'bulletedList', 'numberedList', 'blockQuote',
-                '|', 'insertTable', 'codeBlock', 'undo', 'redo'
+ClassicEditor
+    .create(document.querySelector('#content'), {
+        toolbar: {
+            items: [
+                'heading',
+                '|',
+                'bold',
+                'italic',
+                'link',
+                'bulletedList',
+                'numberedList',
+                '|',
+                'outdent',
+                'indent',
+                '|',
+                'imageUpload',
+                'blockQuote',
+                'insertTable',
+                'undo',
+                'redo'
             ]
-        })
-        .then(editor => {
-            editor.ui.view.editable.element.style.height = '400px';
-            ckeditorInstance = editor;
-        })
-        .catch(error => {
-            console.error(error);
-        });
+        },
+        image: {
+            toolbar: [
+                'imageTextAlternative',
+                'imageStyle:inline',
+                'imageStyle:block',
+                'imageStyle:side'
+            ]
+        },
+        table: {
+            contentToolbar: [
+                'tableColumn',
+                'tableRow',
+                'mergeTableCells'
+            ]
+        },
+        language: 'ko'
+    })
+    .then(editor => {
+        ckeditorInstance = editor;
+        console.log('Editor initialized');
+    })
+    .catch(error => {
+        console.error(error);
+    });
 
-    // 폼 submit 시 에디터 내용 textarea에 복사
-    document.getElementById('resource-form').addEventListener('submit', function(e) {
-        if (ckeditorInstance) {
-            document.getElementById('content').value = ckeditorInstance.getData();
-            // CKEditor 내용이 비어 있으면 제출 막기
-            if (!ckeditorInstance.getData().trim()) {
-                alert('내용을 입력하세요.');
-                e.preventDefault();
-                return false;
-            }
+// 이미지 업로드 핸들러
+function uploadImage(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?>');
+
+    return fetch('/upload/image', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            return {
+                url: data.url
+            };
+        } else {
+            throw new Error(data.error || '이미지 업로드에 실패했습니다.');
         }
-        const descriptionInput = document.getElementById('description');
-        if (!descriptionInput.value.trim()) {
-            alert('설명을 입력하세요.');
+    });
+}
+
+// CKEditor 이미지 업로드 어댑터 설정
+class CustomUploadAdapter {
+    constructor(loader) {
+        this.loader = loader;
+    }
+
+    upload() {
+        return this.loader.file
+            .then(file => uploadImage(file));
+    }
+
+    abort() {
+        // 업로드 중단 처리
+    }
+}
+
+function CustomUploadAdapterPlugin(editor) {
+    editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+        return new CustomUploadAdapter(loader);
+    };
+}
+
+// CKEditor에 업로드 어댑터 플러그인 추가
+ClassicEditor
+    .create(document.querySelector('#content'), {
+        extraPlugins: [CustomUploadAdapterPlugin],
+        // ... 기존 설정 ...
+    })
+    .then(editor => {
+        ckeditorInstance = editor;
+    })
+    .catch(error => {
+        console.error(error);
+    });
+
+// 폼 submit 시 에디터 내용 textarea에 복사
+document.getElementById('resource-form').addEventListener('submit', function(e) {
+    if (ckeditorInstance) {
+        document.getElementById('content').value = ckeditorInstance.getData();
+        // CKEditor 내용이 비어 있으면 제출 막기
+        if (!ckeditorInstance.getData().trim()) {
+            alert('내용을 입력하세요.');
             e.preventDefault();
             return false;
         }
-    });
-
-    // 태그 입력 처리
-    const tagsInput = document.getElementById('tags');
-    tagsInput.addEventListener('input', function() {
-        this.value = this.value.replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9,]/g, '');
-    });
-
-    // 유튜브 링크 미리보기 처리
-    const linkInput = document.getElementById('link');
-    const youtubePreview = document.getElementById('youtube-preview');
-    const youtubeIframe = document.getElementById('youtube-iframe');
-
-    function getYoutubeVideoId(url) {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
     }
-
-    function updateYoutubePreview() {
-        const url = linkInput.value.trim();
-        const videoId = getYoutubeVideoId(url);
-        
-        if (videoId) {
-            youtubeIframe.src = `https://www.youtube.com/embed/${videoId}`;
-            youtubePreview.style.display = 'block';
-        } else {
-            youtubePreview.style.display = 'none';
-            youtubeIframe.src = '';
-        }
+    const descriptionInput = document.getElementById('description');
+    if (!descriptionInput.value.trim()) {
+        alert('설명을 입력하세요.');
+        e.preventDefault();
+        return false;
     }
-
-    linkInput.addEventListener('input', updateYoutubePreview);
-    linkInput.addEventListener('change', updateYoutubePreview);
-    
-    // 초기 로드 시 미리보기 업데이트
-    updateYoutubePreview();
 });
+
+// 태그 입력 처리
+const tagsInput = document.getElementById('tags');
+tagsInput.addEventListener('input', function() {
+    this.value = this.value.replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9,]/g, '');
+});
+
+// 유튜브 링크 미리보기 처리
+const linkInput = document.getElementById('link');
+const youtubePreview = document.getElementById('youtube-preview');
+const youtubeIframe = document.getElementById('youtube-iframe');
+
+function getYoutubeVideoId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function updateYoutubePreview() {
+    const url = linkInput.value.trim();
+    const videoId = getYoutubeVideoId(url);
+    
+    if (videoId) {
+        youtubeIframe.src = `https://www.youtube.com/embed/${videoId}`;
+        youtubePreview.style.display = 'block';
+    } else {
+        youtubePreview.style.display = 'none';
+        youtubeIframe.src = '';
+    }
+}
+
+linkInput.addEventListener('input', updateYoutubePreview);
+linkInput.addEventListener('change', updateYoutubePreview);
+
+// 초기 로드 시 미리보기 업데이트
+updateYoutubePreview();
 </script>
