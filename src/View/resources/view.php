@@ -51,6 +51,7 @@
 <style>
 .resource-content {
     max-width: 100%;
+    overflow: hidden;
 }
 
 .resource-content img {
@@ -58,6 +59,23 @@
     height: auto;
     display: block;
     margin: 1rem auto;
+    object-fit: contain;
+}
+
+.resource-content figure {
+    max-width: 100%;
+    margin: 1rem auto;
+}
+
+.resource-content figure img {
+    width: 100%;
+    height: auto;
+}
+
+.resource-content p {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
 }
 
 img {
