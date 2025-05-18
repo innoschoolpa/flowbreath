@@ -51,17 +51,18 @@
 <style>
 .resource-content {
     width: 100%;
+    box-sizing: border-box;
 }
 
 .resource-content img {
-    width: 100%;
+    max-width: 100%;
     height: auto;
+    display: block;
 }
 
 .resource-content p {
-    max-width: 100%;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
+    width: 100%;
+    box-sizing: border-box;
 }
 </style>
 
