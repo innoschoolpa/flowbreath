@@ -52,6 +52,12 @@
 .resource-content {
     max-width: 100%;
     overflow: hidden;
+    box-sizing: border-box;
+}
+
+.resource-content * {
+    box-sizing: border-box;
+    max-width: 100%;
 }
 
 .resource-content img {
@@ -65,22 +71,26 @@
 .resource-content figure {
     max-width: 100%;
     margin: 1rem auto;
+    box-sizing: border-box;
 }
 
 .resource-content figure img {
     width: 100%;
     height: auto;
+    box-sizing: border-box;
 }
 
 .resource-content p {
     max-width: 100%;
     overflow-wrap: break-word;
     word-wrap: break-word;
+    box-sizing: border-box;
 }
 
 img {
     max-width: 100%;
     height: auto;
+    box-sizing: border-box;
 }
 </style>
 
