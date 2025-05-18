@@ -114,34 +114,43 @@ return function (Router $router) {
     $router->add('GET', '/uploads/images/{filename}', function($params) {
         $filename = $params['filename'] ?? '';
         if (empty($filename)) {
+            error_log("Empty filename requested");
             http_response_code(404);
             exit;
         }
         
-        $filePath = 'public/uploads/images/' . $filename;
-        if (file_exists($filePath)) {
-            // 파일 확장자에 따른 MIME 타입 설정
-            $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-            $mimeTypes = [
-                'png' => 'image/png',
-                'jpg' => 'image/jpeg',
-                'jpeg' => 'image/jpeg',
-                'gif' => 'image/gif',
-                'webp' => 'image/webp'
-            ];
-            
-            $mimeType = $mimeTypes[$extension] ?? mime_content_type($filePath);
-            
-            // 캐시 헤더 설정
-            header('Cache-Control: public, max-age=31536000');
-            header('Content-Type: ' . $mimeType);
-            header('Content-Length: ' . filesize($filePath));
-            
-            // 파일 출력
-            readfile($filePath);
+        $filePath = dirname(__DIR__) . '/public/uploads/images/' . $filename;
+        if (!file_exists($filePath)) {
+            error_log("File not found: " . $filePath);
+            http_response_code(404);
             exit;
         }
-        http_response_code(404);
+
+        // 파일 확장자에 따른 MIME 타입 설정
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $mimeTypes = [
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp'
+        ];
+        
+        $mimeType = $mimeTypes[$extension] ?? mime_content_type($filePath);
+        if (!$mimeType) {
+            error_log("Unknown MIME type for file: " . $filePath);
+            http_response_code(500);
+            exit;
+        }
+
+        // 캐시 헤더 설정
+        header('Cache-Control: public, max-age=31536000');
+        header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + 31536000));
+        header('Content-Type: ' . $mimeType);
+        header('Content-Length: ' . filesize($filePath));
+        
+        // 파일 출력
+        readfile($filePath);
         exit;
     });
 
