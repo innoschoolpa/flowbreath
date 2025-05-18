@@ -87,6 +87,45 @@
     box-sizing: border-box;
 }
 
+/* CKEditor 스타일과 일치하도록 추가 */
+.resource-content .image {
+    max-width: 100%;
+    margin: 1rem auto;
+}
+
+.resource-content .image img {
+    max-width: 100%;
+    height: auto;
+}
+
+.resource-content .image-style-side {
+    float: right;
+    margin-left: 1rem;
+    max-width: 50%;
+}
+
+.resource-content .image-style-align-left {
+    float: left;
+    margin-right: 1rem;
+}
+
+.resource-content .image-style-align-right {
+    float: right;
+    margin-left: 1rem;
+}
+
+.resource-content .image-style-align-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 이미지 컨테이너 클리어 */
+.resource-content .image::after {
+    content: '';
+    display: table;
+    clear: both;
+}
+
 img {
     max-width: 100%;
     height: auto;
