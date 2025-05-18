@@ -20,7 +20,7 @@
     </div>
 
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div class="editor-content">
+        <div class="resource-content">
             <?= $resource['content'] ?>
         </div>
     </div>
@@ -49,74 +49,15 @@
 </div>
 
 <style>
-.editor-content {
+.resource-content {
     max-width: 100%;
-    overflow-x: hidden;
 }
 
-.editor-content p {
-    margin: 1rem 0;
-}
-
-.editor-content img {
+.resource-content img {
     max-width: 100%;
     height: auto;
     display: block;
     margin: 1rem auto;
-}
-
-.editor-content figure {
-    max-width: 100%;
-    margin: 1rem 0;
-}
-
-.editor-content figure img {
-    max-width: 100%;
-    height: auto;
-}
-
-.editor-content .image-style-block {
-    max-width: 100%;
-    margin: 1rem 0;
-}
-
-.editor-content .image-style-inline {
-    max-width: 45%;
-    margin: 0.5rem;
-}
-
-.editor-content .image-style-side {
-    max-width: 30%;
-    float: right;
-    margin: 0.5rem 0 0.5rem 1rem;
-}
-
-.editor-content .image-style-align-left {
-    float: left;
-    margin: 0.5rem 1rem 0.5rem 0;
-    max-width: 45%;
-}
-
-.editor-content .image-style-align-center {
-    margin: 1rem auto;
-    max-width: 100%;
-}
-
-.editor-content .image-style-align-right {
-    float: right;
-    margin: 0.5rem 0 0.5rem 1rem;
-    max-width: 45%;
-}
-
-@media (max-width: 768px) {
-    .editor-content .image-style-side,
-    .editor-content .image-style-inline,
-    .editor-content .image-style-align-left,
-    .editor-content .image-style-align-right {
-        max-width: 100%;
-        float: none;
-        margin: 1rem 0;
-    }
 }
 </style>
 
