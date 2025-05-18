@@ -112,14 +112,19 @@ return function (Router $router) {
 
     // 정적 파일 제공을 위한 라우트
     $router->add('GET', '/uploads/images/{filename}', function($params) {
-        $filename = $params['filename'] ?? '';
+        // URL에서 직접 파일명 추출
+        $requestUri = $_SERVER['REQUEST_URI'];
+        $filename = basename($requestUri);
+        
         if (empty($filename)) {
-            error_log("Empty filename requested");
+            error_log("Empty filename requested from URI: " . $requestUri);
             http_response_code(404);
             exit;
         }
         
         $filePath = dirname(__DIR__) . '/public/uploads/images/' . $filename;
+        error_log("Attempting to serve file: " . $filePath);
+        
         if (!file_exists($filePath)) {
             error_log("File not found: " . $filePath);
             http_response_code(404);
