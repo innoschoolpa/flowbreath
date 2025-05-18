@@ -253,10 +253,16 @@ $title = $title ?? '리소스 상세';
         const metaList = document.getElementById('db-meta-list');
         const toggleBtn = document.getElementById('toggle-meta-btn');
         let expanded = false;
+
+        // 초기 상태 설정
+        metaList.style.maxHeight = '120px';
+        metaList.style.overflow = 'hidden';
+        metaList.style.transition = 'max-height 0.3s ease-in-out';
+
         toggleBtn.addEventListener('click', function() {
             expanded = !expanded;
             if (expanded) {
-                metaList.style.maxHeight = '1000px';
+                metaList.style.maxHeight = metaList.scrollHeight + 'px';
                 toggleBtn.textContent = '접기';
             } else {
                 metaList.style.maxHeight = '120px';
