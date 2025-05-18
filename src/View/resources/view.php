@@ -60,42 +60,18 @@
     max-width: 100%;
 }
 
-.resource-content img {
-    max-width: 100%;
-    height: auto;
+/* CKEditor 이미지 스타일 */
+.resource-content .image {
     display: block;
     margin: 1rem auto;
-    object-fit: contain;
-}
-
-.resource-content figure {
     max-width: 100%;
-    margin: 1rem auto;
-    box-sizing: border-box;
-}
-
-.resource-content figure img {
-    width: 100%;
-    height: auto;
-    box-sizing: border-box;
-}
-
-.resource-content p {
-    max-width: 100%;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    box-sizing: border-box;
-}
-
-/* CKEditor 스타일과 일치하도록 추가 */
-.resource-content .image {
-    max-width: 100%;
-    margin: 1rem auto;
 }
 
 .resource-content .image img {
     max-width: 100%;
     height: auto;
+    display: block;
+    margin: 0 auto;
 }
 
 .resource-content .image-style-side {
@@ -126,10 +102,28 @@
     clear: both;
 }
 
-img {
+/* 일반 이미지 스타일 (CKEditor로 처리되지 않은 이미지용) */
+.resource-content img {
     max-width: 100%;
     height: auto;
-    box-sizing: border-box;
+    display: block;
+    margin: 1rem auto;
+}
+
+.resource-content figure {
+    max-width: 100%;
+    margin: 1rem auto;
+}
+
+.resource-content figure img {
+    width: 100%;
+    height: auto;
+}
+
+.resource-content p {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
 }
 </style>
 
@@ -193,4 +187,5 @@ async function deleteResource() {
 }
 </script>
 
+<?php require_once __DIR__ . '/../layouts/footer.php'; ?> 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?> 
