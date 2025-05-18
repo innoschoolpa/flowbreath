@@ -53,17 +53,59 @@
     width: 100%;
     max-width: 100%;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 .resource-content img {
     max-width: 100%;
     height: auto;
+    display: block;
+    margin: 1rem auto;
+    box-sizing: border-box;
+    object-fit: contain;
 }
 
 .resource-content p {
     width: 100%;
     max-width: 100%;
     overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* 이미지 컨테이너 */
+.resource-content figure {
+    max-width: 100%;
+    margin: 1rem 0;
+    box-sizing: border-box;
+    clear: both;
+}
+
+/* 이미지 정렬 */
+.resource-content .image-align-left {
+    float: left;
+    margin: 0.5rem 1rem 0.5rem 0;
+    max-width: 45%;
+}
+
+.resource-content .image-align-center {
+    margin: 1rem auto;
+    max-width: 100%;
+}
+
+.resource-content .image-align-right {
+    float: right;
+    margin: 0.5rem 0 0.5rem 1rem;
+    max-width: 45%;
+}
+
+/* 반응형 이미지 */
+@media (max-width: 768px) {
+    .resource-content .image-align-left,
+    .resource-content .image-align-right {
+        max-width: 100%;
+        float: none;
+        margin: 1rem 0;
+    }
 }
 </style>
 

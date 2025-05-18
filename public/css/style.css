@@ -22,17 +22,30 @@
     display: block;
     margin: 0 auto;
     box-sizing: border-box;
+    object-fit: contain;
 }
 
-.content-area figure.image {
+/* 리소스 컨텐츠 영역 */
+.resource-content {
+    width: 100%;
     max-width: 100%;
-    margin: 1rem 0;
+    overflow: hidden;
     box-sizing: border-box;
 }
 
-.content-area figure.image img {
+.resource-content img {
     max-width: 100%;
     height: auto;
+    display: block;
+    margin: 1rem auto;
+    box-sizing: border-box;
+    object-fit: contain;
+}
+
+.resource-content p {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
     box-sizing: border-box;
 }
 
