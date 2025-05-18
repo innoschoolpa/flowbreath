@@ -56,14 +56,18 @@ class UploadController {
 
             // 상대 URL 반환
             $url = '/uploads/images/' . $filename;
-            echo json_encode(['success' => true, 'url' => $url]);
+            $response = ['success' => true, 'url' => $url];
+            echo json_encode($response);
+            return $response;
 
         } catch (\Exception $e) {
             http_response_code(400);
-            echo json_encode([
+            $response = [
                 'success' => false,
                 'error' => $e->getMessage()
-            ]);
+            ];
+            echo json_encode($response);
+            return $response;
         }
     }
 } 
