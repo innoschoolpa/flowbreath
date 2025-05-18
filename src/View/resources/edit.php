@@ -291,9 +291,54 @@ function isChecked($currentValue, $optionValue) {
 <!-- CKEditor 5 CDN -->
 <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 <script>
+// 이미지 업로드 핸들러
+function uploadImage(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?>');
+
+    return fetch('/upload/image', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            return {
+                default: data.url
+            };
+        } else {
+            throw new Error(data.error || '이미지 업로드에 실패했습니다.');
+        }
+    });
+}
+
+// CKEditor 이미지 업로드 어댑터 설정
+class CustomUploadAdapter {
+    constructor(loader) {
+        this.loader = loader;
+    }
+
+    upload() {
+        return this.loader.file
+            .then(file => uploadImage(file));
+    }
+
+    abort() {
+        // 업로드 중단 처리
+    }
+}
+
+function CustomUploadAdapterPlugin(editor) {
+    editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+        return new CustomUploadAdapter(loader);
+    };
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     ClassicEditor
         .create(document.querySelector('#content'), {
+            extraPlugins: [CustomUploadAdapterPlugin],
             language: 'ko',
             toolbar: [
                 'heading', '|', 'bold', 'italic', 'underline', 'link', 'bulletedList', 'numberedList', 'blockQuote',
