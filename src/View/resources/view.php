@@ -59,6 +59,11 @@
     display: block;
     margin: 1rem auto;
 }
+
+img {
+    max-width: 100%;
+    height: auto;
+}
 </style>
 
 <script>
