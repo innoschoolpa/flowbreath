@@ -120,8 +120,24 @@ return function (Router $router) {
         
         $filePath = 'public/uploads/images/' . $filename;
         if (file_exists($filePath)) {
-            $mimeType = mime_content_type($filePath);
+            // 파일 확장자에 따른 MIME 타입 설정
+            $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $mimeTypes = [
+                'png' => 'image/png',
+                'jpg' => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'webp' => 'image/webp'
+            ];
+            
+            $mimeType = $mimeTypes[$extension] ?? mime_content_type($filePath);
+            
+            // 캐시 헤더 설정
+            header('Cache-Control: public, max-age=31536000');
             header('Content-Type: ' . $mimeType);
+            header('Content-Length: ' . filesize($filePath));
+            
+            // 파일 출력
             readfile($filePath);
             exit;
         }
