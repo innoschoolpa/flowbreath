@@ -50,15 +50,12 @@
 
 <style>
 .resource-content {
-    max-width: 100%;
-    overflow: hidden;
+    width: 100%;
 }
 
 .resource-content img {
-    max-width: 100%;
+    width: 100%;
     height: auto;
-    display: block;
-    margin: 1rem auto;
 }
 
 .resource-content p {
