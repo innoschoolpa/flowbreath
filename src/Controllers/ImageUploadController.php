@@ -27,7 +27,8 @@ class ImageUploadController {
             $url = '/uploads/images/' . $fileName;
             return $this->jsonResponse([
                 'url' => $url,
-                'uploaded' => true
+                'uploaded' => 1,
+                'fileName' => $fileName
             ]);
         }
 

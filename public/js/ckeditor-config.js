@@ -11,12 +11,8 @@ ClassicEditor
                 types: ['jpeg', 'png', 'gif', 'jpg']
             }
         },
-        simpleUpload: {
-            uploadUrl: '/upload/image',
-            withCredentials: true,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-            }
+        ckfinder: {
+            uploadUrl: '/upload/image'
         }
     })
     .catch(error => {
