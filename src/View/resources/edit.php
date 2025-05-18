@@ -378,6 +378,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 resizeUnit: '%',
                 upload: {
                     types: ['jpeg', 'png', 'gif', 'jpg']
+                },
+                insert: {
+                    type: 'block'
+                },
+                styles: {
+                    options: [
+                        'inline',
+                        'block',
+                        'side'
+                    ]
                 }
             }
         })

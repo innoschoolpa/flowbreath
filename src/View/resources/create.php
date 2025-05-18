@@ -200,6 +200,16 @@ ClassicEditor
             resizeUnit: '%',
             upload: {
                 types: ['jpeg', 'png', 'gif', 'jpg']
+            },
+            insert: {
+                type: 'block'
+            },
+            styles: {
+                options: [
+                    'inline',
+                    'block',
+                    'side'
+                ]
             }
         },
         table: {
