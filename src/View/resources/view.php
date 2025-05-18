@@ -204,7 +204,7 @@ $title = $title ?? '리소스 상세';
 
                     <div class="mb-4">
                         <h5 class="card-title">DB 원본 정보</h5>
-                        <ul class="list-unstyled small" id="db-meta-list" style="max-height: 120px; overflow: hidden; transition: max-height 0.3s;">
+                        <ul class="list-unstyled small">
                             <li><b>ID:</b> <?= htmlspecialchars($resource['id']) ?></li>
                             <li><b>언어 코드:</b> <?= htmlspecialchars($resource['translation_language_code'] ?? $resource['language_code'] ?? 'ko') ?></li>
                             <li><b>작성자:</b> <a href="/profile/<?= htmlspecialchars($resource['user_id']) ?>" class="text-decoration-none"><?= htmlspecialchars($resource['author_name'] ?? '-') ?></a></li>
@@ -215,7 +215,6 @@ $title = $title ?? '리소스 상세';
                             <li><b>슬러그:</b> <?= htmlspecialchars($resource['slug'] ?? '-') ?></li>
                             <li><b>파일:</b> <?= htmlspecialchars($resource['file_path'] ?? '-') ?></li>
                         </ul>
-                        <button id="toggle-meta-btn" class="btn btn-sm btn-outline-secondary mt-2">더보기</button>
                     </div>
                 </div>
             </div>
@@ -248,28 +247,7 @@ $title = $title ?? '리소스 상세';
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const metaList = document.getElementById('db-meta-list');
-        const toggleBtn = document.getElementById('toggle-meta-btn');
-        let expanded = false;
-
-        // 초기 상태 설정
-        const initialHeight = '120px';
-        const expandedHeight = metaList.scrollHeight + 'px';
-        
-        metaList.style.maxHeight = initialHeight;
-        metaList.style.overflow = 'hidden';
-        metaList.style.transition = 'max-height 0.3s ease-in-out';
-
-        toggleBtn.addEventListener('click', function() {
-            expanded = !expanded;
-            if (expanded) {
-                metaList.style.maxHeight = expandedHeight;
-                toggleBtn.textContent = '접기';
-            } else {
-                metaList.style.maxHeight = initialHeight;
-                toggleBtn.textContent = '더보기';
-            }
-        });
+        // 더보기 버튼 관련 코드 제거
     });
 
     function confirmDelete(resourceId, languageCode) {
