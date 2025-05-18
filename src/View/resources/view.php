@@ -20,9 +20,11 @@
     </div>
 
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div class="content-area prose max-w-none">
-            <div class="resource-content" style="max-width: 100%; overflow-x: hidden;">
-                <?= $resource['content'] ?>
+        <div class="content-wrapper" style="max-width: 100%; margin: 0 auto;">
+            <div class="content-area prose" style="max-width: 100%;">
+                <div class="resource-content" style="max-width: 100%; overflow-x: hidden;">
+                    <?= $resource['content'] ?>
+                </div>
             </div>
         </div>
     </div>
@@ -51,66 +53,77 @@
 </div>
 
 <style>
-.content-area {
-    max-width: 100%;
-    overflow-x: hidden;
+.content-wrapper {
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.content-area img {
+.content-area {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.resource-content {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.resource-content img {
     max-width: 100%;
     height: auto;
     display: block;
     margin: 1rem auto;
 }
 
-.content-area figure {
+.resource-content figure {
     max-width: 100%;
     margin: 1rem 0;
+    box-sizing: border-box;
 }
 
-.content-area figure img {
+.resource-content figure img {
     max-width: 100%;
     height: auto;
 }
 
-.content-area .image-style-block {
+.resource-content .image-style-block {
     max-width: 100%;
     margin: 1rem 0;
 }
 
-.content-area .image-style-inline {
+.resource-content .image-style-inline {
     max-width: 45%;
     margin: 0.5rem;
 }
 
-.content-area .image-style-side {
+.resource-content .image-style-side {
     max-width: 30%;
     float: right;
     margin: 0.5rem 0 0.5rem 1rem;
 }
 
-.content-area .image-style-align-left {
+.resource-content .image-style-align-left {
     float: left;
     margin: 0.5rem 1rem 0.5rem 0;
     max-width: 45%;
 }
 
-.content-area .image-style-align-center {
+.resource-content .image-style-align-center {
     margin: 1rem auto;
     max-width: 100%;
 }
 
-.content-area .image-style-align-right {
+.resource-content .image-style-align-right {
     float: right;
     margin: 0.5rem 0 0.5rem 1rem;
     max-width: 45%;
 }
 
 @media (max-width: 768px) {
-    .content-area .image-style-side,
-    .content-area .image-style-inline,
-    .content-area .image-style-align-left,
-    .content-area .image-style-align-right {
+    .resource-content .image-style-side,
+    .resource-content .image-style-inline,
+    .resource-content .image-style-align-left,
+    .resource-content .image-style-align-right {
         max-width: 100%;
         float: none;
         margin: 1rem 0;
