@@ -49,13 +49,14 @@
                     
                     <?php
                     // Check if the URL is a YouTube URL (including live streams)
-                    if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/', $resource['url'], $matches)) {
+                    $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
+                    if (preg_match($youtube_pattern, $resource['url'], $matches)) {
                         $youtube_id = $matches[1];
                         ?>
                         <div class="mt-3">
                             <div class="ratio ratio-16x9">
                                 <iframe 
-                                    src="https://www.youtube.com/embed/<?= $youtube_id ?>" 
+                                    src="https://www.youtube.com/embed/<?= $youtube_id ?>?autoplay=0" 
                                     title="YouTube video player" 
                                     frameborder="0" 
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
