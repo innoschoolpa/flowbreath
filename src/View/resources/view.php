@@ -142,26 +142,37 @@ $title = $title ?? '리소스 상세';
                 <div class="card-body">
                     <?php if (!empty($resource['content'])): ?>
                         <?php
-                        // link 또는 content에서 유튜브 링크 추출
+                        // Extract YouTube video ID from link or content
                         $videoId = null;
+                        $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
+                        
+                        // First check the link field
                         if (!empty($resource['link'])) {
-                            if (preg_match('/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=)|youtu\\.be\\/)([^"&?\\/\\s]{11})/', $resource['link'], $matches)) {
+                            if (preg_match($youtube_pattern, $resource['link'], $matches)) {
                                 $videoId = $matches[1];
                             }
                         }
+                        
+                        // If no video ID found in link, check content
                         if (!$videoId && !empty($resource['content'])) {
-                            if (preg_match('/https?:\/\/(www\.)?(youtube\\.com|youtu\\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
-                                if (preg_match('/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=)|youtu\\.be\\/)([^"&?\\/\\s]{11})/', $ytMatch[0], $matches)) {
+                            if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
+                                if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
                                     $videoId = $matches[1];
                                 }
                             }
                         }
+
+                        // Display video if found
                         if ($videoId): ?>
                             <div class="mb-4" style="max-width:640px;margin:24px auto 0 auto;">
                                 <div class="ratio ratio-16x9">
-                                    <iframe src="https://www.youtube.com/embed/<?= $videoId ?>"
-                                            title="YouTube video"
-                                            allowfullscreen></iframe>
+                                    <iframe 
+                                        src="https://www.youtube.com/embed/<?= $videoId ?>?autoplay=0" 
+                                        title="YouTube video player"
+                                        frameborder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                        allowfullscreen>
+                                    </iframe>
                                 </div>
                             </div>
                         <?php endif; ?>
