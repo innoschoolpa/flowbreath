@@ -4,7 +4,8 @@
 
 if (!function_exists('extractYoutubeIdHome')) {
     function extractYoutubeIdHome($url) {
-        if (preg_match('/(?:youtube\\.com\\/(?:[^\\/\\n\\s]+\\/\\S+\\/|(?:v|e(?:mbed)?|shorts)\\/|.*[?&]v=)|youtu\\.be\\/)([\\w-]{11})/', $url, $matches)) {
+        $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
+        if (preg_match($youtube_pattern, $url, $matches)) {
             return $matches[1];
         }
         return null;
@@ -94,7 +95,13 @@ load_view('layout/header', ['title' => $page_title ?? 'FlowBreath.io']);
                 ?>
                 <?php if ($youtubeId): ?>
                     <div class="ratio ratio-16x9">
-                        <iframe src="https://www.youtube.com/embed/<?php echo htmlspecialchars($youtubeId); ?>" title="YouTube video preview" allowfullscreen></iframe>
+                        <iframe 
+                            src="https://www.youtube.com/embed/<?php echo htmlspecialchars($youtubeId); ?>?autoplay=0" 
+                            title="YouTube video player"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
                     </div>
                 <?php endif; ?>
                 <div class="card-body d-flex flex-column">

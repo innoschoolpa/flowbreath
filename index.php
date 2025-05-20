@@ -211,6 +211,28 @@ require_once PROJECT_ROOT . '/src/View/layouts/header.php';
                 <?php foreach ($recentResources as $resource): ?>
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
+                        <?php
+                        // Extract YouTube video ID from URL
+                        $youtubeId = null;
+                        if (!empty($resource['url'])) {
+                            $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
+                            if (preg_match($youtube_pattern, $resource['url'], $matches)) {
+                                $youtubeId = $matches[1];
+                            }
+                        }
+                        
+                        // Display video if found
+                        if ($youtubeId): ?>
+                            <div class="ratio ratio-16x9">
+                                <iframe 
+                                    src="https://www.youtube.com/embed/<?= htmlspecialchars($youtubeId) ?>?autoplay=0" 
+                                    title="YouTube video player"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        <?php endif; ?>
                         <div class="card-body">
                             <h5 class="card-title"><?= htmlspecialchars($resource['title']) ?></h5>
                             <p class="card-text text-muted">
