@@ -31,6 +31,28 @@ require_once __DIR__ . '/layouts/header.php';
             <?php else: foreach ($searchResults as $resource): ?>
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card card-resource h-100">
+                        <?php
+                        // Extract YouTube video ID from URL
+                        $youtubeId = null;
+                        if (!empty($resource['link'])) {
+                            $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
+                            if (preg_match($youtube_pattern, $resource['link'], $matches)) {
+                                $youtubeId = $matches[1];
+                            }
+                        }
+                        
+                        // Display video if found
+                        if ($youtubeId): ?>
+                            <div class="ratio ratio-16x9 mb-3">
+                                <iframe 
+                                    src="https://www.youtube.com/embed/<?= htmlspecialchars($youtubeId) ?>?autoplay=0&rel=0" 
+                                    title="YouTube video player"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        <?php endif; ?>
                         <div class="card-body">
                             <h5 class="card-title mb-2"><?= htmlspecialchars($resource['title']) ?></h5>
                             <div class="resource-meta mb-2">
@@ -58,6 +80,28 @@ require_once __DIR__ . '/layouts/header.php';
             <?php foreach ($recentResources as $resource): ?>
                 <div class="col-md-6 col-lg-6 mb-4">
                     <div class="card card-resource h-100">
+                        <?php
+                        // Extract YouTube video ID from URL
+                        $youtubeId = null;
+                        if (!empty($resource['link'])) {
+                            $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
+                            if (preg_match($youtube_pattern, $resource['link'], $matches)) {
+                                $youtubeId = $matches[1];
+                            }
+                        }
+                        
+                        // Display video if found
+                        if ($youtubeId): ?>
+                            <div class="ratio ratio-16x9 mb-3">
+                                <iframe 
+                                    src="https://www.youtube.com/embed/<?= htmlspecialchars($youtubeId) ?>?autoplay=0&rel=0" 
+                                    title="YouTube video player"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        <?php endif; ?>
                         <div class="card-body">
                             <h5 class="card-title mb-2">
                                 <a href="/resources/view/<?= $resource['id'] ?>" class="text-decoration-none text-dark">
