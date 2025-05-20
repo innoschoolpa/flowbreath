@@ -1025,7 +1025,7 @@ class Resource extends Model {
                 rt.content,
                 rt.description,
                 u.name as username,
-                r.url
+                r.link as url
                 FROM resources r
                 JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
                 LEFT JOIN users u ON r.user_id = u.id
