@@ -214,9 +214,9 @@ require_once PROJECT_ROOT . '/src/View/layouts/header.php';
                         <?php
                         // Extract YouTube video ID from URL
                         $youtubeId = null;
-                        if (!empty($resource['url'])) {
+                        if (!empty($resource['link'])) {
                             $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
-                            if (preg_match($youtube_pattern, $resource['url'], $matches)) {
+                            if (preg_match($youtube_pattern, $resource['link'], $matches)) {
                                 $youtubeId = $matches[1];
                             }
                         }
