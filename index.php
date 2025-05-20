@@ -223,13 +223,14 @@ require_once PROJECT_ROOT . '/src/View/layouts/header.php';
                         
                         // Display video if found
                         if ($youtubeId): ?>
-                            <div class="ratio ratio-16x9">
+                            <div class="ratio ratio-16x9 mb-3">
                                 <iframe 
-                                    src="https://www.youtube.com/embed/<?= htmlspecialchars($youtubeId) ?>?autoplay=0" 
+                                    src="https://www.youtube.com/embed/<?= htmlspecialchars($youtubeId) ?>?autoplay=0&rel=0" 
                                     title="YouTube video player"
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen>
+                                    allowfullscreen
+                                    style="width: 100%; height: 100%;">
                                 </iframe>
                             </div>
                         <?php endif; ?>
