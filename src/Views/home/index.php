@@ -22,6 +22,31 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <?php foreach ($recent_resources as $resource): ?>
             <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow">
+                <?php
+                // Extract YouTube video ID from URL
+                $youtubeId = null;
+                if (!empty($resource['link'])) {
+                    $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
+                    if (preg_match($youtube_pattern, $resource['link'], $matches)) {
+                        $youtubeId = $matches[1];
+                    }
+                }
+                
+                // Display video if found
+                if ($youtubeId): ?>
+                    <div class="mb-4">
+                        <div class="relative pb-[56.25%] h-0">
+                            <iframe 
+                                src="https://www.youtube.com/embed/<?= htmlspecialchars($youtubeId) ?>?autoplay=0&rel=0" 
+                                title="YouTube video player"
+                                class="absolute top-0 left-0 w-full h-full"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                    </div>
+                <?php endif; ?>
                 <h3 class="text-xl font-semibold mb-2">
                     <a href="/resources/<?= $resource['id'] ?>" class="hover:text-blue-600">
                         <?= htmlspecialchars($resource['title']) ?>
