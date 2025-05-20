@@ -48,8 +48,8 @@
                     </a>
                     
                     <?php
-                    // Check if the URL is a YouTube URL
-                    if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $resource['url'], $matches)) {
+                    // Check if the URL is a YouTube URL (including live streams)
+                    if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/', $resource['url'], $matches)) {
                         $youtube_id = $matches[1];
                         ?>
                         <div class="mt-3">
