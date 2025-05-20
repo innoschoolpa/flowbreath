@@ -46,6 +46,26 @@
                     <a href="<?= htmlspecialchars($resource['url']) ?>" target="_blank" rel="noopener noreferrer">
                         <?= htmlspecialchars($resource['url']) ?>
                     </a>
+                    
+                    <?php
+                    // Check if the URL is a YouTube URL
+                    if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $resource['url'], $matches)) {
+                        $youtube_id = $matches[1];
+                        ?>
+                        <div class="mt-3">
+                            <div class="ratio ratio-16x9">
+                                <iframe 
+                                    src="https://www.youtube.com/embed/<?= $youtube_id ?>" 
+                                    title="YouTube video player" 
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                    ?>
                 </div>
             <?php endif; ?>
 
