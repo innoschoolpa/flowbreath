@@ -91,22 +91,38 @@ load_view('layout/header', ['title' => $page_title ?? 'FlowBreath.io']);
         <div class="col-md-6 col-lg-4">
             <div class="card resource-card h-100 shadow-sm border-0">
                 <?php
-                $youtubeId = !empty($resource['url']) ? extractYoutubeIdHome($resource['url']) : null;
+                $videoId = null;
+                $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
+                
+                // Check link field first
+                if (!empty($resource['link']) && preg_match($youtube_pattern, $resource['link'], $matches)) {
+                    $videoId = $matches[1];
+                }
+                
+                // If no video ID found in link, check content
+                if (!$videoId && !empty($resource['content'])) {
+                    if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
+                        if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
+                            $videoId = $matches[1];
+                        }
+                    }
+                }
                 ?>
-                <?php if ($youtubeId): ?>
-                    <div class="ratio ratio-16x9">
+                <?php if ($videoId): ?>
+                    <div class="ratio ratio-16x9 mb-2" style="max-width:320px; max-height:180px; margin:auto;">
                         <iframe 
-                            src="https://www.youtube.com/embed/<?php echo htmlspecialchars($youtubeId); ?>?autoplay=0" 
+                            src="https://www.youtube.com/embed/<?= $videoId ?>?autoplay=0" 
                             title="YouTube video player"
                             frameborder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen>
+                            allowfullscreen
+                            style="width:100%; height:100%; min-height:120px;">
                         </iframe>
                     </div>
                 <?php endif; ?>
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title mb-2"><?php echo e($resource['title']); ?></h5>
-                    <?php if (!$youtubeId): ?>
+                    <?php if (!$videoId): ?>
                         <div class="card-summary mb-2 flex-grow-1">
                             <?php
                             $content = $resource['content'] ?? '';
