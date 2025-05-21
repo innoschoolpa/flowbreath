@@ -13,6 +13,18 @@
         "prev": "이전",
         "next": "다음"
     },
+    "breathing": {
+        "inhale": "들숨",
+        "exhale": "날숨",
+        "breathing_time": "호흡 시간 (초)",
+        "exercise_time": "운동 시간 (초)",
+        "ready": "준비",
+        "start": "시작",
+        "stop": "정지",
+        "settings": "설정",
+        "sound": "소리",
+        "vibration": "진동"
+    },
     "home": {
         "hero": {
             "title": "호흡을 위한 최고의 자료, FlowBreath.io",

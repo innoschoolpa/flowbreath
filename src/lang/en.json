@@ -13,6 +13,18 @@
         "prev": "Previous",
         "next": "Next"
     },
+    "breathing": {
+        "inhale": "Inhale",
+        "exhale": "Exhale",
+        "breathing_time": "Breathing Time (sec)",
+        "exercise_time": "Exercise Time (sec)",
+        "ready": "Ready",
+        "start": "Start",
+        "stop": "Stop",
+        "settings": "Settings",
+        "sound": "Sound",
+        "vibration": "Vibration"
+    },
     "home": {
         "hero": {
             "title": "Best Resources for Breathing, FlowBreath.io",
