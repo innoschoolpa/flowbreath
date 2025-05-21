@@ -4,7 +4,7 @@
 define('PROJECT_ROOT', dirname(__DIR__));
 
 // 언어 디렉토리 생성
-$langDir = PROJECT_ROOT . '/src/Lang';
+$langDir = PROJECT_ROOT . '/src/lang';
 
 if (!file_exists($langDir)) {
     if (mkdir($langDir, 0755, true)) {

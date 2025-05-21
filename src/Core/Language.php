@@ -15,7 +15,7 @@ class Language
 
     private function __construct()
     {
-        $this->langPath = dirname(__DIR__, 2) . '/src/Lang';
+        $this->langPath = dirname(__DIR__, 2) . '/src/lang';
         $this->loadLanguage();
         if (isset($_SESSION['lang']) && in_array($_SESSION['lang'], $this->availableLanguages)) {
             $this->currentLanguage = $_SESSION['lang'];

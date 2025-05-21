@@ -23,7 +23,7 @@
                     <a href="/resources/create"
                         class="px-6 py-2 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 transition-colors ml-4"
                         style="height:44px; min-width:110px; font-size:1.1rem; display:flex; align-items:center; justify-content:center; color:#222;">
-                        <i class="fas fa-plus me-1"></i><?= $language->get('home.hero.add_resource') ?>
+                        <i class="fas fa-plus me-1"></i><?= $language->get('common.add_resource') ?>
                     </a>
                 <?php endif; ?>
             </div>

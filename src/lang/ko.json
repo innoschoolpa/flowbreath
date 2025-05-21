@@ -8,7 +8,8 @@
         "logout": "로그아웃",
         "register": "회원가입",
         "profile": "내 프로필",
-        "anonymous": "익명"
+        "anonymous": "익명",
+        "add_resource": "자료 등록"
     },
     "home": {
         "hero": {
