@@ -56,30 +56,26 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <?php foreach ($resources as $resource): ?>
             <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-4 flex flex-col justify-between transition-transform hover:-translate-y-1 hover:shadow-2xl">
-                <!-- 카드 내용 시작 -->
-                <div>
-                    <h3 class="mb-2" style="font-size:1rem; font-weight:600;">
-                        <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" 
-                           class="text-gray-900 hover:text-blue-600 transition-colors">
-                            <?= htmlspecialchars($resource['title'] ?? '') ?>
-                        </a>
-                    </h3>
-                    <?php if (!empty($resource['link'])): ?>
-                        <?php
-                        $videoId = null;
-                        $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
-                        if (preg_match($youtube_pattern, $resource['link'], $matches)) {
-                            $videoId = $matches[1];
-                        }
-                        if (!$videoId && !empty($resource['content'])) {
-                            if (preg_match('/https?:\\/\\/(www\\.)?(youtube\\.com|youtu\\.be)\\/[\\w\\-?=&#;]+/', $resource['content'], $ytMatch)) {
-                                if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
-                                    $videoId = $matches[1];
-                                }
+                <?php
+                $videoId = null;
+                if (!empty($resource['link'])) {
+                    $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
+                    if (preg_match($youtube_pattern, $resource['link'], $matches)) {
+                        $videoId = $matches[1];
+                    }
+                    if (!$videoId && !empty($resource['content'])) {
+                        if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
+                            if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
+                                $videoId = $matches[1];
                             }
                         }
-                        if ($videoId): ?>
-                            <div class="aspect-w-16 aspect-h-9 mb-4">
+                    }
+                }
+                ?>
+                <?php if ($videoId): ?>
+                    <div class="flex flex-row gap-4 items-start">
+                        <div class="flex-shrink-0 w-64 max-w-full">
+                            <div class="aspect-w-16 aspect-h-9 mb-0">
                                 <iframe 
                                     src="https://www.youtube.com/embed/<?= $videoId ?>?autoplay=0" 
                                     title="YouTube video player"
@@ -89,9 +85,65 @@
                                     class="w-full h-full rounded-lg">
                                 </iframe>
                             </div>
-                        <?php endif; ?>
-                    <?php endif; ?>
-                    <p class="text-gray-600 mb-4">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="mb-2" style="font-size:1rem; font-weight:600;">
+                                <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" 
+                                   class="text-gray-900 hover:text-blue-600 transition-colors">
+                                    <?= htmlspecialchars($resource['title'] ?? '') ?>
+                                </a>
+                            </h3>
+                            <p class="text-gray-600 mb-2">
+                                <?php
+                                $preview = '';
+                                if (!empty($resource['content'])) {
+                                    $plain = strip_tags($resource['content']);
+                                    $preview = mb_strimwidth($plain, 0, 300, '...');
+                                }
+                                echo htmlspecialchars($preview ?? '');
+                                ?>
+                            </p>
+                            <?php if (!empty($resource['tags'])): ?>
+                            <div class="mb-2">
+                                <?php foreach (($resource['tags'] ?? []) as $tag): ?>
+                                    <span class="inline-block px-2 py-1 text-sm text-gray-600 bg-gray-100 rounded-full mr-1 mb-1">
+                                        #<?= htmlspecialchars(is_array($tag) ? $tag['name'] : $tag) ?>
+                                    </span>
+                                <?php endforeach; ?>
+                            </div>
+                            <?php endif; ?>
+                            <div class="text-sm text-gray-500 mt-2 border-t pt-3 flex flex-wrap gap-4">
+                                <span>
+                                    <i class="fas fa-user mr-1"></i>
+                                    <?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?>
+                                </span>
+                                <span>
+                                    <i class="fas fa-calendar mr-1"></i>
+                                    <?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?>
+                                </span>
+                                <?php if (isset($resource['view_count'])): ?>
+                                    <span>
+                                        <i class="fas fa-eye mr-1"></i>
+                                        <?= htmlspecialchars($resource['view_count']) ?>
+                                    </span>
+                                <?php endif; ?>
+                                <?php if (isset($resource['rating'])): ?>
+                                    <span>
+                                        <i class="fas fa-star mr-1"></i>
+                                        <?= number_format($resource['rating'], 1) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <h3 class="mb-2" style="font-size:1rem; font-weight:600;">
+                        <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" 
+                           class="text-gray-900 hover:text-blue-600 transition-colors">
+                            <?= htmlspecialchars($resource['title'] ?? '') ?>
+                        </a>
+                    </h3>
+                    <p class="text-gray-600 mb-2">
                         <?php
                         $preview = '';
                         if (!empty($resource['content'])) {
@@ -101,38 +153,38 @@
                         echo htmlspecialchars($preview ?? '');
                         ?>
                     </p>
-                    <!-- 태그를 content 아래에 표시 -->
-                    <div class="mb-3">
+                    <?php if (!empty($resource['tags'])): ?>
+                    <div class="mb-2">
                         <?php foreach (($resource['tags'] ?? []) as $tag): ?>
                             <span class="inline-block px-2 py-1 text-sm text-gray-600 bg-gray-100 rounded-full mr-1 mb-1">
                                 #<?= htmlspecialchars(is_array($tag) ? $tag['name'] : $tag) ?>
                             </span>
                         <?php endforeach; ?>
                     </div>
-                </div>
-                <!-- 카드 내용 끝 -->
-                <div class="text-sm text-gray-500 mt-4 border-t pt-3 flex flex-wrap gap-4">
-                    <span>
-                        <i class="fas fa-user mr-1"></i>
-                        <?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?>
-                    </span>
-                    <span>
-                        <i class="fas fa-calendar mr-1"></i>
-                        <?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?>
-                    </span>
-                    <?php if (isset($resource['view_count'])): ?>
-                        <span>
-                            <i class="fas fa-eye mr-1"></i>
-                            <?= htmlspecialchars($resource['view_count']) ?>
-                        </span>
                     <?php endif; ?>
-                    <?php if (isset($resource['rating'])): ?>
+                    <div class="text-sm text-gray-500 mt-2 border-t pt-3 flex flex-wrap gap-4">
                         <span>
-                            <i class="fas fa-star mr-1"></i>
-                            <?= number_format($resource['rating'], 1) ?>
+                            <i class="fas fa-user mr-1"></i>
+                            <?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?>
                         </span>
-                    <?php endif; ?>
-                </div>
+                        <span>
+                            <i class="fas fa-calendar mr-1"></i>
+                            <?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?>
+                        </span>
+                        <?php if (isset($resource['view_count'])): ?>
+                            <span>
+                                <i class="fas fa-eye mr-1"></i>
+                                <?= htmlspecialchars($resource['view_count']) ?>
+                            </span>
+                        <?php endif; ?>
+                        <?php if (isset($resource['rating'])): ?>
+                            <span>
+                                <i class="fas fa-star mr-1"></i>
+                                <?= number_format($resource['rating'], 1) ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
             </div>
         <?php endforeach; ?>
     </div>
