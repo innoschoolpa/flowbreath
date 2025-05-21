@@ -9,17 +9,12 @@ class Language
     private $currentLang = 'ko';
     private $fallbackLang = 'en';
     private $langPath;
-    private $currentLanguage = 'ko';
-    private $defaultLanguage = 'ko';
     private $availableLanguages = ['ko', 'en'];
 
     private function __construct()
     {
         $this->langPath = dirname(__DIR__, 2) . '/src/lang';
         $this->loadLanguage();
-        if (isset($_SESSION['lang']) && in_array($_SESSION['lang'], $this->availableLanguages)) {
-            $this->currentLanguage = $_SESSION['lang'];
-        }
     }
 
     public static function getInstance(): self
@@ -32,13 +27,13 @@ class Language
 
     private function loadLanguage()
     {
-        // 브라우저 언어 설정 확인
-        $browserLang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'ko', 0, 2);
-        $this->currentLang = in_array($browserLang, ['ko', 'en']) ? $browserLang : 'ko';
-
         // 세션에 저장된 언어 설정이 있으면 사용
-        if (isset($_SESSION['lang'])) {
+        if (isset($_SESSION['lang']) && in_array($_SESSION['lang'], $this->availableLanguages)) {
             $this->currentLang = $_SESSION['lang'];
+        } else {
+            // 브라우저 언어 설정 확인
+            $browserLang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'ko', 0, 2);
+            $this->currentLang = in_array($browserLang, ['ko', 'en']) ? $browserLang : 'ko';
         }
 
         // 현재 언어 파일 로드
@@ -111,16 +106,6 @@ class Language
     public function getCurrentLang()
     {
         return $this->currentLang;
-    }
-
-    public function getCurrentLanguage(): string
-    {
-        return $this->currentLanguage;
-    }
-
-    public function getDefaultLanguage(): string
-    {
-        return $this->defaultLanguage;
     }
 
     public function getAvailableLanguages(): array
