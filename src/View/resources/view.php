@@ -164,7 +164,7 @@ $title = $title ?? '리소스 상세';
 
                         // Display video if found
                         if ($videoId): ?>
-                            <div class="mb-4" style="max-width:640px;margin:24px auto 0 auto;">
+                            <div class="mb-4" style="max-width:720px;margin:24px auto 0 auto;">
                                 <div class="ratio ratio-16x9">
                                     <iframe 
                                         src="https://www.youtube.com/embed/<?= $videoId ?>?autoplay=0" 
