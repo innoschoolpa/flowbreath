@@ -58,11 +58,6 @@
                                 <?= htmlspecialchars($types[$resource['type']] ?? $resource['type']) ?>
                             </span>
                         <?php endif; ?>
-                        <?php foreach (($resource['tags'] ?? []) as $tag): ?>
-                            <span class="inline-block px-2 py-1 text-sm text-gray-600 bg-gray-100 rounded-full mr-1 mb-1">
-                                #<?= htmlspecialchars(is_array($tag) ? $tag['name'] : $tag) ?>
-                            </span>
-                        <?php endforeach; ?>
                     </div>
                     
                     <h3 class="mb-2" style="font-size:1rem; font-weight:600;">
@@ -113,6 +108,15 @@
                         echo htmlspecialchars($preview ?? '');
                         ?>
                     </p>
+
+                    <!-- 태그를 content 아래에 표시 -->
+                    <div class="mb-3">
+                        <?php foreach (($resource['tags'] ?? []) as $tag): ?>
+                            <span class="inline-block px-2 py-1 text-sm text-gray-600 bg-gray-100 rounded-full mr-1 mb-1">
+                                #<?= htmlspecialchars(is_array($tag) ? $tag['name'] : $tag) ?>
+                            </span>
+                        <?php endforeach; ?>
+                    </div>
 
                     <div class="text-sm text-gray-500">
                         <div class="flex items-center gap-4">
