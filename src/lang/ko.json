@@ -9,7 +9,9 @@
         "register": "회원가입",
         "profile": "내 프로필",
         "anonymous": "익명",
-        "add_resource": "자료 등록"
+        "add_resource": "자료 등록",
+        "prev": "이전",
+        "next": "다음"
     },
     "home": {
         "hero": {

@@ -9,7 +9,9 @@
         "register": "Register",
         "profile": "My Profile",
         "anonymous": "Anonymous",
-        "add_resource": "Add Resource"
+        "add_resource": "Add Resource",
+        "prev": "Previous",
+        "next": "Next"
     },
     "home": {
         "hero": {
