@@ -105,53 +105,15 @@ body { background: #f7fcfc; }
 }
 </style>
 <div class="container py-4" style="max-width:1200px;">
-  <div class="resource-search-box mb-4">
-    <form action="/resources" method="GET" class="resource-search-form">
-      <div class="form-group keyword">
-        <input type="text" name="keyword" class="form-control" placeholder="<?= $language->get('common.search') ?>" value="<?= htmlspecialchars($keyword ?? '') ?>">
-      </div>
-      <div class="form-group tags">
-        <select name="tags[]" class="form-select" multiple data-placeholder="태그 선택">
-          <?php foreach ($all_tags as $tag): ?>
-            <option value="<?= htmlspecialchars($tag['id']) ?>" <?= in_array($tag['id'], $selected_tags ?? []) ? 'selected' : '' ?>><?= htmlspecialchars($tag['name']) ?></option>
-          <?php endforeach; ?>
-        </select>
-      </div>
-      <div class="form-group sort">
-        <select name="sort" class="form-select">
-          <option value="latest" <?= ($sort ?? '') === 'latest' ? 'selected' : '' ?>><?= $language->get('resources.sort.latest') ?></option>
-          <option value="oldest" <?= ($sort ?? '') === 'oldest' ? 'selected' : '' ?>><?= $language->get('resources.sort.oldest') ?></option>
-          <option value="title" <?= ($sort ?? '') === 'title' ? 'selected' : '' ?>><?= $language->get('resources.sort.title') ?></option>
-          <option value="views" <?= ($sort ?? '') === 'views' ? 'selected' : '' ?>><?= $language->get('resources.sort.views') ?></option>
-          <option value="rating" <?= ($sort ?? '') === 'rating' ? 'selected' : '' ?>><?= $language->get('resources.sort.rating') ?></option>
-          <option value="relevance" <?= ($sort ?? '') === 'relevance' ? 'selected' : '' ?>><?= $language->get('resources.sort.relevance') ?></option>
-        </select>
-      </div>
-      <div class="form-group type">
-        <select name="type" class="form-select">
-          <option value=""><?= $language->get('resources.type.all') ?></option>
-          <?php foreach ($types as $key => $label): ?>
-            <option value="<?= htmlspecialchars($key) ?>" <?= ($type ?? '') === $key ? 'selected' : '' ?>><?= htmlspecialchars($label) ?></option>
-          <?php endforeach; ?>
-        </select>
-      </div>
-      <div class="form-group visibility">
-        <select name="visibility" class="form-select">
-          <option value=""><?= $language->get('resources.visibility.all') ?></option>
-          <option value="public" <?= ($visibility ?? '') === 'public' ? 'selected' : '' ?>><?= $language->get('resources.visibility.public') ?></option>
-          <option value="private" <?= ($visibility ?? '') === 'private' ? 'selected' : '' ?>><?= $language->get('resources.visibility.private') ?></option>
-        </select>
-      </div>
-      <div class="form-group button d-flex flex-row align-items-center gap-2" style="min-width:180px;">
-        <button type="submit" class="btn btn-primary px-3 rounded-3" style="height:40px;min-width:90px;font-size:1rem;font-weight:500;">
-          <?= $language->get('common.search') ?>
-        </button>
-        <?php if (isset($user) && $user['id']): ?>
-          <a href="/resources/create" class="btn btn-success px-3 rounded-3 d-flex align-items-center justify-content-center" style="height:40px;min-width:110px;font-size:1rem;font-weight:500;white-space:nowrap;">
-            <i class="fas fa-plus me-1"></i><?= $language->get('resources.create') ?>
-          </a>
-        <?php endif; ?>
-      </div>
+  <div class="mb-12">
+    <form action="/resources" method="GET" class="flex gap-2">
+      <input type="text" name="q" placeholder="검색어를 입력하세요" class="flex-1 px-4 py-2 border rounded-lg" value="<?= htmlspecialchars($keyword ?? '') ?>">
+      <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">검색</button>
+      <?php if (isset($user) && $user['id']): ?>
+        <a href="/resources/create" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+          <i class="fas fa-plus me-1"></i>자료 등록
+        </a>
+      <?php endif; ?>
     </form>
   </div>
 
