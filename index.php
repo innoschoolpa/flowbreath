@@ -241,7 +241,7 @@ require_once PROJECT_ROOT . '/src/View/layouts/header.php';
                                 <?= date('Y-m-d', strtotime($resource['created_at'])) ?>
                             </p>
                             <p class="card-text">
-                                <?= htmlspecialchars(mb_substr($resource['description'], 0, 100)) ?>...
+                                <?= htmlspecialchars(mb_substr($resource['description'], 0, 200)) ?>...
                             </p>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="badge bg-primary"><?= htmlspecialchars($resource['type']) ?></span>
