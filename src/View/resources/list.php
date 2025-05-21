@@ -8,18 +8,21 @@
         <p class="text-gray-600 mb-8">호흡 건강, 운동, 명상, 치료 등 다양한 호흡 자료를 쉽고 빠르게 찾아보세요.</p>
         
         <!-- Search Form -->
-        <div class="max-w-2xl mx-auto mb-6">
-            <div class="flex items-center">
+        <div class="container mx-auto mb-6">
+            <div class="flex items-center justify-between gap-2 w-full">
                 <form action="/resources" method="GET" class="flex flex-1 gap-2 items-center">
-                    <input type="text" name="keyword" placeholder="자료, 태그, 키워드로 검색..." 
+                    <input type="text" name="keyword" placeholder="자료, 태그, 키워드로 검색..."
                         class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>">
-                    <button type="submit" class="px-6 py-2 bg-yellow-400 text-gray-900 font-bold rounded-lg shadow hover:bg-yellow-500 transition-colors border border-yellow-500" style="height:44px; min-width:90px; font-size:1.1rem;">
+                    <button type="submit" class="px-6 py-2 bg-yellow-400 text-gray-900 font-bold rounded-lg shadow hover:bg-yellow-500 transition-colors border border-yellow-500"
+                        style="height:44px; min-width:90px; font-size:1.1rem;">
                         <i class="fas fa-search mr-1"></i>검색
                     </button>
                 </form>
                 <?php if (isset($user) && $user['id']): ?>
-                    <a href="/resources/create" class="ml-auto px-6 py-2 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 transition-colors" style="height:44px; min-width:110px; font-size:1.1rem; display:flex; align-items:center; justify-content:center; color:#222;">
+                    <a href="/resources/create"
+                        class="px-6 py-2 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 transition-colors ml-4"
+                        style="height:44px; min-width:110px; font-size:1.1rem; display:flex; align-items:center; justify-content:center; color:#222;">
                         <i class="fas fa-plus me-1"></i>자료 등록
                     </a>
                 <?php endif; ?>
