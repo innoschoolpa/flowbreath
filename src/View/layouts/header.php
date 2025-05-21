@@ -4,13 +4,68 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../../helpers/lang.php';
+
+// Get current language
+$currentLang = $_SESSION['lang'] ?? 'ko';
+
+// Get current page URL
+$currentUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . 
+    "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+
+// Default meta description
+$metaDescription = $currentLang === 'ko' 
+    ? 'FlowBreath.io - 단전 호흡과 기 수련을 위한 최고의 플랫폼. 단전 호흡법, 기 수련, 복식 호흡, 4-7-8 호흡법, 박스 호흡 등 다양한 호흡 운동을 제공합니다. 건강, 명상, 치료를 위한 완벽한 호흡 솔루션.'
+    : 'FlowBreath.io - The ultimate platform for dantian breathing and qi training. Practice dantian breathing, qi cultivation, diaphragmatic breathing, 4-7-8 breathing, box breathing, and more. Your complete breathing solution for health, meditation, and therapy.';
+
+// Default meta keywords
+$metaKeywords = $currentLang === 'ko'
+    ? '단전 호흡, 기 수련, 단전 호흡법, 기 공, 호흡 운동, 복식 호흡, 4-7-8 호흡법, 박스 호흡, 명상, 건강, 치료, FlowBreath'
+    : 'dantian breathing, qi training, dantian breathing method, qigong, breathing exercise, diaphragmatic breathing, 4-7-8 breathing, box breathing, meditation, health, therapy, FlowBreath';
 ?>
 <!DOCTYPE html>
-<html lang="<?= $_SESSION['lang'] ?? 'ko' ?>">
+<html lang="<?= $currentLang ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $title ?? 'FlowBreath - 호흡 운동' ?></title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="<?= $metaDescription ?>">
+    <meta name="keywords" content="<?= $metaKeywords ?>">
+    <meta name="author" content="FlowBreath">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="<?= htmlspecialchars($currentUrl) ?>">
+
+    <!-- Open Graph Tags for Social Media -->
+    <meta property="og:title" content="<?= $title ?? 'FlowBreath - 호흡 운동' ?>">
+    <meta property="og:description" content="<?= $metaDescription ?>">
+    <meta property="og:image" content="/assets/images/og-image.jpg">
+    <meta property="og:url" content="<?= htmlspecialchars($currentUrl) ?>">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="FlowBreath">
+    <meta property="og:locale" content="<?= $currentLang === 'ko' ? 'ko_KR' : 'en_US' ?>">
+
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= $title ?? 'FlowBreath - 호흡 운동' ?>">
+    <meta name="twitter:description" content="<?= $metaDescription ?>">
+    <meta name="twitter:image" content="/assets/images/og-image.jpg">
+
+    <!-- Schema.org markup for Google -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "FlowBreath",
+        "url": "<?= htmlspecialchars($currentUrl) ?>",
+        "description": <?= json_encode($metaDescription) ?>,
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "<?= htmlspecialchars($currentUrl) ?>?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
     
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-30RDJ93Z7Z"></script>
