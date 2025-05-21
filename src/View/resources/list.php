@@ -215,7 +215,7 @@ body { background: #f7fcfc; }
                 }
 
                 if ($videoId): ?>
-                    <div class="ratio ratio-16x9 mb-2" style="max-width:320px; max-height:180px; margin:auto;">
+                    <div class="ratio ratio-16x9 mb-2" style="max-width:640px; max-height:360px; margin:auto;">
                         <iframe 
                             src="https://www.youtube.com/embed/<?= $videoId ?>?autoplay=0" 
                             title="YouTube video player"
