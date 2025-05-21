@@ -147,6 +147,12 @@ require_once __DIR__ . '/../layout/header.php'; ?>
                             <label for="application_ideas" class="form-label"><?= __('resource.application_ideas') ?></label>
                             <textarea class="form-control tinymce-editor" id="application_ideas" name="application_ideas" rows="3"><?= htmlspecialchars($resource['application_ideas'] ?? '') ?></textarea>
                         </div>
+
+                        <div class="col-md-12">
+                            <label for="description" class="form-label">설명 *</label>
+                            <textarea class="form-control tinymce-editor" id="description" name="description" rows="5"><?= htmlspecialchars($resource['description'] ?? '') ?></textarea>
+                            <div class="invalid-feedback">설명을 입력해주세요.</div>
+                        </div>
                     </div>
                 </div>
 
@@ -251,4 +257,20 @@ function confirmDelete(resourceId) {
 }
 </script>
 
-<?php require_once __DIR__ . '/../layout/footer.php'; ?> 
+<!-- Add this before the closing </body> tag -->
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        tinymce.init({
+            selector: '.tinymce-editor',
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+            height: 300,
+            menubar: false,
+            language: 'ko_KR',
+            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; }'
+        });
+    });
+</script>
+</body>
+</html> 
