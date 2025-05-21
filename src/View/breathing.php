@@ -241,7 +241,7 @@ function updateVisualGuide(data) {
     if (!data || !data.visual_guide) {
         circle.style.transform = 'scale(1)';
         circle.style.backgroundColor = '#4CAF50';
-        phaseText.textContent = '준비';
+        phaseText.textContent = '<?= __('breathing.controls.ready') ?>';
         lastPhase = null;
         lastCircleSize = 1;
         return;
@@ -291,12 +291,12 @@ function updateVisualGuide(data) {
     
     // 단계 텍스트 업데이트
     const phaseMap = {
-        'inhale': '들숨',
-        'hold_in': '들숨 후 참기',
-        'exhale': '날숨',
-        'hold_out': '날숨 후 참기'
+        'inhale': '<?= __('breathing.inhale') ?>',
+        'hold_in': '<?= __('breathing.hold_in') ?>',
+        'exhale': '<?= __('breathing.exhale') ?>',
+        'hold_out': '<?= __('breathing.hold_out') ?>'
     };
-    phaseText.textContent = phaseMap[currentPhase] || '준비';
+    phaseText.textContent = phaseMap[currentPhase] || '<?= __('breathing.controls.ready') ?>';
     
     // 소리와 진동
     if (data.current_phase.time_remaining === data.current_phase.duration) {
@@ -382,7 +382,7 @@ async function stopSession() {
             circle.style.transform = 'scale(1)';
             circle.style.backgroundColor = '#4CAF50';
         });
-        document.getElementById('phaseText').textContent = '준비';
+        document.getElementById('phaseText').textContent = '<?= __('breathing.controls.ready') ?>';
         
         // 종료 소리
         playSound(330, 0.5);

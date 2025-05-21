@@ -16,6 +16,8 @@
     "breathing": {
         "inhale": "Inhale",
         "exhale": "Exhale",
+        "hold_in": "Hold after Inhale",
+        "hold_out": "Hold after Exhale",
         "breathing_time": "Breathing Time (sec)",
         "exercise_time": "Exercise Time (sec)",
         "ready": "Ready",

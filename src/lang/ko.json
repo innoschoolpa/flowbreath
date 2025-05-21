@@ -16,6 +16,8 @@
     "breathing": {
         "inhale": "들숨",
         "exhale": "날숨",
+        "hold_in": "들숨 후 참기",
+        "hold_out": "날숨 후 참기",
         "breathing_time": "호흡 시간 (초)",
         "exercise_time": "운동 시간 (초)",
         "ready": "준비",
