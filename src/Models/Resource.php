@@ -47,14 +47,12 @@ class Resource extends Model {
      * 언어별 번역 정보 조인 쿼리 생성 (공통)
      */
     private function translationSelect($alias = 'r', $lang = null, $def = null) {
-        if (!$lang) $lang = Language::getInstance()->getCurrentLanguage();
+        if (!$lang) $lang = Language::getInstance()->getCurrentLang();
         return [
             "rt.title as title",
             "rt.content as content",
             "rt.description as description",
-            "LEFT JOIN resource_translations rt ON {$alias}.id = rt.resource_id AND rt.language_code = ?",
-            $def ? "LEFT JOIN resource_translations rt_default ON {$alias}.id = rt_default.resource_id AND rt_default.language_code = ?" : '',
-            $def ? "LEFT JOIN users u ON {$alias}.user_id = u.id" : ''
+            "LEFT JOIN resource_translations rt ON {$alias}.id = rt.resource_id AND rt.language_code = ?"
         ];
     }
 
@@ -63,8 +61,8 @@ class Resource extends Model {
      */
     public function getResourcesWithTags($limit = null, $offset = null, $language = null, $defaultLang = null) {
         try {
-            $lang = $language ?: Language::getInstance()->getCurrentLanguage();
-            $def = $defaultLang ?: Language::getInstance()->getDefaultLanguage();
+            $lang = $language ?: Language::getInstance()->getCurrentLang();
+            $def = $defaultLang ?: 'en'; // Using 'en' as the default fallback language
             $select = $this->translationSelect('r', $lang);
             $sql = "SELECT r.*, {$select[0]}, {$select[1]}, {$select[2]}, GROUP_CONCAT(t.name) as tags
                     FROM {$this->table} r
@@ -161,7 +159,7 @@ class Resource extends Model {
 
     public function searchResources($query, $limit = null, $offset = null) {
         try {
-            $lang = Language::getInstance()->getCurrentLanguage();
+            $lang = Language::getInstance()->getCurrentLang();
             $sql = "SELECT r.*, rt.title, rt.content, rt.description, GROUP_CONCAT(t.name) as tags 
                     FROM resources r 
                     LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
@@ -208,8 +206,8 @@ class Resource extends Model {
      */
     public function searchFulltext($keyword, $language = null, $filters = []) {
         try {
-            $lang = $language ?: Language::getInstance()->getCurrentLanguage();
-            $def = Language::getInstance()->getDefaultLanguage();
+            $lang = $language ?: Language::getInstance()->getCurrentLang();
+            $def = 'en'; // Using 'en' as the default fallback language
             $select = $this->translationSelect('r', $lang, $def);
             $params = [$lang, $def];
             $where = ["rt.language_code = ?"];
@@ -306,8 +304,8 @@ class Resource extends Model {
      */
     public function findById($id, $language = null, $defaultLang = null) {
         try {
-            $lang = $language ?: Language::getInstance()->getCurrentLanguage();
-            $def = $defaultLang ?: Language::getInstance()->getDefaultLanguage();
+            $lang = $language ?: Language::getInstance()->getCurrentLang();
+            $def = $defaultLang ?: 'en'; // Using 'en' as the default fallback language
             $select = $this->translationSelect('r', $lang);
             $sql = "SELECT r.*, rt.language_code as translation_language_code, {$select[0]}, {$select[1]}, {$select[2]},
                     GROUP_CONCAT(DISTINCT t.name) as tags,
@@ -670,8 +668,8 @@ class Resource extends Model {
      */
     public function findAll($language = null, $defaultLang = null) {
         try {
-            $lang = $language ?: Language::getInstance()->getCurrentLanguage();
-            $def = $defaultLang ?: Language::getInstance()->getDefaultLanguage();
+            $lang = $language ?: Language::getInstance()->getCurrentLang();
+            $def = $defaultLang ?: 'en'; // Using 'en' as the default fallback language
             $select = $this->translationSelect('r', $lang);
             $sql = "SELECT r.*, {$select[0]}, {$select[1]}, {$select[2]}, GROUP_CONCAT(t.name) as tags FROM {$this->table} r {$select[3]} LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id LEFT JOIN tags t ON rtag.tag_id = t.id GROUP BY r.id ORDER BY r.created_at DESC";
             $resources = $this->db->fetchAll($sql, [$lang]);
@@ -1296,7 +1294,7 @@ class Resource extends Model {
     public function findByUserId($userId, $lang = null) {
         try {
             $lang = $lang ?? $_SESSION['lang'] ?? 'ko';
-            $defaultLang = Language::getInstance()->getDefaultLanguage();
+            $defaultLang = 'en'; // Using 'en' as the default fallback language
             
             $sql = "SELECT r.*, 
                     COALESCE(rt.title, rt_default.title) as title,
