@@ -10,9 +10,9 @@
         <!-- Search Form -->
         <div class="max-w-2xl mx-auto">
             <form action="/resources" method="GET" class="flex gap-2">
-                <input type="text" name="q" placeholder="자료, 태그, 키워드로 검색..." 
+                <input type="text" name="keyword" placeholder="자료, 태그, 키워드로 검색..." 
                        class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
+                       value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>">
                 <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     검색
                 </button>
@@ -65,7 +65,7 @@
                         <?php endforeach; ?>
                     </div>
                     
-                    <h3 class="text-xl font-semibold mb-2">
+                    <h3 class="text-lg font-semibold mb-2">
                         <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" 
                            class="text-gray-900 hover:text-blue-600 transition-colors">
                             <?= htmlspecialchars($resource['title'] ?? '') ?>
