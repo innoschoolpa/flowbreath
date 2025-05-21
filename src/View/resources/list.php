@@ -65,7 +65,7 @@
                         <?php endforeach; ?>
                     </div>
                     
-                    <h3 class="text-lg font-semibold mb-2">
+                    <h3 class="text-base font-semibold mb-2">
                         <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" 
                            class="text-gray-900 hover:text-blue-600 transition-colors">
                             <?= htmlspecialchars($resource['title'] ?? '') ?>
