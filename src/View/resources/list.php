@@ -98,7 +98,7 @@
                                 $preview = '';
                                 if (!empty($resource['content'])) {
                                     $plain = strip_tags($resource['content']);
-                                    $preview = mb_strimwidth($plain, 0, 300, '...');
+                                    $preview = mb_strimwidth($plain, 0, 200, '...');
                                 }
                                 echo htmlspecialchars($preview ?? '');
                                 ?>
