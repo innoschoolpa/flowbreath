@@ -114,7 +114,7 @@ require_once __DIR__ . '/layouts/header.php';
                             </div>
                             <p class="card-text mb-2">
                                 <a href="/resources/view/<?= $resource['id'] ?>" class="text-decoration-none text-dark">
-                                    <?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']),0,120,'...')) ?>
+                                    <?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']),0,180,'...')) ?>
                                 </a>
                             </p>
                             <div class="mb-2">
