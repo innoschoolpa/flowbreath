@@ -692,6 +692,26 @@ class ResourceController extends BaseController {
             if (!$resource) {
                 throw new \Exception("리소스를 찾을 수 없습니다.", 404);
             }
+
+            // 번역 데이터 가져오기
+            $db = \App\Core\Database::getInstance();
+            $sql = "SELECT * FROM resource_translations WHERE resource_id = ?";
+            $translations = $db->fetchAll($sql, [$id]);
+            
+            // 현재 언어의 번역 데이터가 있으면 리소스 데이터에 병합
+            $currentLang = $_SESSION['lang'] ?? 'ko';
+            foreach ($translations as $translation) {
+                if ($translation['language_code'] === $currentLang) {
+                    $resource = array_merge($resource, [
+                        'title' => $translation['title'],
+                        'content' => $translation['content'],
+                        'description' => $translation['description'],
+                        'language_code' => $translation['language_code']
+                    ]);
+                    break;
+                }
+            }
+
             // 태그, 관련 리소스 등 추가 데이터 필요시 불러오기
             $tags = $this->resource->getTags($id);
             $all_resources = $this->resource->getAll();
