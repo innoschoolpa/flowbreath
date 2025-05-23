@@ -253,9 +253,41 @@ $title = $title ?? '리소스 상세';
                 <i class="fas fa-arrow-left"></i> 목록으로
             </a>
         <?php endif; ?>
+
+        <!-- 댓글 섹션 -->
+        <div class="comments-section mt-5">
+            <h3>댓글</h3>
+            
+            <!-- 댓글 작성 폼 -->
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <form id="comment-form" class="comment-form">
+                    <input type="hidden" name="parent_id" value="">
+                    <textarea name="content" placeholder="댓글을 입력하세요..." maxlength="1000" required></textarea>
+                    <button type="submit">댓글 작성</button>
+                </form>
+            <?php else: ?>
+                <div class="alert alert-info">
+                    댓글을 작성하려면 <a href="/login">로그인</a>이 필요합니다.
+                </div>
+            <?php endif; ?>
+
+            <!-- 댓글 목록 -->
+            <div id="comments-container"></div>
+
+            <!-- 로딩 표시 -->
+            <div class="loading" style="display: none;">
+                댓글을 불러오는 중...
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // 현재 사용자 정보 설정
+    window.currentUserId = <?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'null'; ?>;
+    window.isAdmin = <?php echo isset($_SESSION['is_admin']) && $_SESSION['is_admin'] ? 'true' : 'false'; ?>;
+    </script>
+    <script src="/js/comments.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // 더보기 버튼 관련 코드 제거

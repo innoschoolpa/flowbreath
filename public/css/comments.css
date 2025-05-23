@@ -4,42 +4,43 @@
 }
 
 .comment-form {
-    margin-bottom: 2rem;
+    background-color: #f8f9fa;
     padding: 1rem;
-    background: #f8f9fa;
     border-radius: 8px;
+    margin-bottom: 2rem;
 }
 
 .comment-form textarea {
     width: 100%;
     min-height: 100px;
     padding: 0.5rem;
-    margin-bottom: 1rem;
     border: 1px solid #dee2e6;
     border-radius: 4px;
+    margin-bottom: 1rem;
     resize: vertical;
 }
 
 .comment-form button {
-    padding: 0.5rem 1rem;
-    background: #007bff;
+    background-color: #007bff;
     color: white;
     border: none;
+    padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 .comment-form button:hover {
-    background: #0056b3;
+    background-color: #0056b3;
 }
 
 .comment {
-    margin: 1rem 0;
-    padding: 1rem;
-    background: white;
+    background-color: white;
     border: 1px solid #dee2e6;
     border-radius: 8px;
-    transition: all 0.3s ease;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.2s;
 }
 
 .comment:hover {
@@ -49,9 +50,8 @@
 .comment-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 0.5rem;
-    color: #6c757d;
-    font-size: 0.9rem;
 }
 
 .comment-author {
@@ -59,54 +59,53 @@
     color: #495057;
 }
 
+.comment-time {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
 .comment-content {
-    margin: 0.5rem 0;
+    margin-bottom: 1rem;
     line-height: 1.5;
-    word-break: break-word;
+    white-space: pre-wrap;
 }
 
 .comment-actions {
     display: flex;
     gap: 0.5rem;
-    margin-top: 0.5rem;
 }
 
 .comment-actions button {
+    background: none;
+    border: none;
     padding: 0.25rem 0.5rem;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    color: #6c757d;
+    transition: color 0.2s;
 }
 
 .comment-actions button:hover {
-    background: #e9ecef;
-}
-
-.comment-actions button.like {
-    color: #28a745;
-}
-
-.comment-actions button.dislike {
-    color: #dc3545;
-}
-
-.comment-actions button.reply {
     color: #007bff;
 }
 
-.comment-actions button.edit {
-    color: #ffc107;
+.comment-actions .like:hover {
+    color: #28a745;
 }
 
-.comment-actions button.delete {
+.comment-actions .dislike:hover {
     color: #dc3545;
 }
 
-.comment-actions button.report {
-    color: #6c757d;
+.comment-actions .edit:hover {
+    color: #ffc107;
+}
+
+.comment-actions .delete:hover {
+    color: #dc3545;
+}
+
+.comment-actions .report:hover {
+    color: #dc3545;
 }
 
 .loading {
@@ -116,21 +115,19 @@
 }
 
 .error-message {
-    padding: 1rem;
-    margin: 1rem 0;
-    background: #f8d7da;
+    background-color: #f8d7da;
     color: #721c24;
-    border: 1px solid #f5c6cb;
+    padding: 0.75rem;
     border-radius: 4px;
+    margin-bottom: 1rem;
 }
 
 .success-message {
-    padding: 1rem;
-    margin: 1rem 0;
-    background: #d4edda;
+    background-color: #d4edda;
     color: #155724;
-    border: 1px solid #c3e6cb;
+    padding: 0.75rem;
     border-radius: 4px;
+    margin-bottom: 1rem;
 }
 
 /* 반응형 디자인 */
@@ -138,46 +135,50 @@
     .comment-actions {
         flex-wrap: wrap;
     }
-    
+
     .comment-actions button {
-        flex: 1 1 calc(50% - 0.5rem);
-        text-align: center;
+        font-size: 0.875rem;
     }
 }
 
-/* 다크 모드 지원 */
+/* 다크 모드 */
 @media (prefers-color-scheme: dark) {
-    .comments-section {
-        background: #1a1a1a;
-        color: #e0e0e0;
-    }
-
     .comment-form {
-        background: #2d2d2d;
-    }
-
-    .comment-form textarea {
-        background: #333;
-        color: #e0e0e0;
-        border-color: #444;
+        background-color: #343a40;
     }
 
     .comment {
-        background: #2d2d2d;
-        border-color: #444;
+        background-color: #343a40;
+        border-color: #495057;
     }
 
     .comment-author {
-        color: #e0e0e0;
+        color: #e9ecef;
+    }
+
+    .comment-time {
+        color: #adb5bd;
+    }
+
+    .comment-content {
+        color: #e9ecef;
     }
 
     .comment-actions button {
-        background: #333;
-        border-color: #444;
-        color: #e0e0e0;
+        color: #adb5bd;
     }
 
     .comment-actions button:hover {
-        background: #444;
+        color: #007bff;
+    }
+
+    .error-message {
+        background-color: #721c24;
+        color: #f8d7da;
+    }
+
+    .success-message {
+        background-color: #155724;
+        color: #d4edda;
     }
 } 

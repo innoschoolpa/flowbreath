@@ -55,21 +55,23 @@ class Comment
     private $db;
     private $table = 'comments';
 
-    public function __construct() {
-        $this->db = Database::getInstance();
+    public function __construct(PDO $db) {
+        $this->db = $db;
     }
 
     public function create($data) {
         $sql = "INSERT INTO {$this->table} (
             resource_id, user_id, parent_id, content, 
-            language_code, depth, attachment_path, attachment_type
+            language_code, depth, attachment_path, 
+            attachment_type, created_at, updated_at
         ) VALUES (
             :resource_id, :user_id, :parent_id, :content,
-            :language_code, :depth, :attachment_path, :attachment_type
+            :language_code, :depth, :attachment_path,
+            :attachment_type, NOW(), NOW()
         )";
 
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
+        $stmt->execute([
             'resource_id' => $data['resource_id'],
             'user_id' => $data['user_id'],
             'parent_id' => $data['parent_id'] ?? null,
@@ -79,12 +81,14 @@ class Comment
             'attachment_path' => $data['attachment_path'] ?? null,
             'attachment_type' => $data['attachment_type'] ?? null
         ]);
+
+        return $this->db->lastInsertId();
     }
 
     public function update($id, $data) {
         $sql = "UPDATE {$this->table} SET 
             content = :content,
-            updated_at = CURRENT_TIMESTAMP
+            updated_at = NOW()
             WHERE id = :id";
 
         $stmt = $this->db->prepare($sql);
@@ -97,7 +101,7 @@ class Comment
     public function delete($id) {
         $sql = "UPDATE {$this->table} SET 
             is_deleted = 1,
-            deleted_at = CURRENT_TIMESTAMP
+            deleted_at = NOW()
             WHERE id = :id";
 
         $stmt = $this->db->prepare($sql);
@@ -105,9 +109,9 @@ class Comment
     }
 
     public function getById($id) {
-        $sql = "SELECT c.*, u.name as user_name 
+        $sql = "SELECT c.*, u.name as author_name 
                 FROM {$this->table} c
-                JOIN users u ON c.user_id = u.id
+                LEFT JOIN users u ON c.user_id = u.id
                 WHERE c.id = :id AND c.is_deleted = 0";
 
         $stmt = $this->db->prepare($sql);
@@ -118,12 +122,13 @@ class Comment
     public function getByResourceId($resourceId, $page = 1, $limit = 10) {
         $offset = ($page - 1) * $limit;
         
-        $sql = "SELECT c.*, u.name as user_name,
+        $sql = "SELECT c.*, u.name as author_name,
                 (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction_type = 'like') as like_count,
                 (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction_type = 'dislike') as dislike_count
                 FROM {$this->table} c
-                JOIN users u ON c.user_id = u.id
+                LEFT JOIN users u ON c.user_id = u.id
                 WHERE c.resource_id = :resource_id 
+                AND c.parent_id IS NULL 
                 AND c.is_deleted = 0
                 ORDER BY c.created_at DESC
                 LIMIT :limit OFFSET :offset";
@@ -133,16 +138,16 @@ class Comment
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
-        
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getReplies($parentId) {
-        $sql = "SELECT c.*, u.name as user_name,
+        $sql = "SELECT c.*, u.name as author_name,
                 (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction_type = 'like') as like_count,
                 (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction_type = 'dislike') as dislike_count
                 FROM {$this->table} c
-                JOIN users u ON c.user_id = u.id
+                LEFT JOIN users u ON c.user_id = u.id
                 WHERE c.parent_id = :parent_id 
                 AND c.is_deleted = 0
                 ORDER BY c.created_at ASC";
@@ -153,20 +158,24 @@ class Comment
     }
 
     public function report($commentId, $userId, $reason) {
-        $sql = "INSERT INTO comment_reports (comment_id, reporter_id, reason)
-                VALUES (:comment_id, :reporter_id, :reason)";
+        $sql = "INSERT INTO comment_reports (
+            comment_id, user_id, reason, created_at
+        ) VALUES (
+            :comment_id, :user_id, :reason, NOW()
+        )";
 
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
             'comment_id' => $commentId,
-            'reporter_id' => $userId,
+            'user_id' => $userId,
             'reason' => $reason
         ]);
     }
 
     public function block($commentId) {
         $sql = "UPDATE {$this->table} SET 
-            is_blocked = 1
+            is_blocked = 1,
+            updated_at = NOW()
             WHERE id = :id";
 
         $stmt = $this->db->prepare($sql);
@@ -174,9 +183,14 @@ class Comment
     }
 
     public function addReaction($commentId, $userId, $reactionType) {
-        $sql = "INSERT INTO comment_reactions (comment_id, user_id, reaction_type)
-                VALUES (:comment_id, :user_id, :reaction_type)
-                ON DUPLICATE KEY UPDATE reaction_type = :reaction_type";
+        // Remove existing reaction if any
+        $this->removeReaction($commentId, $userId);
+
+        $sql = "INSERT INTO comment_reactions (
+            comment_id, user_id, reaction_type, created_at
+        ) VALUES (
+            :comment_id, :user_id, :reaction_type, NOW()
+        )";
 
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
@@ -188,7 +202,8 @@ class Comment
 
     public function removeReaction($commentId, $userId) {
         $sql = "DELETE FROM comment_reactions 
-                WHERE comment_id = :comment_id AND user_id = :user_id";
+                WHERE comment_id = :comment_id 
+                AND user_id = :user_id";
 
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
