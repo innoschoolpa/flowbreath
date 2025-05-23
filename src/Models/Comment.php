@@ -48,79 +48,153 @@ if ($searchQuery !== '') {
 }
 
 use App\Core\Database;
+use PDO;
 
 class Comment
 {
-    private static function getDB()
-    {
-        return Database::getInstance();
+    private $db;
+    private $table = 'comments';
+
+    public function __construct() {
+        $this->db = Database::getInstance();
     }
 
-    public static function getResourceComments($resourceId, $limit = 10, $offset = 0)
-    {
-        $db = self::getDB();
-        $sql = "
-            SELECT c.*, u.name as user_name 
-            FROM comments c
-            JOIN users u ON c.user_id = u.id
-            WHERE c.resource_id = ? AND c.parent_id IS NULL AND c.is_deleted = 0
-            ORDER BY c.created_at DESC
-            LIMIT ? OFFSET ?
-        ";
-        return $db->fetchAll($sql, [$resourceId, $limit, $offset]);
+    public function create($data) {
+        $sql = "INSERT INTO {$this->table} (
+            resource_id, user_id, parent_id, content, 
+            language_code, depth, attachment_path, attachment_type
+        ) VALUES (
+            :resource_id, :user_id, :parent_id, :content,
+            :language_code, :depth, :attachment_path, :attachment_type
+        )";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'resource_id' => $data['resource_id'],
+            'user_id' => $data['user_id'],
+            'parent_id' => $data['parent_id'] ?? null,
+            'content' => $data['content'],
+            'language_code' => $data['language_code'] ?? 'ko',
+            'depth' => $data['depth'] ?? 0,
+            'attachment_path' => $data['attachment_path'] ?? null,
+            'attachment_type' => $data['attachment_type'] ?? null
+        ]);
     }
 
-    public static function getReplies($parentId, $limit = 5, $offset = 0)
-    {
-        $db = self::getDB();
-        $sql = "
-            SELECT c.*, u.name as user_name 
-            FROM comments c
-            JOIN users u ON c.user_id = u.id
-            WHERE c.parent_id = ? AND c.is_deleted = 0
-            ORDER BY c.created_at ASC
-            LIMIT ? OFFSET ?
-        ";
-        return $db->fetchAll($sql, [$parentId, $limit, $offset]);
+    public function update($id, $data) {
+        $sql = "UPDATE {$this->table} SET 
+            content = :content,
+            updated_at = CURRENT_TIMESTAMP
+            WHERE id = :id";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => $id,
+            'content' => $data['content']
+        ]);
     }
 
-    public static function countResourceComments($resourceId)
-    {
-        $db = self::getDB();
-        $sql = "SELECT COUNT(*) as count FROM comments WHERE resource_id = ? AND is_deleted = 0";
-        $result = $db->fetch($sql, [$resourceId]);
-        return $result['count'] ?? 0;
+    public function delete($id) {
+        $sql = "UPDATE {$this->table} SET 
+            is_deleted = 1,
+            deleted_at = CURRENT_TIMESTAMP
+            WHERE id = :id";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute(['id' => $id]);
     }
 
-    public static function findOrFail($id)
-    {
-        $db = self::getDB();
-        $sql = "SELECT * FROM comments WHERE id = ? AND is_deleted = 0";
-        $comment = $db->fetch($sql, [$id]);
+    public function getById($id) {
+        $sql = "SELECT c.*, u.name as user_name 
+                FROM {$this->table} c
+                JOIN users u ON c.user_id = u.id
+                WHERE c.id = :id AND c.is_deleted = 0";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function getByResourceId($resourceId, $page = 1, $limit = 10) {
+        $offset = ($page - 1) * $limit;
         
-        if (!$comment) {
-            throw new \Exception('댓글을 찾을 수 없습니다.');
-        }
+        $sql = "SELECT c.*, u.name as user_name,
+                (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction_type = 'like') as like_count,
+                (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction_type = 'dislike') as dislike_count
+                FROM {$this->table} c
+                JOIN users u ON c.user_id = u.id
+                WHERE c.resource_id = :resource_id 
+                AND c.is_deleted = 0
+                ORDER BY c.created_at DESC
+                LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':resource_id', $resourceId, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
         
-        return $comment;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public static function create($data)
-    {
-        $db = self::getDB();
-        return $db->insert('comments', $data);
+    public function getReplies($parentId) {
+        $sql = "SELECT c.*, u.name as user_name,
+                (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction_type = 'like') as like_count,
+                (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction_type = 'dislike') as dislike_count
+                FROM {$this->table} c
+                JOIN users u ON c.user_id = u.id
+                WHERE c.parent_id = :parent_id 
+                AND c.is_deleted = 0
+                ORDER BY c.created_at ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['parent_id' => $parentId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public static function update($id, $data)
-    {
-        $db = self::getDB();
-        return $db->update('comments', $data, 'id = ?', [$id]);
+    public function report($commentId, $userId, $reason) {
+        $sql = "INSERT INTO comment_reports (comment_id, reporter_id, reason)
+                VALUES (:comment_id, :reporter_id, :reason)";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'comment_id' => $commentId,
+            'reporter_id' => $userId,
+            'reason' => $reason
+        ]);
     }
 
-    public static function softDelete($id)
-    {
-        $db = self::getDB();
-        return $db->update('comments', ['is_deleted' => 1], 'id = ?', [$id]);
+    public function block($commentId) {
+        $sql = "UPDATE {$this->table} SET 
+            is_blocked = 1
+            WHERE id = :id";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute(['id' => $commentId]);
+    }
+
+    public function addReaction($commentId, $userId, $reactionType) {
+        $sql = "INSERT INTO comment_reactions (comment_id, user_id, reaction_type)
+                VALUES (:comment_id, :user_id, :reaction_type)
+                ON DUPLICATE KEY UPDATE reaction_type = :reaction_type";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'comment_id' => $commentId,
+            'user_id' => $userId,
+            'reaction_type' => $reactionType
+        ]);
+    }
+
+    public function removeReaction($commentId, $userId) {
+        $sql = "DELETE FROM comment_reactions 
+                WHERE comment_id = :comment_id AND user_id = :user_id";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'comment_id' => $commentId,
+            'user_id' => $userId
+        ]);
     }
 }
 ?>
