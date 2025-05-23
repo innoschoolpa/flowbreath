@@ -68,7 +68,7 @@
             <label for="language_code" class="form-label">언어</label>
             <select class="form-control" id="language_code" name="language_code">
                 <option value="ko" <?php if (($resource['language_code'] ?? 'ko') === 'ko') echo 'selected'; ?>>한국어</option>
-                <option value="en" <?php if (($resource['language_code'] ?? '') === 'en') echo 'selected'; ?>>English</option>
+                <option value="en" <?php if (($resource['language_code'] ?? 'ko') === 'en') echo 'selected'; ?>>English</option>
             </select>
         </div>
         
