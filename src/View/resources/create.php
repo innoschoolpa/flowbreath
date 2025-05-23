@@ -96,7 +96,7 @@
 <!-- CKEditor 5 CDN -->
 <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 <script>
-let ckeditorInstance;
+let ckeditorInstance, descriptionEditorInstance;
 
 // 이미지 업로드 핸들러
 function uploadImage(file) {
@@ -142,91 +142,105 @@ function CustomUploadAdapterPlugin(editor) {
     };
 }
 
-// CKEditor 초기화 (한 번만 실행)
-ClassicEditor
-    .create(document.querySelector('#content'), {
-        extraPlugins: [CustomUploadAdapterPlugin],
-        toolbar: {
-            items: [
-                'heading',
-                '|',
-                'bold',
-                'italic',
-                'link',
-                'bulletedList',
-                'numberedList',
-                '|',
-                'outdent',
-                'indent',
-                '|',
-                'imageUpload',
-                'blockQuote',
-                'insertTable',
-                'undo',
-                'redo'
-            ]
-        },
-        image: {
-            toolbar: [
-                'imageTextAlternative',
-                'imageStyle:inline',
-                'imageStyle:block',
-                'imageStyle:side'
-            ],
-            styles: [
-                'full',
-                'side',
-                'alignLeft',
-                'alignCenter',
-                'alignRight'
-            ],
-            resizeOptions: [
-                {
-                    name: 'imageResize:original',
-                    value: null,
-                    label: 'Original'
-                },
-                {
-                    name: 'imageResize:50',
-                    value: '50',
-                    label: '50%'
-                },
-                {
-                    name: 'imageResize:75',
-                    value: '75',
-                    label: '75%'
-                }
-            ],
-            resizeUnit: '%',
-            upload: {
-                types: ['jpeg', 'png', 'gif', 'jpg']
+// 공통 에디터 설정
+const editorConfig = {
+    extraPlugins: [CustomUploadAdapterPlugin],
+    toolbar: {
+        items: [
+            'heading',
+            '|',
+            'bold',
+            'italic',
+            'link',
+            'bulletedList',
+            'numberedList',
+            '|',
+            'outdent',
+            'indent',
+            '|',
+            'imageUpload',
+            'blockQuote',
+            'insertTable',
+            'undo',
+            'redo'
+        ]
+    },
+    image: {
+        toolbar: [
+            'imageTextAlternative',
+            'imageStyle:inline',
+            'imageStyle:block',
+            'imageStyle:side'
+        ],
+        styles: [
+            'full',
+            'side',
+            'alignLeft',
+            'alignCenter',
+            'alignRight'
+        ],
+        resizeOptions: [
+            {
+                name: 'imageResize:original',
+                value: null,
+                label: 'Original'
             },
-            insert: {
-                type: 'block'
+            {
+                name: 'imageResize:50',
+                value: '50',
+                label: '50%'
             },
-            styles: {
-                options: [
-                    'inline',
-                    'block',
-                    'side'
-                ]
+            {
+                name: 'imageResize:75',
+                value: '75',
+                label: '75%'
             }
+        ],
+        resizeUnit: '%',
+        upload: {
+            types: ['jpeg', 'png', 'gif', 'jpg']
         },
-        table: {
-            contentToolbar: [
-                'tableColumn',
-                'tableRow',
-                'mergeTableCells'
+        insert: {
+            type: 'block'
+        },
+        styles: {
+            options: [
+                'inline',
+                'block',
+                'side'
             ]
-        },
-        language: 'ko'
-    })
+        }
+    },
+    table: {
+        contentToolbar: [
+            'tableColumn',
+            'tableRow',
+            'mergeTableCells'
+        ]
+    },
+    language: 'ko'
+};
+
+// content 에디터 초기화
+ClassicEditor
+    .create(document.querySelector('#content'), editorConfig)
     .then(editor => {
         ckeditorInstance = editor;
-        console.log('Editor initialized');
+        console.log('Content editor initialized');
     })
     .catch(error => {
-        console.error(error);
+        console.error('Content editor error:', error);
+    });
+
+// description 에디터 초기화
+ClassicEditor
+    .create(document.querySelector('#description'), editorConfig)
+    .then(editor => {
+        descriptionEditorInstance = editor;
+        console.log('Description editor initialized');
+    })
+    .catch(error => {
+        console.error('Description editor error:', error);
     });
 
 // 폼 submit 시 에디터 내용 textarea에 복사
@@ -240,11 +254,14 @@ document.getElementById('resource-form').addEventListener('submit', function(e) 
             return false;
         }
     }
-    const descriptionInput = document.getElementById('description');
-    if (!descriptionInput.value.trim()) {
-        alert('설명을 입력하세요.');
-        e.preventDefault();
-        return false;
+    if (descriptionEditorInstance) {
+        document.getElementById('description').value = descriptionEditorInstance.getData();
+        // CKEditor 내용이 비어 있으면 제출 막기
+        if (!descriptionEditorInstance.getData().trim()) {
+            alert('설명을 입력하세요.');
+            e.preventDefault();
+            return false;
+        }
     }
 });
 
