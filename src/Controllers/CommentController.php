@@ -28,14 +28,14 @@ class CommentController extends Controller
             $limit = 10;
             $offset = ($page - 1) * $limit;
 
-            $comments = Comment::getResourceComments($resourceId, $limit, $offset);
-            $total = Comment::countResourceComments($resourceId);
+            $comments = $this->commentModel->getResourceComments($resourceId, $limit, $offset);
+            $total = $this->commentModel->countResourceComments($resourceId);
 
             foreach ($comments as &$comment) {
-                $comment['replies'] = Comment::getReplies($comment['id']);
+                $comment['replies'] = $this->commentModel->getReplies($comment['id']);
             }
 
-            return Response::json([
+            return $this->response->json([
                 'success' => true,
                 'data' => [
                     'comments' => $comments,
@@ -45,7 +45,7 @@ class CommentController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return Response::json([
+            return $this->response->json([
                 'success' => false,
                 'message' => $e->getMessage()
             ], 500);
@@ -75,9 +75,9 @@ class CommentController extends Controller
 
             if ($comment->save()) {
                 // 저장된 댓글 정보 조회
-                $commentData = Comment::getResourceComments($resourceId, 1, 0)[0] ?? null;
+                $commentData = $this->commentModel->getResourceComments($resourceId, 1, 0)[0] ?? null;
 
-                return Response::json([
+                return $this->response->json([
                     'success' => true,
                     'message' => '댓글이 등록되었습니다.',
                     'data' => $commentData
@@ -86,7 +86,7 @@ class CommentController extends Controller
 
             throw new \Exception('댓글 등록에 실패했습니다.');
         } catch (\Exception $e) {
-            return Response::json([
+            return $this->response->json([
                 'success' => false,
                 'message' => $e->getMessage()
             ], 500);
@@ -103,17 +103,17 @@ class CommentController extends Controller
                 throw new \Exception('댓글 내용을 입력해주세요.');
             }
 
-            $comment = Comment::findOrFail($commentId);
+            $comment = $this->commentModel->findOrFail($commentId);
 
             // 권한 확인
-            if ($comment->user_id !== $userId) {
+            if ($comment->user_id !== $userId && !Auth::isAdmin()) {
                 throw new \Exception('댓글을 수정할 권한이 없습니다.');
             }
 
             $comment->content = $content;
             
             if ($comment->save()) {
-                return Response::json([
+                return $this->response->json([
                     'success' => true,
                     'message' => '댓글이 수정되었습니다.',
                     'data' => $comment
@@ -122,7 +122,7 @@ class CommentController extends Controller
 
             throw new \Exception('댓글 수정에 실패했습니다.');
         } catch (\Exception $e) {
-            return Response::json([
+            return $this->response->json([
                 'success' => false,
                 'message' => $e->getMessage()
             ], 500);
@@ -133,15 +133,15 @@ class CommentController extends Controller
     {
         try {
             $userId = $request->getUser()->id;
-            $comment = Comment::findOrFail($commentId);
+            $comment = $this->commentModel->findOrFail($commentId);
 
             // 권한 확인
-            if ($comment->user_id !== $userId) {
+            if ($comment->user_id !== $userId && !Auth::isAdmin()) {
                 throw new \Exception('댓글을 삭제할 권한이 없습니다.');
             }
 
             if ($comment->softDelete()) {
-                return Response::json([
+                return $this->response->json([
                     'success' => true,
                     'message' => '댓글이 삭제되었습니다.'
                 ]);
@@ -149,7 +149,7 @@ class CommentController extends Controller
 
             throw new \Exception('댓글 삭제에 실패했습니다.');
         } catch (\Exception $e) {
-            return Response::json([
+            return $this->response->json([
                 'success' => false,
                 'message' => $e->getMessage()
             ], 500);
@@ -222,103 +222,6 @@ class CommentController extends Controller
             return $this->response->json([
                 'success' => false,
                 'message' => '댓글 등록에 실패했습니다.'
-            ], 500);
-        }
-    }
-
-    public function update($id) {
-        if (!Auth::check()) {
-            return $this->response->json([
-                'success' => false,
-                'message' => '로그인이 필요합니다.'
-            ], 401);
-        }
-
-        $comment = $this->commentModel->getById($id);
-        if (!$comment) {
-            return $this->response->json([
-                'success' => false,
-                'message' => '댓글을 찾을 수 없습니다.'
-            ], 404);
-        }
-
-        // 권한 체크
-        if ($comment['user_id'] !== Auth::id() && !Auth::isAdmin()) {
-            return $this->response->json([
-                'success' => false,
-                'message' => '권한이 없습니다.'
-            ], 403);
-        }
-
-        $data = $this->request->getJson();
-        
-        if (empty($data['content'])) {
-            return $this->response->json([
-                'success' => false,
-                'message' => '내용을 입력해주세요.'
-            ], 400);
-        }
-
-        if (mb_strlen($data['content']) > 1000) {
-            return $this->response->json([
-                'success' => false,
-                'message' => '댓글은 1000자를 초과할 수 없습니다.'
-            ], 400);
-        }
-
-        $data['content'] = strip_tags($data['content']);
-
-        try {
-            $this->commentModel->update($id, $data);
-            $updatedComment = $this->commentModel->getById($id);
-            
-            return $this->response->json([
-                'success' => true,
-                'message' => '댓글이 수정되었습니다.',
-                'data' => $updatedComment
-            ]);
-        } catch (\Exception $e) {
-            return $this->response->json([
-                'success' => false,
-                'message' => '댓글 수정에 실패했습니다.'
-            ], 500);
-        }
-    }
-
-    public function delete($id) {
-        if (!Auth::check()) {
-            return $this->response->json([
-                'success' => false,
-                'message' => '로그인이 필요합니다.'
-            ], 401);
-        }
-
-        $comment = $this->commentModel->getById($id);
-        if (!$comment) {
-            return $this->response->json([
-                'success' => false,
-                'message' => '댓글을 찾을 수 없습니다.'
-            ], 404);
-        }
-
-        // 권한 체크
-        if ($comment['user_id'] !== Auth::id() && !Auth::isAdmin()) {
-            return $this->response->json([
-                'success' => false,
-                'message' => '권한이 없습니다.'
-            ], 403);
-        }
-
-        try {
-            $this->commentModel->delete($id);
-            return $this->response->json([
-                'success' => true,
-                'message' => '댓글이 삭제되었습니다.'
-            ]);
-        } catch (\Exception $e) {
-            return $this->response->json([
-                'success' => false,
-                'message' => '댓글 삭제에 실패했습니다.'
             ], 500);
         }
     }
