@@ -113,18 +113,52 @@ class Comment
     public function delete($id)
     {
         try {
-            $sql = "UPDATE {$this->table} 
-                    SET deleted_at = NOW() 
-                    WHERE id = :id 
-                    AND deleted_at IS NULL";
+            // 먼저 댓글이 존재하는지 확인
+            $checkSql = "SELECT id FROM {$this->table} WHERE id = :id AND deleted_at IS NULL";
+            $checkStmt = $this->db->prepare($checkSql);
+            $checkStmt->bindValue(':id', $id, PDO::PARAM_INT);
+            $checkStmt->execute();
             
-            $stmt = $this->db->prepare($sql);
-            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-            $result = $stmt->execute();
-            
-            return $result && $stmt->rowCount() > 0;
-        } catch (\PDOException $e) {
-            error_log("Comment deletion error: " . $e->getMessage());
+            if (!$checkStmt->fetch()) {
+                error_log("Comment not found or already deleted: ID = {$id}");
+                return false;
+            }
+
+            // 트랜잭션 시작
+            $this->db->beginTransaction();
+
+            try {
+                $sql = "UPDATE {$this->table} 
+                        SET deleted_at = NOW() 
+                        WHERE id = :id 
+                        AND deleted_at IS NULL";
+                
+                $stmt = $this->db->prepare($sql);
+                $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+                $result = $stmt->execute();
+                
+                if (!$result) {
+                    throw new \PDOException("Failed to execute delete query");
+                }
+
+                $rowCount = $stmt->rowCount();
+                if ($rowCount === 0) {
+                    throw new \PDOException("No rows were affected by the delete operation");
+                }
+
+                // 트랜잭션 커밋
+                $this->db->commit();
+                error_log("Comment successfully deleted: ID = {$id}");
+                return true;
+
+            } catch (\PDOException $e) {
+                // 트랜잭션 롤백
+                $this->db->rollBack();
+                error_log("Comment deletion failed: " . $e->getMessage());
+                return false;
+            }
+        } catch (\Exception $e) {
+            error_log("Unexpected error in comment deletion: " . $e->getMessage());
             return false;
         }
     }

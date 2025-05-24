@@ -189,19 +189,23 @@ class CommentController extends Controller
 
             $comment = $this->commentModel->find($commentId);
             if (!$comment) {
+                error_log("Comment not found for deletion: ID = {$commentId}");
                 throw new \Exception('존재하지 않는 댓글입니다.', 404);
             }
 
             // 권한 확인 (작성자 또는 관리자만 삭제 가능)
             if ($comment['user_id'] !== $this->auth->id() && !$this->auth->isAdmin()) {
+                error_log("Unauthorized deletion attempt: Comment ID = {$commentId}, User ID = {$this->auth->id()}");
                 throw new \Exception('댓글을 삭제할 권한이 없습니다.', 403);
             }
 
             $deleted = $this->commentModel->delete($commentId);
             if (!$deleted) {
+                error_log("Failed to delete comment: ID = {$commentId}");
                 throw new \Exception('댓글 삭제에 실패했습니다.', 500);
             }
 
+            error_log("Comment successfully deleted: ID = {$commentId}");
             return $this->response->json([
                 'success' => true,
                 'message' => '댓글이 삭제되었습니다.'
