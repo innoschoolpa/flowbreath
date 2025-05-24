@@ -75,18 +75,21 @@ body {
     display: inline-block;
     background: rgba(14, 165, 233, 0.1);
     color: var(--accent-color);
-    padding: 0.25rem 0.75rem;
+    padding: 0.5rem 1rem;
     border-radius: 20px;
     text-decoration: none;
     margin-right: 0.5rem;
     margin-bottom: 0.5rem;
     font-size: 0.875rem;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(14, 165, 233, 0.2);
 }
 
 .tag-badge:hover {
     background: rgba(14, 165, 233, 0.2);
     color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .btn-warning {
@@ -136,6 +139,53 @@ h1, h2, h3, h4, h5, h6 {
 
 .text-decoration-none {
     text-decoration: none !important;
+}
+
+.popular-tags {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-top: 4rem;
+    border: 1px solid var(--border-color);
+}
+
+.popular-tags h5 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.popular-tags h5::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: var(--accent-color);
+    border-radius: 2px;
+}
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.tag-badge i {
+    margin-right: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.tag-count {
+    background: rgba(14, 165, 233, 0.2);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
 }
 </style>
 
@@ -260,11 +310,19 @@ h1, h2, h3, h4, h5, h6 {
                 </div>
             <?php endforeach; ?>
         </div>
-        <div class="popular-tags mt-5">
-            <h5 class="mb-3"><?= $language->get('home.popular_tags.title') ?></h5>
-            <?php foreach ($popularTags as $tag): ?>
-                <a href="/resources?tags[]=<?= $tag['id'] ?>" class="tag-badge">#<?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></a>
-            <?php endforeach; ?>
+        <div class="popular-tags">
+            <h5><i class="fa fa-fire"></i> <?= $language->get('home.popular_tags.title') ?></h5>
+            <div class="tags-container">
+                <?php foreach ($popularTags as $tag): ?>
+                    <a href="/resources?tags[]=<?= $tag['id'] ?>" class="tag-badge">
+                        <i class="fa fa-hashtag"></i>
+                        <?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?>
+                        <?php if (isset($tag['count'])): ?>
+                            <span class="tag-count"><?= $tag['count'] ?></span>
+                        <?php endif; ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
         </div>
     <?php endif; ?>
 </div>
