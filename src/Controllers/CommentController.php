@@ -8,6 +8,7 @@ use App\Core\Response;
 use App\Models\Comment;
 use App\Models\Resource;
 use App\Core\Auth;
+use PDO;
 
 class CommentController extends Controller
 {
@@ -18,9 +19,19 @@ class CommentController extends Controller
     public function __construct()
     {
         parent::__construct();
-        $this->commentModel = new Comment();
-        $this->resourceModel = new Resource();
+        
+        // 데이터베이스 연결 가져오기
+        $db = $this->getDb();
+        
+        // 모델 초기화
+        $this->commentModel = new Comment($db);
+        $this->resourceModel = new Resource($db);
         $this->auth = new Auth();
+    }
+
+    protected function getDb(): PDO
+    {
+        return $this->db;
     }
 
     public function index(Request $request, $resourceId)
@@ -158,7 +169,7 @@ class CommentController extends Controller
                 throw new \Exception('댓글을 삭제할 권한이 없습니다.', 403);
             }
 
-            $deleted = $this->commentModel->softDelete($commentId);
+            $deleted = $this->commentModel->delete($commentId);
             if (!$deleted) {
                 throw new \Exception('댓글 삭제에 실패했습니다.');
             }
