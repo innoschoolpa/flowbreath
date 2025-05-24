@@ -371,4 +371,72 @@ class CommentController extends Controller
             ], $e->getCode() ?: 500);
         }
     }
+
+    public function translate(Request $request, $commentId)
+    {
+        try {
+            if (!$this->auth->check()) {
+                throw new \Exception('로그인이 필요합니다.', 401);
+            }
+
+            $comment = $this->commentModel->find($commentId);
+            if (!$comment) {
+                throw new \Exception('존재하지 않는 댓글입니다.', 404);
+            }
+
+            // Google Translate API를 사용하여 번역
+            $translatedContent = $this->translateText($comment['content'], 'en');
+            
+            return $this->response->json([
+                'success' => true,
+                'data' => [
+                    'original' => $comment['content'],
+                    'translated' => $translatedContent
+                ]
+            ]);
+        } catch (\Exception $e) {
+            error_log("Translation error: " . $e->getMessage());
+            return $this->response->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], $e->getCode() ?: 500);
+        }
+    }
+
+    private function translateText($text, $targetLang)
+    {
+        // Google Translate API 키 설정
+        $apiKey = getenv('GOOGLE_TRANSLATE_API_KEY');
+        if (!$apiKey) {
+            throw new \Exception('번역 서비스가 설정되지 않았습니다.', 500);
+        }
+
+        $url = 'https://translation.googleapis.com/language/translate/v2';
+        $data = [
+            'q' => $text,
+            'target' => $targetLang,
+            'key' => $apiKey
+        ];
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode !== 200) {
+            throw new \Exception('번역 서비스 오류가 발생했습니다.', 500);
+        }
+
+        $result = json_decode($response, true);
+        if (!isset($result['data']['translations'][0]['translatedText'])) {
+            throw new \Exception('번역 결과를 가져올 수 없습니다.', 500);
+        }
+
+        return $result['data']['translations'][0]['translatedText'];
+    }
 } 

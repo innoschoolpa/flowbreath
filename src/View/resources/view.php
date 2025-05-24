@@ -582,22 +582,24 @@ $title = $title ?? '리소스 상세';
 
         <!-- 댓글 섹션 -->
         <div class="comments-section mt-5">
-            <h3><i class="fas fa-comments"></i> 댓글</h3>
+            <h3><i class="fas fa-comments"></i> <?php echo $lang === 'en' ? 'Comments' : '댓글'; ?></h3>
             
             <!-- 댓글 작성 폼 -->
             <?php if (isset($_SESSION['user_id'])): ?>
                 <form id="comment-form" class="comment-form">
                     <input type="hidden" name="parent_id" value="">
-                    <textarea name="content" placeholder="댓글을 입력하세요..." maxlength="1000" required></textarea>
+                    <textarea name="content" placeholder="<?php echo $lang === 'en' ? 'Write a comment...' : '댓글을 입력하세요...'; ?>" maxlength="1000" required></textarea>
                     <button type="submit">
                         <i class="fas fa-paper-plane"></i>
-                        댓글 작성
+                        <?php echo $lang === 'en' ? 'Post Comment' : '댓글 작성'; ?>
                     </button>
                 </form>
             <?php else: ?>
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i>
-                    댓글을 작성하려면 <a href="/login" class="text-decoration-none">로그인</a>이 필요합니다.
+                    <?php echo $lang === 'en' ? 'Please ' : ''; ?>
+                    <a href="/login" class="text-decoration-none"><?php echo $lang === 'en' ? 'login' : '로그인'; ?></a>
+                    <?php echo $lang === 'en' ? ' to write a comment.' : '이 필요합니다.'; ?>
                 </div>
             <?php endif; ?>
 
@@ -607,7 +609,7 @@ $title = $title ?? '리소스 상세';
             <!-- 로딩 표시 -->
             <div class="loading" style="display: none;">
                 <i class="fas fa-spinner fa-spin"></i>
-                댓글을 불러오는 중...
+                <?php echo $lang === 'en' ? 'Loading comments...' : '댓글을 불러오는 중...'; ?>
             </div>
         </div>
     </div>
@@ -617,12 +619,13 @@ $title = $title ?? '리소스 상세';
     // 현재 사용자 정보 설정
     window.currentUserId = <?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'null'; ?>;
     window.isAdmin = <?php echo isset($_SESSION['is_admin']) && $_SESSION['is_admin'] ? 'true' : 'false'; ?>;
+    window.currentLang = '<?php echo $lang; ?>'; // 현재 언어 설정 추가
     </script>
     <script src="/js/comments.js"></script>
     <script>
     // 전역 함수 선언
     window.deleteComment = async function(commentId) {
-        if (!confirm('댓글을 삭제하시겠습니까?')) {
+        if (!confirm(window.currentLang === 'en' ? 'Are you sure you want to delete this comment?' : '댓글을 삭제하시겠습니까?')) {
             return;
         }
 
@@ -722,17 +725,16 @@ $title = $title ?? '리소스 상세';
             const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
             const contentElement = commentElement.querySelector('.comment-content');
             
-            // 수정 폼 생성
             const editForm = document.createElement('form');
             editForm.className = 'edit-form';
             editForm.innerHTML = `
                 <textarea class="form-control mb-2" required>${currentContent}</textarea>
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="fas fa-save"></i> 저장
+                        <i class="fas fa-save"></i> ${window.currentLang === 'en' ? 'Save' : '저장'}
                     </button>
                     <button type="button" class="btn btn-secondary btn-sm" onclick="cancelEdit(${commentId}, '${currentContent.replace(/'/g, "\\'")}')">
-                        <i class="fas fa-times"></i> 취소
+                        <i class="fas fa-times"></i> ${window.currentLang === 'en' ? 'Cancel' : '취소'}
                     </button>
                 </div>
             `;
@@ -805,28 +807,28 @@ $title = $title ?? '리소스 상세';
                 <div class="comment-content">${comment.content}</div>
                 <div class="comment-actions">
                     <button class="comment-action-btn reply-btn" onclick="showReplyForm(${comment.id})">
-                        <i class="fas fa-reply"></i> 답글
+                        <i class="fas fa-reply"></i> ${window.currentLang === 'en' ? 'Reply' : '답글'}
                     </button>
                     ${(isAuthor || isAdmin) ? `
                         <button class="comment-action-btn edit-btn" onclick="editComment(${comment.id}, '${comment.content.replace(/'/g, "\\'")}')">
-                            <i class="fas fa-edit"></i> 수정
+                            <i class="fas fa-edit"></i> ${window.currentLang === 'en' ? 'Edit' : '수정'}
                         </button>
                         <button class="comment-action-btn delete-btn" onclick="deleteComment(${comment.id})">
-                            <i class="fas fa-trash"></i> 삭제
+                            <i class="fas fa-trash"></i> ${window.currentLang === 'en' ? 'Delete' : '삭제'}
                         </button>
                     ` : ''}
                 </div>
                 <div id="reply-form-${comment.id}" class="reply-form">
                     <form class="comment-form">
                         <input type="hidden" name="parent_id" value="${comment.id}">
-                        <textarea name="content" placeholder="답글을 입력하세요..." maxlength="1000" required></textarea>
+                        <textarea name="content" placeholder="${window.currentLang === 'en' ? 'Write a reply...' : '답글을 입력하세요...'}" maxlength="1000" required></textarea>
                         <div class="d-flex gap-2">
                             <button type="submit">
                                 <i class="fas fa-paper-plane"></i>
-                                답글 작성
+                                ${window.currentLang === 'en' ? 'Post Reply' : '답글 작성'}
                             </button>
                             <button type="button" class="btn btn-secondary btn-sm" onclick="hideReplyForm(${comment.id})">
-                                <i class="fas fa-times"></i> 취소
+                                <i class="fas fa-times"></i> ${window.currentLang === 'en' ? 'Cancel' : '취소'}
                             </button>
                         </div>
                     </form>

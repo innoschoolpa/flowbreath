@@ -56,6 +56,7 @@ return function (Router $router) {
     $router->add('PUT', '/api/comments/{commentId}', [CommentController::class, 'update']);
     $router->add('DELETE', '/api/comments/{commentId}', [CommentController::class, 'destroy']);
     $router->add('GET', '/api/comments/{commentId}/replies', [CommentController::class, 'getReplies']);
+    $router->add('GET', '/comments/{commentId}/translate', [CommentController::class, 'translate']);
     $router->add('POST', '/api/comments/{commentId}/report', [CommentController::class, 'report']);
     $router->add('POST', '/api/comments/{commentId}/block', [CommentController::class, 'block']);
     $router->add('POST', '/api/comments/{commentId}/reactions', [CommentController::class, 'addReaction']);
