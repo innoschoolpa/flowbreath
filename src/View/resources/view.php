@@ -569,16 +569,20 @@ $title = $title ?? '리소스 상세';
                     })
                 });
 
-                const data = await response.json();
-                if (data.success) {
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 폼 초기화
                     this.reset();
-                    // 새 댓글을 맨 위에 추가
-                    const newComment = createCommentElement(data.comment);
-                    commentsContainer.insertBefore(newComment, commentsContainer.firstChild);
-                    // 댓글 수 업데이트
-                    updateCommentCount();
+                    
+                    // 댓글 목록 새로고침
+                    currentPage = 1;
+                    commentsContainer.innerHTML = '';
+                    await loadComments(currentPage);
+                    
+                    alert(result.message);
                 } else {
-                    alert(data.error || '댓글 작성 중 오류가 발생했습니다.');
+                    alert(result.message || '댓글 작성 중 오류가 발생했습니다.');
                 }
             } catch (error) {
                 console.error('Error:', error);

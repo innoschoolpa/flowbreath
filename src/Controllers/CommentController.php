@@ -74,10 +74,26 @@ class CommentController extends Controller
                 throw new \Exception('로그인이 필요합니다.', 401);
             }
 
-            // JSON 요청 처리
-            $jsonData = json_decode(file_get_contents('php://input'), true);
-            $content = $jsonData['content'] ?? null;
-            $parentId = $jsonData['parent_id'] ?? null;
+            // 요청 데이터 처리 (form-data 또는 JSON)
+            $content = null;
+            $parentId = null;
+
+            // Content-Type 헤더 확인
+            $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+            
+            if (strpos($contentType, 'application/json') !== false) {
+                // JSON 요청 처리
+                $jsonData = json_decode(file_get_contents('php://input'), true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new \Exception('잘못된 JSON 형식입니다.', 400);
+                }
+                $content = $jsonData['content'] ?? null;
+                $parentId = $jsonData['parent_id'] ?? null;
+            } else {
+                // form-data 요청 처리
+                $content = $request->get('content');
+                $parentId = $request->get('parent_id');
+            }
 
             if (empty($content)) {
                 throw new \Exception('댓글 내용을 입력해주세요.', 400);
