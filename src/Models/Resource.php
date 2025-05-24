@@ -718,7 +718,7 @@ class Resource extends Model {
 
                 if (!$tag) {
                     // 태그가 없으면 새로 생성
-                    $stmt = $this->db->prepare("INSERT INTO tags (name) VALUES (?)");
+                    $stmt = $this->db->prepare("INSERT INTO tags (name, created_at) VALUES (?, NOW())");
                     $stmt->execute([$tag_name]);
                     $tag_id = $this->db->lastInsertId();
                 } else {
