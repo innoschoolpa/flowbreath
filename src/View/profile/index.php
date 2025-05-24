@@ -40,6 +40,173 @@ $stats = [
 $resources = [];
 ?>
 
+<style>
+:root {
+    --background-color: #0f172a;
+    --text-color: #f1f5f9;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    --primary-color: #3b82f6;
+    --secondary-color: #64748b;
+    --accent-color: #0ea5e9;
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --hover-bg: rgba(255, 255, 255, 0.1);
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.card-title {
+    color: var(--text-color);
+}
+
+.text-muted {
+    color: var(--secondary-color) !important;
+}
+
+.list-group-item {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.list-group-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.table {
+    color: var(--text-color);
+}
+
+.table thead th {
+    border-bottom-color: var(--border-color);
+    color: var(--secondary-color);
+}
+
+.table td {
+    border-top-color: var(--border-color);
+}
+
+.table-hover tbody tr:hover {
+    background-color: var(--hover-bg);
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.modal-header {
+    border-bottom-color: var(--border-color);
+}
+
+.modal-footer {
+    border-top-color: var(--border-color);
+}
+
+.form-control, .form-select {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--card-bg);
+    border-color: var(--accent-color);
+    color: var(--text-color);
+}
+
+.btn-outline-secondary {
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+}
+
+.progress {
+    background-color: var(--border-color);
+}
+
+.progress-bar {
+    background-color: var(--accent-color);
+}
+
+.social-links .btn-outline-secondary {
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+.social-links .btn-outline-secondary:hover {
+    background-color: var(--hover-bg);
+    border-color: var(--accent-color);
+}
+
+/* 프로필 이미지 아이콘 색상 */
+.fa-user-circle {
+    color: var(--secondary-color) !important;
+}
+
+/* 활동 아이콘 색상 */
+.text-primary {
+    color: var(--accent-color) !important;
+}
+
+.text-success {
+    color: var(--success-color) !important;
+}
+
+.text-danger {
+    color: var(--error-color) !important;
+}
+
+/* 링크 색상 */
+a {
+    color: var(--accent-color);
+}
+
+a:hover {
+    color: #0284c7;
+}
+
+/* 테이블 링크 */
+.table a {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.table a:hover {
+    color: var(--accent-color);
+}
+
+/* 모달 닫기 버튼 */
+.btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+
 <div class="container py-5">
     <div class="row">
         <!-- 프로필 정보 -->
