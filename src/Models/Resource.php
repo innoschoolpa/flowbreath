@@ -726,25 +726,22 @@ class Resource extends Model {
                     if (!$tag) {
                         // 2.2 태그가 없으면 생성
                         $stmt = $this->db->prepare("INSERT INTO tags (name, created_at) VALUES (?, NOW())");
-                        $result = $stmt->execute([$tagName]);
+                        $stmt->execute([$tagName]);
                         
-                        if (!$result) {
-                            error_log("Failed to create tag: " . $tagName);
-                            throw new \Exception("Failed to create tag: " . $tagName);
-                        }
+                        // 생성된 태그 ID 조회
+                        $stmt = $this->db->prepare("SELECT id FROM tags WHERE name = ? ORDER BY id DESC LIMIT 1");
+                        $stmt->execute([$tagName]);
+                        $tag = $stmt->fetch();
                         
-                        $tagId = $this->db->lastInsertId();
-                        if (!$tagId) {
-                            error_log("Failed to get last insert ID for tag: " . $tagName);
-                            throw new \Exception("Failed to get last insert ID for tag: " . $tagName);
+                        if (!$tag) {
+                            error_log("Failed to retrieve tag ID after creation: " . $tagName);
+                            throw new \Exception("Failed to retrieve tag ID after creation: " . $tagName);
                         }
-                    } else {
-                        $tagId = $tag['id'];
                     }
 
                     // 2.3 리소스-태그 관계 생성
                     $stmt = $this->db->prepare("INSERT INTO resource_tags (resource_id, tag_id, created_at) VALUES (?, ?, NOW())");
-                    $result = $stmt->execute([$resourceId, $tagId]);
+                    $result = $stmt->execute([$resourceId, $tag['id']]);
                     
                     if (!$result) {
                         error_log("Failed to create resource-tag relationship for tag: " . $tagName);
