@@ -1,6 +1,7 @@
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
 <?php
-// src/View/resources/show.php
+// Get current language from session or default to 'ko'
+$lang = $_SESSION['lang'] ?? 'ko';
 
 // Generate meta description from content
 $description = !empty($resource['content']) ? 
@@ -14,7 +15,7 @@ $imageUrl = !empty($resource['featured_image']) ? $resource['featured_image'] : 
 $currentUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . 
     "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 
-$title = $title ?? '리소스 상세';
+$title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
 ?>
 <!DOCTYPE html>
 <html lang="ko">
