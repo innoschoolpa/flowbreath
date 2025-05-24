@@ -12,6 +12,154 @@
 
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
+<style>
+:root {
+    --background-color: #0f172a;
+    --text-color: #f1f5f9;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    --primary-color: #3b82f6;
+    --secondary-color: #64748b;
+    --accent-color: #0ea5e9;
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --input-bg: rgba(255, 255, 255, 0.1);
+    --input-border: var(--border-color);
+    --input-focus-bg: rgba(255, 255, 255, 0.15);
+    --input-focus-border: var(--accent-color);
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.form-control {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+.form-control:focus {
+    background-color: var(--input-focus-bg);
+    border-color: var(--input-focus-border);
+    color: var(--text-color);
+    box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25);
+}
+
+.form-control::placeholder {
+    color: var(--text-color);
+    opacity: 0.5;
+}
+
+.form-label {
+    color: var(--text-color);
+}
+
+.btn-primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--text-color);
+}
+
+.btn-primary:hover {
+    background-color: #0284c7;
+    border-color: #0284c7;
+    color: var(--text-color);
+}
+
+.alert-danger {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: var(--error-color);
+    color: var(--error-color);
+}
+
+/* CKEditor 다크 모드 스타일 */
+.ck.ck-editor {
+    width: 100%;
+}
+
+.ck.ck-content {
+    background-color: var(--input-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--input-border) !important;
+}
+
+.ck.ck-toolbar {
+    background-color: var(--card-bg) !important;
+    border-color: var(--input-border) !important;
+}
+
+.ck.ck-toolbar .ck-toolbar__items button {
+    color: var(--text-color) !important;
+}
+
+.ck.ck-toolbar .ck-toolbar__items button:hover {
+    background-color: var(--input-focus-bg) !important;
+}
+
+.ck.ck-dropdown__panel {
+    background-color: var(--card-bg) !important;
+    border-color: var(--input-border) !important;
+}
+
+.ck.ck-dropdown__panel .ck-button {
+    color: var(--text-color) !important;
+}
+
+.ck.ck-dropdown__panel .ck-button:hover {
+    background-color: var(--input-focus-bg) !important;
+}
+
+/* 유튜브 미리보기 스타일 */
+#youtube-preview {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+/* 파일 업로드 스타일 */
+input[type="file"] {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+input[type="file"]::file-selector-button {
+    background-color: var(--accent-color);
+    color: var(--text-color);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background-color: #0284c7;
+}
+
+/* 선택 상자 스타일 */
+select.form-control {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+select.form-control:focus {
+    background-color: var(--input-focus-bg);
+    border-color: var(--input-focus-border);
+    color: var(--text-color);
+}
+
+/* 필수 입력 표시 */
+.text-danger {
+    color: var(--error-color) !important;
+}
+</style>
+
 <div class="container mt-5">
     <?php
     $rid = $resource['resource_id'] ?? $resource['id'] ?? null;
