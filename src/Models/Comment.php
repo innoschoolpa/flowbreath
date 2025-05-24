@@ -16,7 +16,7 @@ class Comment
 
     public function getByResourceId($resourceId, $limit = 10, $offset = 0)
     {
-        $sql = "SELECT c.*, u.username, u.profile_image 
+        $sql = "SELECT c.*, u.name as author_name, u.profile_image 
                 FROM {$this->table} c 
                 LEFT JOIN users u ON c.user_id = u.id 
                 WHERE c.resource_id = :resource_id 
@@ -50,7 +50,7 @@ class Comment
 
     public function getReplies($commentId)
     {
-        $sql = "SELECT c.*, u.username, u.profile_image 
+        $sql = "SELECT c.*, u.name as author_name, u.profile_image 
                 FROM {$this->table} c 
                 LEFT JOIN users u ON c.user_id = u.id 
                 WHERE c.parent_id = :parent_id 
@@ -66,7 +66,7 @@ class Comment
 
     public function find($id)
     {
-        $sql = "SELECT c.*, u.username, u.profile_image 
+        $sql = "SELECT c.*, u.name as author_name, u.profile_image 
                 FROM {$this->table} c 
                 LEFT JOIN users u ON c.user_id = u.id 
                 WHERE c.id = :id 
