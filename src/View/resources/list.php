@@ -1,6 +1,133 @@
 <?php $language = $language ?? \App\Core\Language::getInstance(); ?>
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
+<style>
+:root {
+    --background-color: #0f172a;
+    --text-color: #f1f5f9;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    --primary-color: #3b82f6;
+    --secondary-color: #64748b;
+    --accent-color: #0ea5e9;
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.text-gray-600 {
+    color: var(--text-color) !important;
+    opacity: 0.8;
+}
+
+.text-gray-900 {
+    color: var(--text-color) !important;
+}
+
+.text-gray-500 {
+    color: var(--text-color) !important;
+    opacity: 0.6;
+}
+
+.bg-white {
+    background-color: var(--card-bg) !important;
+}
+
+.border-gray-200 {
+    border-color: var(--border-color) !important;
+}
+
+.bg-gray-100 {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.bg-yellow-100 {
+    background-color: rgba(245, 158, 11, 0.1) !important;
+}
+
+.bg-red-100 {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+.border-yellow-400 {
+    border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.border-red-400 {
+    border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.text-yellow-700 {
+    color: var(--warning-color) !important;
+}
+
+.text-red-700 {
+    color: var(--error-color) !important;
+}
+
+.hover\:bg-gray-50:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.bg-yellow-300 {
+    background-color: var(--warning-color) !important;
+}
+
+.bg-yellow-400 {
+    background-color: var(--warning-color) !important;
+}
+
+.bg-yellow-500 {
+    background-color: #d97706 !important;
+}
+
+.text-black {
+    color: var(--text-color) !important;
+}
+
+input[type="text"] {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+input[type="text"]:focus {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.25) !important;
+}
+
+input[type="text"]::placeholder {
+    color: var(--text-color) !important;
+    opacity: 0.5;
+}
+
+.border {
+    border-color: var(--border-color) !important;
+}
+
+.border-t {
+    border-top-color: var(--border-color) !important;
+}
+
+.hover\:text-blue-600:hover {
+    color: var(--accent-color) !important;
+}
+
+.shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
+}
+
+.hover\:shadow-2xl:hover {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
+}
+</style>
+
 <div class="container mx-auto px-4 py-8">
     <!-- Hero Section -->
     <div class="text-center mb-12">
@@ -22,7 +149,7 @@
                 <?php if (isset($user) && $user['id']): ?>
                     <a href="/resources/create"
                         class="px-6 py-2 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 transition-colors ml-4"
-                        style="height:44px; min-width:110px; font-size:1.1rem; display:flex; align-items:center; justify-content:center; color:#222;">
+                        style="height:44px; min-width:110px; font-size:1.1rem; display:flex; align-items:center; justify-content:center;">
                         <i class="fas fa-plus me-1"></i><?= $language->get('common.add_resource') ?>
                     </a>
                 <?php endif; ?>
