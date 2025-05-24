@@ -46,9 +46,9 @@ class CommentController extends Controller
             $comments = $this->commentModel->getByResourceId($resourceId, $limit, $offset);
             $total = $this->commentModel->countByResourceId($resourceId);
 
-            // 각 댓글의 답글 가져오기
+            // 각 댓글의 답글을 재귀적으로 가져오기
             foreach ($comments as &$comment) {
-                $comment['replies'] = $this->commentModel->getReplies($comment['id']);
+                $comment['replies'] = $this->getNestedReplies($comment['id']);
             }
 
             return $this->response->json([
@@ -67,6 +67,16 @@ class CommentController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    // 중첩 답글을 재귀적으로 가져오는 메서드
+    private function getNestedReplies($commentId)
+    {
+        $replies = $this->commentModel->getReplies($commentId);
+        foreach ($replies as &$reply) {
+            $reply['replies'] = $this->getNestedReplies($reply['id']);
+        }
+        return $replies;
     }
 
     public function store(Request $request, $resourceId)
