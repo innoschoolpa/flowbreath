@@ -26,12 +26,103 @@ $title = $title ?? '리소스 상세';
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <style>
+    :root {
+        --background-color: #0f172a;
+        --text-color: #f1f5f9;
+        --card-bg: #1e293b;
+        --border-color: #334155;
+        --primary-color: #3b82f6;
+        --secondary-color: #64748b;
+        --accent-color: #0ea5e9;
+        --success-color: #22c55e;
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
+        --info-bg: rgba(14, 165, 233, 0.1);
+    }
+
+    body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+    }
+
+    .card {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+    }
+
+    .card-header {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-bottom-color: var(--border-color);
+    }
+
+    .btn-secondary {
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+        color: var(--text-color);
+    }
+
+    .btn-secondary:hover {
+        background-color: #475569;
+        border-color: #475569;
+        color: var(--text-color);
+    }
+
+    .btn-primary {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        color: var(--text-color);
+    }
+
+    .btn-primary:hover {
+        background-color: #0284c7;
+        border-color: #0284c7;
+        color: var(--text-color);
+    }
+
+    .btn-danger {
+        background-color: var(--error-color);
+        border-color: var(--error-color);
+        color: var(--text-color);
+    }
+
+    .btn-danger:hover {
+        background-color: #dc2626;
+        border-color: #dc2626;
+        color: var(--text-color);
+    }
+
+    .alert-info {
+        background-color: var(--info-bg);
+        border-color: var(--accent-color);
+        color: var(--text-color);
+    }
+
+    .alert-danger {
+        background-color: rgba(239, 68, 68, 0.1);
+        border-color: var(--error-color);
+        color: var(--error-color);
+    }
+
+    .badge.bg-secondary {
+        background-color: var(--secondary-color) !important;
+        color: var(--text-color);
+    }
+
+    .text-decoration-none {
+        color: var(--accent-color);
+    }
+
+    .text-decoration-none:hover {
+        color: #0284c7;
+    }
+
     /* 컨텐츠 영역 스타일 */
     .card-text {
         width: 100%;
         max-width: 100%;
         overflow: hidden;
         box-sizing: border-box;
+        color: var(--text-color);
     }
 
     /* 이미지 컨테이너 */
@@ -78,6 +169,46 @@ $title = $title ?? '리소스 상세';
             float: none;
             margin: 1rem 0;
         }
+    }
+
+    /* 댓글 섹션 스타일 */
+    .comments-section {
+        color: var(--text-color);
+    }
+
+    .comment-form textarea {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: var(--border-color);
+        color: var(--text-color);
+        width: 100%;
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+        border-radius: 0.375rem;
+    }
+
+    .comment-form textarea:focus {
+        background-color: rgba(255, 255, 255, 0.15);
+        border-color: var(--accent-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.25);
+    }
+
+    .comment-form button {
+        background-color: var(--accent-color);
+        color: var(--text-color);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        cursor: pointer;
+    }
+
+    .comment-form button:hover {
+        background-color: #0284c7;
+    }
+
+    .loading {
+        color: var(--text-color);
+        opacity: 0.7;
     }
     </style>
 
@@ -192,7 +323,7 @@ $title = $title ?? '리소스 상세';
                         </div>
                         <?php if (!empty($resource['link'])): ?>
                             <div class="mb-3">
-                                <strong>링크:</strong> <a href="<?= htmlspecialchars($resource['link']) ?>" target="_blank" rel="noopener noreferrer"><?= htmlspecialchars($resource['link']) ?></a>
+                                <strong>링크:</strong> <a href="<?= htmlspecialchars($resource['link']) ?>" target="_blank" rel="noopener noreferrer" class="text-decoration-none"><?= htmlspecialchars($resource['link']) ?></a>
                             </div>
                         <?php endif; ?>
                         <?php if (!empty($resource['description'])): ?>
@@ -267,7 +398,7 @@ $title = $title ?? '리소스 상세';
                 </form>
             <?php else: ?>
                 <div class="alert alert-info">
-                    댓글을 작성하려면 <a href="/login">로그인</a>이 필요합니다.
+                    댓글을 작성하려면 <a href="/login" class="text-decoration-none">로그인</a>이 필요합니다.
                 </div>
             <?php endif; ?>
 
