@@ -457,7 +457,7 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                             <i class="fas fa-list"></i> <?php echo $lang === 'en' ? 'Back to List' : '목록으로'; ?>
                         </a>
                         <?php if (isset($_SESSION['user_id']) && isset($resource['user_id']) && $_SESSION['user_id'] === $resource['user_id']): ?>
-                            <a href="/resources/edit/<?php echo htmlspecialchars($resource['id']); ?>" class="btn btn-primary btn-sm">
+                            <a href="/resources/<?php echo htmlspecialchars($resource['id']); ?>/edit" class="btn btn-primary btn-sm">
                                 <i class="fas fa-edit"></i> <?php echo $lang === 'en' ? 'Edit' : '수정'; ?>
                             </a>
                             <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('<?php echo htmlspecialchars($resource['id']); ?>', '<?php echo htmlspecialchars($resource['translation_language_code'] ?? $resource['language_code'] ?? 'ko'); ?>')">
@@ -563,7 +563,7 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                         <i class="fas fa-list"></i> <?php echo $lang === 'en' ? 'Back to List' : '목록으로'; ?>
                     </a>
                     <?php if (isset($_SESSION['user_id']) && isset($resource['user_id']) && $_SESSION['user_id'] === $resource['user_id']): ?>
-                        <a href="/resources/edit/<?php echo htmlspecialchars($resource['id']); ?>" class="btn btn-primary">
+                        <a href="/resources/<?php echo htmlspecialchars($resource['id']); ?>/edit" class="btn btn-primary">
                             <i class="fas fa-edit"></i> <?php echo $lang === 'en' ? 'Edit' : '수정'; ?>
                         </a>
                         <button type="button" class="btn btn-danger" onclick="confirmDelete('<?php echo htmlspecialchars($resource['id']); ?>', '<?php echo htmlspecialchars($resource['translation_language_code'] ?? $resource['language_code'] ?? 'ko'); ?>')">
