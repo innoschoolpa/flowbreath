@@ -545,7 +545,8 @@ $title = $title ?? '리소스 상세';
             const response = await fetch(`/api/comments/${commentId}`, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
                 }
             });
 
@@ -559,10 +560,10 @@ $title = $title ?? '리소스 상세';
                 }
                 
                 // 댓글 수 업데이트
-                const commentCountElement = document.getElementById('commentCount');
+                const commentCountElement = document.querySelector('.comments-section h3');
                 if (commentCountElement) {
-                    const currentCount = parseInt(commentCountElement.textContent);
-                    commentCountElement.textContent = currentCount - 1;
+                    const count = document.querySelectorAll('.comment').length;
+                    commentCountElement.innerHTML = `<i class="fas fa-comments"></i> 댓글 (${count})`;
                 }
                 
                 alert(result.message);
