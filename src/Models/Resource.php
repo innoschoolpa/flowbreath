@@ -730,6 +730,9 @@ class Resource extends Model {
                 $stmt->execute([$resource_id, $tag_id]);
             }
 
+            // 태그 카운트 업데이트
+            $this->db->query("UPDATE tags t SET count = (SELECT COUNT(*) FROM resource_tags rt WHERE rt.tag_id = t.id)");
+
             $this->db->commit();
             return true;
         } catch (\PDOException $e) {
