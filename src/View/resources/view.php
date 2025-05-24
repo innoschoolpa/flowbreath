@@ -576,8 +576,9 @@ $title = $title ?? '리소스 상세';
                     this.reset();
                     
                     // 댓글 목록 새로고침
-                    currentPage = 1;
                     commentsContainer.innerHTML = '';
+                    currentPage = 1;
+                    hasMoreComments = true;
                     await loadComments(currentPage);
                     
                     alert(result.message);
@@ -730,12 +731,16 @@ $title = $title ?? '리소스 상세';
                 const data = await response.json();
 
                 if (data.success) {
-                    data.comments.forEach(comment => {
+                    if (page === 1) {
+                        commentsContainer.innerHTML = '';
+                    }
+                    
+                    data.data.comments.forEach(comment => {
                         const commentElement = createCommentElement(comment);
                         commentsContainer.appendChild(commentElement);
                     });
 
-                    hasMoreComments = data.comments.length === 10; // 페이지당 10개씩 로드
+                    hasMoreComments = data.data.comments.length === 10; // 페이지당 10개씩 로드
                     currentPage = page;
                     updateCommentCount();
                 }
