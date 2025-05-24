@@ -9,23 +9,25 @@ use App\Models\Comment;
 use App\Models\Resource;
 use App\Core\Auth;
 use PDO;
+use App\Core\Database;
 
 class CommentController extends Controller
 {
     protected $commentModel;
     protected $resourceModel;
     protected $auth;
+    protected $db;
 
     public function __construct()
     {
         parent::__construct();
         
         // 데이터베이스 연결 가져오기
-        $db = $this->getDb();
+        $this->db = Database::getInstance()->getConnection();
         
         // 모델 초기화
-        $this->commentModel = new Comment($db);
-        $this->resourceModel = new Resource($db);
+        $this->commentModel = new Comment($this->db);
+        $this->resourceModel = new Resource($this->db);
         $this->auth = new Auth();
     }
 
