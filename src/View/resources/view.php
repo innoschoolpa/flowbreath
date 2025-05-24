@@ -542,6 +542,7 @@ $title = $title ?? '리소스 상세';
         let currentPage = 1;
         let isLoading = false;
         let hasMoreComments = true;
+        const resourceId = <?php echo $resource['id']; ?>;
 
         // 댓글 작성
         commentForm.addEventListener('submit', async function(e) {
@@ -556,14 +557,13 @@ $title = $title ?? '리소스 상세';
             }
 
             try {
-                const response = await fetch('/api/comments', {
+                const response = await fetch(`/api/resources/${resourceId}/comments`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
                     },
                     body: JSON.stringify({
-                        resource_id: <?php echo $resource['id']; ?>,
                         content: content,
                         parent_id: parentId || null
                     })
@@ -722,7 +722,7 @@ $title = $title ?? '리소스 상세';
             loadingIndicator.style.display = 'block';
 
             try {
-                const response = await fetch(`/api/comments?resource_id=<?php echo $resource['id']; ?>&page=${page}`);
+                const response = await fetch(`/api/resources/${resourceId}/comments?page=${page}`);
                 const data = await response.json();
 
                 if (data.success) {
