@@ -112,14 +112,21 @@ class Comment
 
     public function delete($id)
     {
-        $sql = "UPDATE {$this->table} 
-                SET deleted_at = NOW() 
-                WHERE id = :id";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        
-        return $stmt->execute();
+        try {
+            $sql = "UPDATE {$this->table} 
+                    SET deleted_at = NOW() 
+                    WHERE id = :id 
+                    AND deleted_at IS NULL";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+            $result = $stmt->execute();
+            
+            return $result && $stmt->rowCount() > 0;
+        } catch (\PDOException $e) {
+            error_log("Comment deletion error: " . $e->getMessage());
+            return false;
+        }
     }
 
     public function report($commentId, $userId, $reason)

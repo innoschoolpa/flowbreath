@@ -207,6 +207,7 @@ class CommentController extends Controller
                 'message' => '댓글이 삭제되었습니다.'
             ]);
         } catch (\Exception $e) {
+            error_log("Comment deletion error in controller: " . $e->getMessage());
             $statusCode = $e->getCode() ?: 500;
             if ($statusCode < 400 || $statusCode > 599) {
                 $statusCode = 500;
