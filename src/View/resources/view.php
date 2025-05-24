@@ -535,6 +535,39 @@ $title = $title ?? '리소스 상세';
     </script>
     <script src="/js/comments.js"></script>
     <script>
+    // 전역 함수 선언
+    window.deleteComment = async function(commentId) {
+        if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
+
+        try {
+            const response = await fetch(`/api/comments/${commentId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
+                }
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                // 댓글 요소 제거
+                const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+                if (commentElement) {
+                    commentElement.remove();
+                    // 댓글 수 업데이트
+                    updateCommentCount();
+                }
+                alert(result.message);
+            } else {
+                alert(result.message || '댓글 삭제 중 오류가 발생했습니다.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('댓글 삭제 중 오류가 발생했습니다.');
+        }
+    };
+
     document.addEventListener('DOMContentLoaded', function() {
         const commentForm = document.getElementById('comment-form');
         const commentsContainer = document.getElementById('comments-container');
@@ -619,39 +652,6 @@ $title = $title ?? '리소스 상세';
             } catch (error) {
                 console.error('Error:', error);
                 alert('댓글 수정 중 오류가 발생했습니다.');
-            }
-        }
-
-        // 댓글 삭제
-        async function deleteComment(commentId) {
-            if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
-
-            try {
-                const response = await fetch(`/api/comments/${commentId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
-                    }
-                });
-
-                const result = await response.json();
-                
-                if (result.success) {
-                    // 댓글 요소 제거
-                    const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
-                    if (commentElement) {
-                        commentElement.remove();
-                        // 댓글 수 업데이트
-                        updateCommentCount();
-                    }
-                    alert(result.message);
-                } else {
-                    alert(result.message || '댓글 삭제 중 오류가 발생했습니다.');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('댓글 삭제 중 오류가 발생했습니다.');
             }
         }
 
