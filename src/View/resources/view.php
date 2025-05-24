@@ -335,9 +335,9 @@ $title = $title ?? '리소스 상세';
     }
 
     .edit-form textarea {
-        background-color: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border-color);
-        color: var(--text-color);
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid var(--border-color) !important;
+        color: #ffffff !important;
         width: 100%;
         padding: 0.5rem;
         border-radius: 0.25rem;
@@ -347,30 +347,30 @@ $title = $title ?? '리소스 상세';
     }
 
     .edit-form textarea:focus {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-color: var(--accent-color);
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border-color: var(--accent-color) !important;
         outline: none;
         box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.25);
     }
 
     .edit-form textarea::placeholder {
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.5) !important;
     }
 
     .edit-form textarea::-webkit-input-placeholder {
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.5) !important;
     }
 
     .edit-form textarea:-moz-placeholder {
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.5) !important;
     }
 
     .edit-form textarea::-moz-placeholder {
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.5) !important;
     }
 
     .edit-form textarea:-ms-input-placeholder {
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.5) !important;
     }
 
     .edit-form .btn {
