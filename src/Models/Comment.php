@@ -52,164 +52,176 @@ use PDO;
 
 class Comment
 {
-    private $db;
-    private $table = 'comments';
+    protected $db;
+    protected $table = 'comments';
 
-    public function __construct(PDO $db) {
+    public function __construct(PDO $db)
+    {
         $this->db = $db;
     }
 
-    public function create($data) {
-        $sql = "INSERT INTO {$this->table} (
-            resource_id, user_id, parent_id, content, 
-            language_code, depth, attachment_path, 
-            attachment_type, created_at, updated_at
-        ) VALUES (
-            :resource_id, :user_id, :parent_id, :content,
-            :language_code, :depth, :attachment_path,
-            :attachment_type, NOW(), NOW()
-        )";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            'resource_id' => $data['resource_id'],
-            'user_id' => $data['user_id'],
-            'parent_id' => $data['parent_id'] ?? null,
-            'content' => $data['content'],
-            'language_code' => $data['language_code'] ?? 'ko',
-            'depth' => $data['depth'] ?? 0,
-            'attachment_path' => $data['attachment_path'] ?? null,
-            'attachment_type' => $data['attachment_type'] ?? null
-        ]);
-
-        return $this->db->lastInsertId();
-    }
-
-    public function update($id, $data) {
-        $sql = "UPDATE {$this->table} SET 
-            content = :content,
-            updated_at = NOW()
-            WHERE id = :id";
-
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            'id' => $id,
-            'content' => $data['content']
-        ]);
-    }
-
-    public function delete($id) {
-        $sql = "UPDATE {$this->table} SET 
-            is_deleted = 1,
-            deleted_at = NOW()
-            WHERE id = :id";
-
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute(['id' => $id]);
-    }
-
-    public function getById($id) {
-        $sql = "SELECT c.*, u.name as author_name 
-                FROM {$this->table} c
-                LEFT JOIN users u ON c.user_id = u.id
-                WHERE c.id = :id AND c.is_deleted = 0";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function getByResourceId($resourceId, $page = 1, $limit = 10) {
-        $offset = ($page - 1) * $limit;
-        
-        $sql = "SELECT c.*, u.name as author_name,
-                (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction_type = 'like') as like_count,
-                (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction_type = 'dislike') as dislike_count
-                FROM {$this->table} c
-                LEFT JOIN users u ON c.user_id = u.id
+    public function getByResourceId($resourceId, $limit = 10, $offset = 0)
+    {
+        $sql = "SELECT c.*, u.username, u.profile_image 
+                FROM {$this->table} c 
+                LEFT JOIN users u ON c.user_id = u.id 
                 WHERE c.resource_id = :resource_id 
                 AND c.parent_id IS NULL 
-                AND c.is_deleted = 0
-                ORDER BY c.created_at DESC
+                AND c.deleted_at IS NULL 
+                ORDER BY c.created_at DESC 
                 LIMIT :limit OFFSET :offset";
-
+        
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':resource_id', $resourceId, PDO::PARAM_INT);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
-
+        
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getReplies($parentId) {
-        $sql = "SELECT c.*, u.name as author_name,
-                (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction_type = 'like') as like_count,
-                (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction_type = 'dislike') as dislike_count
-                FROM {$this->table} c
-                LEFT JOIN users u ON c.user_id = u.id
+    public function countByResourceId($resourceId)
+    {
+        $sql = "SELECT COUNT(*) FROM {$this->table} 
+                WHERE resource_id = :resource_id 
+                AND parent_id IS NULL 
+                AND deleted_at IS NULL";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':resource_id', $resourceId, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetchColumn();
+    }
+
+    public function getReplies($commentId)
+    {
+        $sql = "SELECT c.*, u.username, u.profile_image 
+                FROM {$this->table} c 
+                LEFT JOIN users u ON c.user_id = u.id 
                 WHERE c.parent_id = :parent_id 
-                AND c.is_deleted = 0
+                AND c.deleted_at IS NULL 
                 ORDER BY c.created_at ASC";
-
+        
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['parent_id' => $parentId]);
+        $stmt->bindValue(':parent_id', $commentId, PDO::PARAM_INT);
+        $stmt->execute();
+        
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function report($commentId, $userId, $reason) {
-        $sql = "INSERT INTO comment_reports (
-            comment_id, user_id, reason, created_at
-        ) VALUES (
-            :comment_id, :user_id, :reason, NOW()
-        )";
-
+    public function find($id)
+    {
+        $sql = "SELECT c.*, u.username, u.profile_image 
+                FROM {$this->table} c 
+                LEFT JOIN users u ON c.user_id = u.id 
+                WHERE c.id = :id 
+                AND c.deleted_at IS NULL";
+        
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            'comment_id' => $commentId,
-            'user_id' => $userId,
-            'reason' => $reason
-        ]);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function block($commentId) {
-        $sql = "UPDATE {$this->table} SET 
-            is_blocked = 1,
-            updated_at = NOW()
-            WHERE id = :id";
-
+    public function create($data)
+    {
+        $sql = "INSERT INTO {$this->table} 
+                (resource_id, user_id, parent_id, content, created_at) 
+                VALUES 
+                (:resource_id, :user_id, :parent_id, :content, NOW())";
+        
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute(['id' => $commentId]);
+        $stmt->bindValue(':resource_id', $data['resource_id'], PDO::PARAM_INT);
+        $stmt->bindValue(':user_id', $data['user_id'], PDO::PARAM_INT);
+        $stmt->bindValue(':parent_id', $data['parent_id'], PDO::PARAM_INT);
+        $stmt->bindValue(':content', $data['content'], PDO::PARAM_STR);
+        
+        return $stmt->execute() ? $this->db->lastInsertId() : false;
     }
 
-    public function addReaction($commentId, $userId, $reactionType) {
-        // Remove existing reaction if any
-        $this->removeReaction($commentId, $userId);
-
-        $sql = "INSERT INTO comment_reactions (
-            comment_id, user_id, reaction_type, created_at
-        ) VALUES (
-            :comment_id, :user_id, :reaction_type, NOW()
-        )";
-
+    public function update($id, $data)
+    {
+        $sql = "UPDATE {$this->table} 
+                SET content = :content, 
+                    updated_at = NOW() 
+                WHERE id = :id 
+                AND deleted_at IS NULL";
+        
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            'comment_id' => $commentId,
-            'user_id' => $userId,
-            'reaction_type' => $reactionType
-        ]);
+        $stmt->bindValue(':content', $data['content'], PDO::PARAM_STR);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        
+        return $stmt->execute();
     }
 
-    public function removeReaction($commentId, $userId) {
+    public function delete($id)
+    {
+        $sql = "UPDATE {$this->table} 
+                SET deleted_at = NOW() 
+                WHERE id = :id";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        
+        return $stmt->execute();
+    }
+
+    public function report($commentId, $userId, $reason)
+    {
+        $sql = "INSERT INTO comment_reports 
+                (comment_id, user_id, reason, created_at) 
+                VALUES 
+                (:comment_id, :user_id, :reason, NOW())";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':comment_id', $commentId, PDO::PARAM_INT);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindValue(':reason', $reason, PDO::PARAM_STR);
+        
+        return $stmt->execute();
+    }
+
+    public function block($commentId)
+    {
+        $sql = "UPDATE {$this->table} 
+                SET is_blocked = 1, 
+                    blocked_at = NOW() 
+                WHERE id = :id";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':id', $commentId, PDO::PARAM_INT);
+        
+        return $stmt->execute();
+    }
+
+    public function addReaction($commentId, $userId, $reactionType)
+    {
+        $sql = "INSERT INTO comment_reactions 
+                (comment_id, user_id, reaction_type, created_at) 
+                VALUES 
+                (:comment_id, :user_id, :reaction_type, NOW())";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':comment_id', $commentId, PDO::PARAM_INT);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindValue(':reaction_type', $reactionType, PDO::PARAM_STR);
+        
+        return $stmt->execute();
+    }
+
+    public function removeReaction($commentId, $userId)
+    {
         $sql = "DELETE FROM comment_reactions 
                 WHERE comment_id = :comment_id 
                 AND user_id = :user_id";
-
+        
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            'comment_id' => $commentId,
-            'user_id' => $userId
-        ]);
+        $stmt->bindValue(':comment_id', $commentId, PDO::PARAM_INT);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        
+        return $stmt->execute();
     }
 }
 ?>
