@@ -214,6 +214,14 @@ $title = $title ?? '리소스 상세';
         color: var(--text-color);
         opacity: 0.7;
     }
+
+    /* DB 정보 섹션 스타일 추가 */
+    .list-unstyled.small {
+        color: var(--text-color);
+    }
+    .list-unstyled.small li b {
+        color: var(--text-color);
+    }
     </style>
 
     <!-- SEO Meta Tags -->
