@@ -320,6 +320,43 @@ $title = $title ?? '리소스 상세';
     .list-unstyled.small li b {
         color: var(--text-color);
     }
+
+    /* 댓글 섹션 스타일 */
+    .comments-section {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background-color: var(--card-bg);
+        border-radius: 0.5rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .edit-form {
+        margin-top: 0.5rem;
+    }
+
+    .edit-form textarea {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        min-height: 80px;
+        resize: vertical;
+        transition: all 0.3s ease;
+    }
+
+    .edit-form textarea:focus {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: var(--accent-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.25);
+    }
+
+    .edit-form .btn {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+    }
     </style>
 
     <!-- SEO Meta Tags -->
@@ -633,35 +670,75 @@ $title = $title ?? '리소스 상세';
         });
 
         // 댓글 수정
-        async function editComment(commentId, currentContent) {
-            const newContent = prompt('댓글을 수정하세요:', currentContent);
-            if (newContent === null || newContent.trim() === currentContent.trim()) return;
+        window.editComment = async function(commentId, currentContent) {
+            const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+            const contentElement = commentElement.querySelector('.comment-content');
+            
+            // 수정 폼 생성
+            const editForm = document.createElement('form');
+            editForm.className = 'edit-form';
+            editForm.innerHTML = `
+                <textarea class="form-control mb-2" required>${currentContent}</textarea>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-save"></i> 저장
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="cancelEdit(${commentId}, '${currentContent.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-times"></i> 취소
+                    </button>
+                </div>
+            `;
 
-            try {
-                const response = await fetch(`/api/comments/${commentId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
-                    },
-                    body: JSON.stringify({ content: newContent.trim() })
-                });
+            // 기존 내용을 수정 폼으로 교체
+            const originalContent = contentElement.innerHTML;
+            contentElement.innerHTML = '';
+            contentElement.appendChild(editForm);
 
-                const data = await response.json();
-                if (data.success) {
-                    const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
-                    if (commentElement) {
-                        commentElement.querySelector('.comment-content').textContent = newContent.trim();
-                        commentElement.querySelector('.comment-date').textContent = '수정됨 • ' + new Date().toLocaleString();
-                    }
-                } else {
-                    alert(data.error || '댓글 수정 중 오류가 발생했습니다.');
+            // 폼 제출 이벤트 처리
+            editForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const newContent = this.querySelector('textarea').value.trim();
+
+                if (newContent === currentContent.trim()) {
+                    cancelEdit(commentId, currentContent);
+                    return;
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('댓글 수정 중 오류가 발생했습니다.');
-            }
-        }
+
+                try {
+                    const response = await fetch(`/api/comments/${commentId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
+                        },
+                        body: JSON.stringify({ content: newContent })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        contentElement.innerHTML = newContent;
+                        const dateElement = commentElement.querySelector('.comment-date');
+                        dateElement.textContent = '수정됨 • ' + new Date().toLocaleString();
+                        alert(result.message);
+                    } else {
+                        alert(result.message || '댓글 수정 중 오류가 발생했습니다.');
+                        cancelEdit(commentId, currentContent);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('댓글 수정 중 오류가 발생했습니다.');
+                    cancelEdit(commentId, currentContent);
+                }
+            });
+        };
+
+        // 수정 취소
+        window.cancelEdit = function(commentId, originalContent) {
+            const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+            const contentElement = commentElement.querySelector('.comment-content');
+            contentElement.innerHTML = originalContent;
+        };
 
         // 댓글 요소 생성
         function createCommentElement(comment) {

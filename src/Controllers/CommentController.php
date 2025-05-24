@@ -146,24 +146,30 @@ class CommentController extends Controller
                 throw new \Exception('로그인이 필요합니다.', 401);
             }
 
-            $content = $request->get('content');
+            // JSON 요청 처리
+            $jsonData = json_decode(file_get_contents('php://input'), true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \Exception('잘못된 JSON 형식입니다.', 400);
+            }
+
+            $content = $jsonData['content'] ?? null;
             if (empty($content)) {
-                throw new \Exception('댓글 내용을 입력해주세요.');
+                throw new \Exception('댓글 내용을 입력해주세요.', 400);
             }
 
             $comment = $this->commentModel->find($commentId);
             if (!$comment) {
-                throw new \Exception('존재하지 않는 댓글입니다.');
+                throw new \Exception('존재하지 않는 댓글입니다.', 404);
             }
 
-            // 권한 확인
+            // 권한 확인 (작성자 또는 관리자만 수정 가능)
             if ($comment['user_id'] !== $this->auth->id() && !$this->auth->isAdmin()) {
                 throw new \Exception('댓글을 수정할 권한이 없습니다.', 403);
             }
 
             $updated = $this->commentModel->update($commentId, ['content' => $content]);
             if (!$updated) {
-                throw new \Exception('댓글 수정에 실패했습니다.');
+                throw new \Exception('댓글 수정에 실패했습니다.', 500);
             }
 
             $comment = $this->commentModel->find($commentId);
@@ -173,10 +179,15 @@ class CommentController extends Controller
                 'data' => $comment
             ]);
         } catch (\Exception $e) {
+            error_log("Comment update error: " . $e->getMessage());
+            $statusCode = $e->getCode() ?: 500;
+            if ($statusCode < 400 || $statusCode > 599) {
+                $statusCode = 500;
+            }
             return $this->response->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ], $e->getCode() ?: 500);
+            ], $statusCode);
         }
     }
 
