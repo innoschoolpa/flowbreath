@@ -177,21 +177,39 @@ $title = $title ?? '리소스 상세';
 
     /* 댓글 섹션 스타일 */
     .comments-section {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background-color: var(--card-bg);
+        border-radius: 0.5rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .comments-section h3 {
         color: var(--text-color);
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .comment-form {
+        margin-bottom: 2rem;
     }
 
     .comment-form textarea {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-color: var(--border-color);
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color);
         color: var(--text-color);
         width: 100%;
-        padding: 0.5rem;
+        padding: 1rem;
         margin-bottom: 1rem;
-        border-radius: 0.375rem;
+        border-radius: 0.5rem;
+        min-height: 100px;
+        resize: vertical;
+        transition: all 0.3s ease;
     }
 
     .comment-form textarea:focus {
-        background-color: rgba(255, 255, 255, 0.15);
+        background-color: rgba(255, 255, 255, 0.1);
         border-color: var(--accent-color);
         outline: none;
         box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.25);
@@ -201,13 +219,93 @@ $title = $title ?? '리소스 상세';
         background-color: var(--accent-color);
         color: var(--text-color);
         border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
         cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .comment-form button:hover {
         background-color: #0284c7;
+        transform: translateY(-1px);
+    }
+
+    .comment-form button:active {
+        transform: translateY(0);
+    }
+
+    .comment-form button i {
+        font-size: 1rem;
+    }
+
+    #comments-container {
+        margin-top: 2rem;
+    }
+
+    .comment {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 0.5rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .comment-author {
+        font-weight: 600;
+        color: var(--accent-color);
+    }
+
+    .comment-date {
+        color: var(--secondary-color);
+        font-size: 0.875rem;
+    }
+
+    .comment-content {
+        color: var(--text-color);
+        line-height: 1.6;
+    }
+
+    .comment-actions {
+        margin-top: 0.5rem;
+        display: flex;
+        gap: 1rem;
+    }
+
+    .comment-action-btn {
+        background: none;
+        border: none;
+        color: var(--secondary-color);
+        cursor: pointer;
+        font-size: 0.875rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        transition: all 0.2s ease;
+    }
+
+    .comment-action-btn:hover {
+        color: var(--accent-color);
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .reply-form {
+        margin-top: 1rem;
+        padding-left: 2rem;
+        display: none;
+    }
+
+    .reply-form.active {
+        display: block;
     }
 
     .loading {
@@ -399,17 +497,21 @@ $title = $title ?? '리소스 상세';
 
         <!-- 댓글 섹션 -->
         <div class="comments-section mt-5">
-            <h3>댓글</h3>
+            <h3><i class="fas fa-comments"></i> 댓글</h3>
             
             <!-- 댓글 작성 폼 -->
             <?php if (isset($_SESSION['user_id'])): ?>
                 <form id="comment-form" class="comment-form">
                     <input type="hidden" name="parent_id" value="">
                     <textarea name="content" placeholder="댓글을 입력하세요..." maxlength="1000" required></textarea>
-                    <button type="submit">댓글 작성</button>
+                    <button type="submit">
+                        <i class="fas fa-paper-plane"></i>
+                        댓글 작성
+                    </button>
                 </form>
             <?php else: ?>
                 <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
                     댓글을 작성하려면 <a href="/login" class="text-decoration-none">로그인</a>이 필요합니다.
                 </div>
             <?php endif; ?>
@@ -419,6 +521,7 @@ $title = $title ?? '리소스 상세';
 
             <!-- 로딩 표시 -->
             <div class="loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i>
                 댓글을 불러오는 중...
             </div>
         </div>
