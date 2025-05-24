@@ -6,6 +6,139 @@ $title = $language->get('common.site_name') . ' - ' . $language->get('home.hero.
 require_once __DIR__ . '/layouts/header.php';
 ?>
 
+<style>
+:root {
+    --background-color: #0f172a;
+    --text-color: #f1f5f9;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    --primary-color: #3b82f6;
+    --secondary-color: #64748b;
+    --accent-color: #0ea5e9;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.hero-section {
+    background: linear-gradient(135deg, var(--background-color), #1e3a8a);
+    padding: 6rem 0;
+    margin-bottom: 4rem;
+}
+
+.search-box .form-control {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.search-box .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: var(--accent-color);
+    color: var(--text-color);
+    box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25);
+}
+
+.search-box .form-control::placeholder {
+    color: var(--secondary-color);
+}
+
+.card-resource {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card-resource:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-resource .card-title {
+    color: var(--text-color);
+}
+
+.card-resource .card-text {
+    color: var(--text-color);
+    opacity: 0.9;
+}
+
+.resource-meta {
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+}
+
+.tag-badge {
+    display: inline-block;
+    background: rgba(14, 165, 233, 0.1);
+    color: var(--accent-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    text-decoration: none;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    transition: background 0.2s;
+}
+
+.tag-badge:hover {
+    background: rgba(14, 165, 233, 0.2);
+    color: var(--accent-color);
+}
+
+.btn-warning {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--text-color);
+}
+
+.btn-warning:hover {
+    background-color: #0284c7;
+    border-color: #0284c7;
+    color: var(--text-color);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+}
+
+.btn-link {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.btn-link:hover {
+    color: #0284c7;
+}
+
+.alert-warning {
+    background-color: rgba(234, 179, 8, 0.1);
+    border-color: rgba(234, 179, 8, 0.2);
+    color: #fbbf24;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-color);
+}
+
+.text-dark {
+    color: var(--text-color) !important;
+}
+
+.text-decoration-none {
+    text-decoration: none !important;
+}
+</style>
+
 <!-- 히어로 섹션 -->
 <section class="hero-section">
     <div class="container">
