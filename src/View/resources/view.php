@@ -353,6 +353,26 @@ $title = $title ?? '리소스 상세';
         box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.25);
     }
 
+    .edit-form textarea::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .edit-form textarea::-webkit-input-placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .edit-form textarea:-moz-placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .edit-form textarea::-moz-placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .edit-form textarea:-ms-input-placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
     .edit-form .btn {
         padding: 0.25rem 0.75rem;
         font-size: 0.875rem;
