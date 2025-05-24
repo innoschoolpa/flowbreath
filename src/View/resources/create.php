@@ -169,6 +169,7 @@ select.form-control:focus {
     <form id="resource-form" action="<?php echo ($rid) ? '/resources/' . $rid : '/resources/store'; ?>" method="post" enctype="multipart/form-data">
         <?php if ($rid): ?>
             <input type="hidden" name="_method" value="PUT">
+            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
         <?php endif; ?>
         
         <div class="mb-3">
