@@ -46,6 +46,7 @@ class CommentController extends Controller
             $comments = $this->commentModel->getByResourceId($resourceId, $limit, $offset);
             $total = $this->commentModel->countByResourceId($resourceId);
 
+            // 각 댓글의 답글 가져오기
             foreach ($comments as &$comment) {
                 $comment['replies'] = $this->commentModel->getReplies($comment['id']);
             }
@@ -60,6 +61,7 @@ class CommentController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            error_log("Error in CommentController::index: " . $e->getMessage());
             return $this->response->json([
                 'success' => false,
                 'message' => $e->getMessage()

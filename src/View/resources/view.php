@@ -952,8 +952,16 @@ $title = $title ?? '리소스 상세';
                     data.data.comments.forEach(comment => {
                         const commentElement = createCommentElement(comment);
                         commentsContainer.appendChild(commentElement);
-                        // 답글 로드
-                        loadReplies(comment.id);
+                        
+                        // 답글 표시
+                        if (comment.replies && comment.replies.length > 0) {
+                            const repliesContainer = commentElement.querySelector(`#replies-${comment.id}`);
+                            comment.replies.forEach(reply => {
+                                const replyElement = createCommentElement(reply);
+                                replyElement.classList.add('reply');
+                                repliesContainer.appendChild(replyElement);
+                            });
+                        }
                     });
 
                     hasMoreComments = data.data.comments.length === 10;
@@ -966,6 +974,71 @@ $title = $title ?? '리소스 상세';
                 isLoading = false;
                 loadingIndicator.style.display = 'none';
             }
+        }
+
+        // 답글 작성 후 처리
+        async function handleReplySubmit(commentId, content) {
+            try {
+                const response = await fetch(`/api/resources/${resourceId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        parent_id: commentId
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 답글 목록 새로고침
+                    const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+                    if (commentElement) {
+                        const repliesContainer = commentElement.querySelector(`#replies-${commentId}`);
+                        repliesContainer.innerHTML = '';
+                        
+                        // 답글 다시 로드
+                        const repliesResponse = await fetch(`/api/comments/${commentId}/replies`);
+                        const repliesData = await repliesResponse.json();
+                        
+                        if (repliesData.success) {
+                            repliesData.data.replies.forEach(reply => {
+                                const replyElement = createCommentElement(reply);
+                                replyElement.classList.add('reply');
+                                repliesContainer.appendChild(replyElement);
+                            });
+                        }
+                    }
+                    
+                    alert(result.message);
+                } else {
+                    alert(result.message || '답글 작성 중 오류가 발생했습니다.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('답글 작성 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 답글 폼 제출 이벤트 처리
+        function setupReplyForm(form, commentId) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const content = formData.get('content').trim();
+
+                if (!content) {
+                    alert('답글 내용을 입력해주세요.');
+                    return;
+                }
+
+                await handleReplySubmit(commentId, content);
+                this.reset();
+                hideReplyForm(commentId);
+            });
         }
 
         // 무한 스크롤
