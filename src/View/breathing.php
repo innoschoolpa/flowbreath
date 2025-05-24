@@ -1,6 +1,111 @@
 <?php require_once __DIR__ . '/layouts/header.php'; ?>
 
-<div class="container">
+<style>
+:root {
+    --background-color: #0f172a;
+    --text-color: #f1f5f9;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    --primary-color: #3b82f6;
+    --secondary-color: #64748b;
+    --accent-color: #0ea5e9;
+    --success-color: #22c55e;
+    --circle-color: #0ea5e9;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+.card-header {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-label {
+    color: var(--text-color);
+}
+
+.form-select, .form-control {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.form-select:focus, .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: var(--accent-color);
+    color: var(--text-color);
+    box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25);
+}
+
+.form-select option {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+}
+
+.form-check-label {
+    color: var(--text-color);
+}
+
+.form-check-input {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-color);
+}
+
+.form-check-input:checked {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+#breathingCircle {
+    background-color: var(--circle-color);
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+}
+
+.btn-primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--text-color);
+}
+
+.btn-primary:hover {
+    background-color: #0284c7;
+    border-color: #0284c7;
+    color: var(--text-color);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: var(--text-color);
+}
+
+.btn-secondary:hover {
+    background-color: #475569;
+    border-color: #475569;
+    color: var(--text-color);
+}
+
+#timer {
+    color: var(--text-color);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#phaseText {
+    color: var(--text-color);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+</style>
+
+<div class="container py-5">
     <div class="row">
         <div class="col-md-8 mx-auto">
             <div class="card">
@@ -42,10 +147,10 @@
 
                     <!-- 시각적 가이드 -->
                     <div class="text-center mb-4 position-relative">
-                        <div id="breathingCircle" class="mx-auto" style="width: 200px; height: 200px; border-radius: 50%; background-color: #4CAF50; transition: all 4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                        <div id="breathingCircle" class="mx-auto" style="width: 200px; height: 200px; border-radius: 50%; transition: all 4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                         <div class="position-absolute top-50 start-50 translate-middle text-center" style="width: 100%;">
-                            <div id="timer" class="h3 mb-2" style="color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">05:00</div>
-                            <div id="phaseText" class="text-white mb-3" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><?= __('breathing.controls.ready') ?></div>
+                            <div id="timer" class="h3 mb-2">05:00</div>
+                            <div id="phaseText" class="mb-3"><?= __('breathing.controls.ready') ?></div>
                             <!-- 컨트롤 -->
                             <div class="d-flex justify-content-center gap-3">
                                 <button class="btn btn-primary" id="startButton"><?= __('breathing.controls.start') ?></button>
