@@ -69,6 +69,10 @@ body {
     color: var(--text-color);
 }
 
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-color);
+}
+
 .text-muted {
     color: var(--secondary-color) !important;
 }

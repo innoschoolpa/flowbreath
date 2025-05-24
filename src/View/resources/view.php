@@ -55,6 +55,10 @@ $title = $title ?? '리소스 상세';
         border-bottom-color: var(--border-color);
     }
 
+    .card-header h1 {
+        color: var(--text-color);
+    }
+
     .btn-secondary {
         background-color: var(--secondary-color);
         border-color: var(--secondary-color);
