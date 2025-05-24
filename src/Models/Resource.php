@@ -30,9 +30,9 @@ class Resource extends Model {
     public function getTranslation($id, $language = null)
     {
         if (!$language) {
-            $language = Language::getInstance()->getCurrentLanguage();
+            $language = Language::getInstance()->getCurrentLang();
         }
-        $defaultLang = Language::getInstance()->getDefaultLanguage();
+        $defaultLang = 'en'; // Using 'en' as the default fallback language
         $sql = "SELECT 
                 rt.title as title,
                 rt.content as content,
@@ -697,73 +697,83 @@ class Resource extends Model {
     }
 
     /**
-     * 리소스의 태그 업데이트
+     * 리소스의 태그를 업데이트합니다.
+     *
+     * @param int $resourceId 리소스 ID
+     * @param array $tagNames 태그 이름 배열
+     * @return bool 성공 여부
      */
-    public function updateResourceTags($resource_id, array $tag_names) {
+    public function updateResourceTags(int $resourceId, array $tagNames): bool
+    {
         try {
-            // 1. 리소스 존재 여부 확인
-            $resource = $this->db->fetch("SELECT id FROM resources WHERE id = ?", [$resource_id]);
-            if (!$resource) {
-                throw new \Exception("리소스를 찾을 수 없습니다: {$resource_id}");
-            }
-
             $this->db->beginTransaction();
 
-            // 2. 기존 태그 관계 삭제
-            $this->db->query("DELETE FROM resource_tags WHERE resource_id = ?", [$resource_id]);
+            // 1. 기존 태그 관계 삭제
+            $stmt = $this->db->prepare("DELETE FROM resource_tags WHERE resource_id = ?");
+            $stmt->execute([$resourceId]);
 
-            // 3. 새 태그 처리
-            foreach ($tag_names as $tag_name) {
-                $tag_name = trim($tag_name);
-                if (empty($tag_name)) continue;
+            // 2. 각 태그 처리
+            foreach ($tagNames as $tagName) {
+                $tagName = trim($tagName);
+                if (empty($tagName)) continue;
 
                 try {
-                    // 4. 태그 존재 여부 확인 (삭제된 태그 포함)
+                    // 2.1 태그 존재 여부 확인
                     $stmt = $this->db->prepare("SELECT id FROM tags WHERE name = ?");
-                    $stmt->execute([$tag_name]);
+                    $stmt->execute([$tagName]);
                     $tag = $stmt->fetch();
 
                     if (!$tag) {
-                        // 5. 새 태그 생성
+                        // 2.2 태그가 없으면 생성
                         $stmt = $this->db->prepare("INSERT INTO tags (name, created_at) VALUES (?, NOW())");
-                        $stmt->execute([$tag_name]);
-                        $tag_id = $this->db->lastInsertId();
-
-                        if (!$tag_id) {
-                            throw new \Exception("태그 생성 실패: " . $tag_name);
+                        $result = $stmt->execute([$tagName]);
+                        
+                        if (!$result) {
+                            error_log("Failed to create tag: " . $tagName);
+                            throw new \Exception("Failed to create tag: " . $tagName);
+                        }
+                        
+                        $tagId = $this->db->lastInsertId();
+                        if (!$tagId) {
+                            error_log("Failed to get last insert ID for tag: " . $tagName);
+                            throw new \Exception("Failed to get last insert ID for tag: " . $tagName);
                         }
                     } else {
-                        $tag_id = $tag['id'];
-                        // 삭제된 태그인 경우 복구
-                        $this->db->query("UPDATE tags SET deleted_at = NULL WHERE id = ?", [$tag_id]);
+                        $tagId = $tag['id'];
                     }
 
-                    // 6. 리소스-태그 관계 생성
-                    $stmt = $this->db->prepare("INSERT INTO resource_tags (resource_id, tag_id) VALUES (?, ?)");
-                    $result = $stmt->execute([$resource_id, $tag_id]);
-
+                    // 2.3 리소스-태그 관계 생성
+                    $stmt = $this->db->prepare("INSERT INTO resource_tags (resource_id, tag_id, created_at) VALUES (?, ?, NOW())");
+                    $result = $stmt->execute([$resourceId, $tagId]);
+                    
                     if (!$result) {
-                        throw new \Exception("태그 관계 생성 실패: resource_id={$resource_id}, tag_id={$tag_id}");
+                        error_log("Failed to create resource-tag relationship for tag: " . $tagName);
+                        throw new \Exception("Failed to create resource-tag relationship for tag: " . $tagName);
                     }
-                } catch (\PDOException $e) {
-                    error_log("Tag processing error for '{$tag_name}': " . $e->getMessage());
+                } catch (\Exception $e) {
+                    error_log("Error processing tag '{$tagName}': " . $e->getMessage());
                     throw $e;
                 }
             }
 
-            // 7. 태그 카운트 업데이트
-            $this->db->query("UPDATE tags t SET count = (SELECT COUNT(*) FROM resource_tags rt WHERE rt.tag_id = t.id)");
+            // 3. 태그 카운트 업데이트
+            $stmt = $this->db->prepare("
+                UPDATE tags t 
+                SET count = (
+                    SELECT COUNT(DISTINCT rt.resource_id) 
+                    FROM resource_tags rt 
+                    WHERE rt.tag_id = t.id
+                )
+            ");
+            $stmt->execute();
 
             $this->db->commit();
             return true;
-        } catch (\PDOException $e) {
-            $this->db->rollback();
-            error_log("Database error in updateResourceTags: " . $e->getMessage());
-            throw new \Exception("태그를 업데이트하는 중 오류가 발생했습니다: " . $e->getMessage());
+
         } catch (\Exception $e) {
-            $this->db->rollback();
+            $this->db->rollBack();
             error_log("Error in updateResourceTags: " . $e->getMessage());
-            throw $e;
+            return false;
         }
     }
 
