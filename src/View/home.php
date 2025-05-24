@@ -74,7 +74,7 @@ body {
 .tag-badge {
     display: inline-block;
     background: rgba(14, 165, 233, 0.1);
-    color: var(--accent-color);
+    color: var(--text-color);
     padding: 0.5rem 1rem;
     border-radius: 20px;
     text-decoration: none;
@@ -87,7 +87,7 @@ body {
 
 .tag-badge:hover {
     background: rgba(14, 165, 233, 0.2);
-    color: var(--accent-color);
+    color: var(--text-color);
     transform: translateY(-2px);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -182,6 +182,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .tag-count {
     background: rgba(14, 165, 233, 0.2);
+    color: var(--text-color);
     padding: 0.25rem 0.5rem;
     border-radius: 12px;
     font-size: 0.75rem;
