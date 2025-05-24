@@ -115,6 +115,12 @@ class Auth
         return $this->session->get('user_id');
     }
 
+    public function isAdmin()
+    {
+        $user = $this->user();
+        return $user && isset($user['role']) && $user['role'] === 'admin';
+    }
+
     public function attempt($email, $password)
     {
         $stmt = $this->db->query("SELECT * FROM users WHERE email = ?", [$email]);

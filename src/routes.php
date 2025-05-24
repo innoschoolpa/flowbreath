@@ -51,10 +51,15 @@ return function (Router $router) {
     $router->add('GET', '/api/docs', [HomeController::class, 'apiDocs']);
 
     // 댓글 관련 라우트
-    $router->add('GET', '/api/resources/{id}/comments', [CommentController::class, 'index']);
-    $router->add('POST', '/api/resources/{id}/comments', [CommentController::class, 'store']);
-    $router->add('PUT', '/api/comments/{id}', [CommentController::class, 'update']);
-    $router->add('DELETE', '/api/comments/{id}', [CommentController::class, 'destroy']);
+    $router->add('GET', '/api/resources/{resourceId}/comments', [CommentController::class, 'index']);
+    $router->add('POST', '/api/resources/{resourceId}/comments', [CommentController::class, 'store']);
+    $router->add('PUT', '/api/comments/{commentId}', [CommentController::class, 'update']);
+    $router->add('DELETE', '/api/comments/{commentId}', [CommentController::class, 'destroy']);
+    $router->add('GET', '/api/comments/{commentId}/replies', [CommentController::class, 'getReplies']);
+    $router->add('POST', '/api/comments/{commentId}/report', [CommentController::class, 'report']);
+    $router->add('POST', '/api/comments/{commentId}/block', [CommentController::class, 'block']);
+    $router->add('POST', '/api/comments/{commentId}/reactions', [CommentController::class, 'addReaction']);
+    $router->add('DELETE', '/api/comments/{commentId}/reactions', [CommentController::class, 'removeReaction']);
 
     // 좋아요 관련 라우트
     $router->add('POST', '/api/resources/{id}/like', [LikeController::class, 'toggle']);
