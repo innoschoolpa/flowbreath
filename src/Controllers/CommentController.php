@@ -12,19 +12,16 @@ use App\Core\Auth;
 class CommentController extends Controller
 {
     private $commentModel;
-    private $request;
-    private $response;
 
     public function __construct() {
+        parent::__construct();
         $this->commentModel = new Comment($this->db);
-        $this->request = new Request();
-        $this->response = new Response();
     }
 
     public function index(Request $request, $resourceId)
     {
         try {
-            $page = $request->getQuery('page', 1);
+            $page = $request->get('page', 1);
             $limit = 10;
             $offset = ($page - 1) * $limit;
 
@@ -56,22 +53,22 @@ class CommentController extends Controller
     {
         try {
             $userId = $request->getUser()->id;
-            $content = $request->getPost('content');
-            $parentId = $request->getPost('parent_id');
+            $content = $request->get('content');
+            $parentId = $request->get('parent_id');
 
             if (empty($content)) {
                 throw new \Exception('댓글 내용을 입력해주세요.');
             }
 
             // 리소스 존재 확인
-            $resource = Resource::findOrFail($resourceId);
+            $resource = new Resource($this->db);
+            $resource = $resource->findOrFail($resourceId);
 
-            $comment = new Comment([
-                'resource_id' => $resourceId,
-                'user_id' => $userId,
-                'parent_id' => $parentId,
-                'content' => $content
-            ]);
+            $comment = new Comment($this->db);
+            $comment->resource_id = $resourceId;
+            $comment->user_id = $userId;
+            $comment->parent_id = $parentId;
+            $comment->content = $content;
 
             if ($comment->save()) {
                 // 저장된 댓글 정보 조회
@@ -97,7 +94,7 @@ class CommentController extends Controller
     {
         try {
             $userId = $request->getUser()->id;
-            $content = $request->getPost('content');
+            $content = $request->get('content');
 
             if (empty($content)) {
                 throw new \Exception('댓글 내용을 입력해주세요.');
@@ -106,7 +103,7 @@ class CommentController extends Controller
             $comment = $this->commentModel->findOrFail($commentId);
 
             // 권한 확인
-            if ($comment->user_id !== $userId && !Auth::isAdmin()) {
+            if ($comment->user_id !== $userId && !$this->auth->isAdmin()) {
                 throw new \Exception('댓글을 수정할 권한이 없습니다.');
             }
 
@@ -136,7 +133,7 @@ class CommentController extends Controller
             $comment = $this->commentModel->findOrFail($commentId);
 
             // 권한 확인
-            if ($comment->user_id !== $userId && !Auth::isAdmin()) {
+            if ($comment->user_id !== $userId && !$this->auth->isAdmin()) {
                 throw new \Exception('댓글을 삭제할 권한이 없습니다.');
             }
 
@@ -158,7 +155,7 @@ class CommentController extends Controller
 
     public function create() {
         // 인증 체크
-        if (!Auth::check()) {
+        if (!$this->auth->check()) {
             return $this->response->json([
                 'success' => false,
                 'message' => '로그인이 필요합니다.'
@@ -207,7 +204,7 @@ class CommentController extends Controller
             $data['depth'] = $parentComment['depth'] + 1;
         }
 
-        $data['user_id'] = Auth::id();
+        $data['user_id'] = $this->auth->id();
         
         try {
             $commentId = $this->commentModel->create($data);
@@ -260,7 +257,7 @@ class CommentController extends Controller
     }
 
     public function report($id) {
-        if (!Auth::check()) {
+        if (!$this->auth->check()) {
             return $this->response->json([
                 'success' => false,
                 'message' => '로그인이 필요합니다.'
@@ -276,7 +273,7 @@ class CommentController extends Controller
         }
 
         try {
-            $this->commentModel->report($id, Auth::id(), $data['reason']);
+            $this->commentModel->report($id, $this->auth->id(), $data['reason']);
             return $this->response->json([
                 'success' => true,
                 'message' => '댓글이 신고되었습니다.'
@@ -290,7 +287,7 @@ class CommentController extends Controller
     }
 
     public function block($id) {
-        if (!Auth::isAdmin()) {
+        if (!$this->auth->isAdmin()) {
             return $this->response->json([
                 'success' => false,
                 'message' => '권한이 없습니다.'
@@ -312,7 +309,7 @@ class CommentController extends Controller
     }
 
     public function addReaction($id) {
-        if (!Auth::check()) {
+        if (!$this->auth->check()) {
             return $this->response->json([
                 'success' => false,
                 'message' => '로그인이 필요합니다.'
@@ -328,7 +325,7 @@ class CommentController extends Controller
         }
 
         try {
-            $this->commentModel->addReaction($id, Auth::id(), $data['reaction_type']);
+            $this->commentModel->addReaction($id, $this->auth->id(), $data['reaction_type']);
             return $this->response->json([
                 'success' => true,
                 'message' => '반응이 등록되었습니다.'
@@ -342,7 +339,7 @@ class CommentController extends Controller
     }
 
     public function removeReaction($id) {
-        if (!Auth::check()) {
+        if (!$this->auth->check()) {
             return $this->response->json([
                 'success' => false,
                 'message' => '로그인이 필요합니다.'
@@ -350,7 +347,7 @@ class CommentController extends Controller
         }
 
         try {
-            $this->commentModel->removeReaction($id, Auth::id());
+            $this->commentModel->removeReaction($id, $this->auth->id());
             return $this->response->json([
                 'success' => true,
                 'message' => '반응이 제거되었습니다.'
