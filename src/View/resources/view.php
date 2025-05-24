@@ -536,52 +536,227 @@ $title = $title ?? '리소스 상세';
     <script src="/js/comments.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // 더보기 버튼 관련 코드 제거
-    });
+        const commentForm = document.getElementById('comment-form');
+        const commentsContainer = document.getElementById('comments-container');
+        const loadingIndicator = document.querySelector('.loading');
+        let currentPage = 1;
+        let isLoading = false;
+        let hasMoreComments = true;
 
-    function confirmDelete(resourceId, languageCode) {
-        if (confirm('정말로 이 번역본을 삭제하시겠습니까?')) {
-            fetch(`/api/resources/${resourceId}/translation`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
-                },
-                body: JSON.stringify({ language_code: languageCode })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('서버 응답이 올바르지 않습니다.');
-                }
-                return response.json();
-            })
-            .then(data => {
+        // 댓글 작성
+        commentForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const content = formData.get('content').trim();
+            const parentId = formData.get('parent_id');
+
+            if (!content) {
+                alert('댓글 내용을 입력해주세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
+                    },
+                    body: JSON.stringify({
+                        resource_id: <?php echo $resource['id']; ?>,
+                        content: content,
+                        parent_id: parentId || null
+                    })
+                });
+
+                const data = await response.json();
                 if (data.success) {
-                    // 성공 메시지 표시
-                    alert(data.message);
-                    
-                    // 리소스가 완전히 삭제되었는지 확인
-                    if (data.data && data.data.original_deleted) {
-                        window.location.href = '/resources';
-                    } else {
-                        window.location.reload();
+                    this.reset();
+                    // 새 댓글을 맨 위에 추가
+                    const newComment = createCommentElement(data.comment);
+                    commentsContainer.insertBefore(newComment, commentsContainer.firstChild);
+                    // 댓글 수 업데이트
+                    updateCommentCount();
+                } else {
+                    alert(data.error || '댓글 작성 중 오류가 발생했습니다.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('댓글 작성 중 오류가 발생했습니다.');
+            }
+        });
+
+        // 댓글 수정
+        async function editComment(commentId, currentContent) {
+            const newContent = prompt('댓글을 수정하세요:', currentContent);
+            if (newContent === null || newContent.trim() === currentContent.trim()) return;
+
+            try {
+                const response = await fetch(`/api/comments/${commentId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
+                    },
+                    body: JSON.stringify({ content: newContent.trim() })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+                    if (commentElement) {
+                        commentElement.querySelector('.comment-content').textContent = newContent.trim();
+                        commentElement.querySelector('.comment-date').textContent = '수정됨 • ' + new Date().toLocaleString();
                     }
                 } else {
-                    // 서버에서 반환된 에러 메시지 표시
-                    alert(data.error || '알 수 없는 오류가 발생했습니다.');
+                    alert(data.error || '댓글 수정 중 오류가 발생했습니다.');
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error:', error);
-                alert(error.message || '삭제 중 오류가 발생했습니다.');
-            });
+                alert('댓글 수정 중 오류가 발생했습니다.');
+            }
         }
-    }
 
-    // 언어 변경 함수 추가
-    function changeLanguage(resourceId, languageCode) {
-        window.location.href = `/resources/view/${resourceId}?lang=${languageCode}`;
-    }
+        // 댓글 삭제
+        async function deleteComment(commentId) {
+            if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
+
+            try {
+                const response = await fetch(`/api/comments/${commentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+                    if (commentElement) {
+                        commentElement.remove();
+                        // 댓글 수 업데이트
+                        updateCommentCount();
+                    }
+                } else {
+                    alert(data.error || '댓글 삭제 중 오류가 발생했습니다.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('댓글 삭제 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 댓글 요소 생성
+        function createCommentElement(comment) {
+            const div = document.createElement('div');
+            div.className = 'comment';
+            div.dataset.commentId = comment.id;
+            
+            const isAuthor = comment.user_id === window.currentUserId;
+            const isAdmin = window.isAdmin;
+
+            div.innerHTML = `
+                <div class="comment-header">
+                    <span class="comment-author">${comment.author_name}</span>
+                    <span class="comment-date">${new Date(comment.created_at).toLocaleString()}</span>
+                </div>
+                <div class="comment-content">${comment.content}</div>
+                <div class="comment-actions">
+                    <button class="comment-action-btn reply-btn" onclick="showReplyForm(${comment.id})">
+                        <i class="fas fa-reply"></i> 답글
+                    </button>
+                    ${(isAuthor || isAdmin) ? `
+                        <button class="comment-action-btn edit-btn" onclick="editComment(${comment.id}, '${comment.content.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-edit"></i> 수정
+                        </button>
+                        <button class="comment-action-btn delete-btn" onclick="deleteComment(${comment.id})">
+                            <i class="fas fa-trash"></i> 삭제
+                        </button>
+                    ` : ''}
+                </div>
+                <div id="reply-form-${comment.id}" class="reply-form">
+                    <form class="comment-form">
+                        <input type="hidden" name="parent_id" value="${comment.id}">
+                        <textarea name="content" placeholder="답글을 입력하세요..." maxlength="1000" required></textarea>
+                        <button type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                            답글 작성
+                        </button>
+                    </form>
+                </div>
+            `;
+
+            return div;
+        }
+
+        // 댓글 수 업데이트
+        function updateCommentCount() {
+            const count = document.querySelectorAll('.comment').length;
+            const countElement = document.querySelector('.comments-section h3');
+            countElement.innerHTML = `<i class="fas fa-comments"></i> 댓글 (${count})`;
+        }
+
+        // 답글 폼 표시/숨김
+        window.showReplyForm = function(commentId) {
+            const replyForm = document.getElementById(`reply-form-${commentId}`);
+            const allReplyForms = document.querySelectorAll('.reply-form');
+            
+            allReplyForms.forEach(form => {
+                if (form.id !== `reply-form-${commentId}`) {
+                    form.classList.remove('active');
+                }
+            });
+
+            replyForm.classList.toggle('active');
+            if (replyForm.classList.contains('active')) {
+                replyForm.querySelector('textarea').focus();
+            }
+        };
+
+        // 댓글 목록 로드
+        async function loadComments(page = 1) {
+            if (isLoading || !hasMoreComments) return;
+            
+            isLoading = true;
+            loadingIndicator.style.display = 'block';
+
+            try {
+                const response = await fetch(`/api/comments?resource_id=<?php echo $resource['id']; ?>&page=${page}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    data.comments.forEach(comment => {
+                        const commentElement = createCommentElement(comment);
+                        commentsContainer.appendChild(commentElement);
+                    });
+
+                    hasMoreComments = data.comments.length === 10; // 페이지당 10개씩 로드
+                    currentPage = page;
+                    updateCommentCount();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                isLoading = false;
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        // 무한 스크롤
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && hasMoreComments) {
+                    loadComments(currentPage + 1);
+                }
+            });
+        });
+
+        observer.observe(loadingIndicator);
+
+        // 초기 댓글 로드
+        loadComments();
+    });
     </script>
 </body>
 </html>
