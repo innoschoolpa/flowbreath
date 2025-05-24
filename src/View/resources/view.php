@@ -453,14 +453,14 @@ $title = $title ?? '리소스 상세';
                     <h1 class="h3 mb-0"><?php echo htmlspecialchars($resource['title'] ?? ''); ?></h1>
                     <div class="d-flex gap-2">
                         <a href="/resources" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-list"></i> 목록으로
+                            <i class="fas fa-list"></i> <?php echo $lang === 'en' ? 'Back to List' : '목록으로'; ?>
                         </a>
                         <?php if (isset($_SESSION['user_id']) && isset($resource['user_id']) && $_SESSION['user_id'] === $resource['user_id']): ?>
                             <a href="/resources/edit/<?php echo htmlspecialchars($resource['id']); ?>" class="btn btn-primary btn-sm">
-                                <i class="fas fa-edit"></i> 수정
+                                <i class="fas fa-edit"></i> <?php echo $lang === 'en' ? 'Edit' : '수정'; ?>
                             </a>
                             <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('<?php echo htmlspecialchars($resource['id']); ?>', '<?php echo htmlspecialchars($resource['translation_language_code'] ?? $resource['language_code'] ?? 'ko'); ?>')">
-                                <i class="fas fa-trash"></i> 삭제
+                                <i class="fas fa-trash"></i> <?php echo $lang === 'en' ? 'Delete' : '삭제'; ?>
                             </button>
                         <?php endif; ?>
                     </div>
@@ -503,7 +503,7 @@ $title = $title ?? '리소스 상세';
                             </div>
                         <?php endif; ?>
                         <div class="mb-4">
-                            <h5>상세 내용</h5>
+                            <h5><?php echo $lang === 'en' ? 'Details' : '상세 내용'; ?></h5>
                             <div class="card-text">
                                 <?php
                                 // HTML 엔티티가 중첩되어 저장된 경우를 방지하고, 줄바꿈은 <br>로 변환
@@ -518,19 +518,19 @@ $title = $title ?? '리소스 상세';
                         </div>
                         <?php if (!empty($resource['link'])): ?>
                             <div class="mb-3">
-                                <strong>링크:</strong> <a href="<?= htmlspecialchars($resource['link']) ?>" target="_blank" rel="noopener noreferrer" class="text-decoration-none"><?= htmlspecialchars($resource['link']) ?></a>
+                                <strong><?php echo $lang === 'en' ? 'Link' : '링크'; ?>:</strong> <a href="<?= htmlspecialchars($resource['link']) ?>" target="_blank" rel="noopener noreferrer" class="text-decoration-none"><?= htmlspecialchars($resource['link']) ?></a>
                             </div>
                         <?php endif; ?>
                         <?php if (!empty($resource['description'])): ?>
                         <div class="alert alert-info mb-4">
-                            <strong>설명:</strong> <?php echo html_entity_decode($resource['description'], ENT_QUOTES | ENT_HTML5, 'UTF-8'); ?>
+                            <strong><?php echo $lang === 'en' ? 'Description' : '설명'; ?>:</strong> <?php echo html_entity_decode($resource['description'], ENT_QUOTES | ENT_HTML5, 'UTF-8'); ?>
                         </div>
                         <?php endif; ?>
                     <?php endif; ?>
 
                     <?php if (!empty($resource['tags'])): ?>
                         <div class="mb-4">
-                            <h5 class="card-title">태그</h5>
+                            <h5 class="card-title"><?php echo $lang === 'en' ? 'Tags' : '태그'; ?></h5>
                             <div class="d-flex flex-wrap gap-2">
                                 <?php foreach ($resource['tags'] as $tag): ?>
                                     <span class="badge bg-secondary"><?php echo htmlspecialchars($tag); ?></span>
@@ -540,17 +540,17 @@ $title = $title ?? '리소스 상세';
                     <?php endif; ?>
 
                     <div class="mb-4">
-                        <h5 class="card-title">DB 원본 정보</h5>
+                        <h5 class="card-title"><?php echo $lang === 'en' ? 'DB Information' : 'DB 원본 정보'; ?></h5>
                         <ul class="list-unstyled small">
                             <li><b>ID:</b> <?= htmlspecialchars($resource['id']) ?></li>
-                            <li><b>언어 코드:</b> <?= htmlspecialchars($resource['translation_language_code'] ?? $resource['language_code'] ?? 'ko') ?></li>
-                            <li><b>작성자:</b> <a href="/profile/<?= htmlspecialchars($resource['user_id']) ?>" class="text-decoration-none"><?= htmlspecialchars($resource['author_name'] ?? '-') ?></a></li>
-                            <li><b>작성일:</b> <?= htmlspecialchars($resource['created_at'] ?? '-') ?></li>
-                            <li><b>수정일:</b> <?= htmlspecialchars($resource['updated_at'] ?? '-') ?></li>
-                            <li><b>공개여부:</b> <?= ($resource['visibility'] ?? 'public') === 'public' ? '공개' : '비공개' ?></li>
-                            <li><b>유형:</b> <?= htmlspecialchars($resource['type'] ?? '-') ?></li>
-                            <li><b>슬러그:</b> <?= htmlspecialchars($resource['slug'] ?? '-') ?></li>
-                            <li><b>파일:</b> <?= htmlspecialchars($resource['file_path'] ?? '-') ?></li>
+                            <li><b><?php echo $lang === 'en' ? 'Language Code' : '언어 코드'; ?>:</b> <?= htmlspecialchars($resource['translation_language_code'] ?? $resource['language_code'] ?? 'ko') ?></li>
+                            <li><b><?php echo $lang === 'en' ? 'Author' : '작성자'; ?>:</b> <a href="/profile/<?= htmlspecialchars($resource['user_id']) ?>" class="text-decoration-none"><?= htmlspecialchars($resource['author_name'] ?? '-') ?></a></li>
+                            <li><b><?php echo $lang === 'en' ? 'Created' : '작성일'; ?>:</b> <?= htmlspecialchars($resource['created_at'] ?? '-') ?></li>
+                            <li><b><?php echo $lang === 'en' ? 'Updated' : '수정일'; ?>:</b> <?= htmlspecialchars($resource['updated_at'] ?? '-') ?></li>
+                            <li><b><?php echo $lang === 'en' ? 'Visibility' : '공개여부'; ?>:</b> <?= ($resource['visibility'] ?? 'public') === 'public' ? ($lang === 'en' ? 'Public' : '공개') : ($lang === 'en' ? 'Private' : '비공개') ?></li>
+                            <li><b><?php echo $lang === 'en' ? 'Type' : '유형'; ?>:</b> <?= htmlspecialchars($resource['type'] ?? '-') ?></li>
+                            <li><b><?php echo $lang === 'en' ? 'Slug' : '슬러그'; ?>:</b> <?= htmlspecialchars($resource['slug'] ?? '-') ?></li>
+                            <li><b><?php echo $lang === 'en' ? 'File' : '파일'; ?>:</b> <?= htmlspecialchars($resource['file_path'] ?? '-') ?></li>
                         </ul>
                     </div>
                 </div>
@@ -559,24 +559,24 @@ $title = $title ?? '리소스 상세';
             <div class="mt-4">
                 <div class="d-flex gap-2">
                     <a href="/resources" class="btn btn-secondary">
-                        <i class="fas fa-list"></i> 목록으로
+                        <i class="fas fa-list"></i> <?php echo $lang === 'en' ? 'Back to List' : '목록으로'; ?>
                     </a>
                     <?php if (isset($_SESSION['user_id']) && isset($resource['user_id']) && $_SESSION['user_id'] === $resource['user_id']): ?>
                         <a href="/resources/edit/<?php echo htmlspecialchars($resource['id']); ?>" class="btn btn-primary">
-                            <i class="fas fa-edit"></i> 수정
+                            <i class="fas fa-edit"></i> <?php echo $lang === 'en' ? 'Edit' : '수정'; ?>
                         </a>
                         <button type="button" class="btn btn-danger" onclick="confirmDelete('<?php echo htmlspecialchars($resource['id']); ?>', '<?php echo htmlspecialchars($resource['translation_language_code'] ?? $resource['language_code'] ?? 'ko'); ?>')">
-                            <i class="fas fa-trash"></i> 삭제
+                            <i class="fas fa-trash"></i> <?php echo $lang === 'en' ? 'Delete' : '삭제'; ?>
                         </button>
                     <?php endif; ?>
                 </div>
             </div>
         <?php else: ?>
             <div class="alert alert-danger">
-                리소스를 찾을 수 없습니다.
+                <?php echo $lang === 'en' ? 'Resource not found.' : '리소스를 찾을 수 없습니다.'; ?>
             </div>
             <a href="/resources" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> 목록으로
+                <i class="fas fa-arrow-left"></i> <?php echo $lang === 'en' ? 'Back to List' : '목록으로'; ?>
             </a>
         <?php endif; ?>
 
