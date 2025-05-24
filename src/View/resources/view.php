@@ -302,10 +302,38 @@ $title = $title ?? '리소스 상세';
         margin-top: 1rem;
         padding-left: 2rem;
         display: none;
+        border-left: 2px solid var(--accent-color);
     }
 
     .reply-form.active {
         display: block;
+    }
+
+    .replies-container {
+        margin-top: 1rem;
+        padding-left: 2rem;
+        border-left: 2px solid var(--border-color);
+    }
+
+    .reply {
+        margin-bottom: 1rem;
+        background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .reply:last-child {
+        margin-bottom: 0;
+    }
+
+    .reply .comment-header {
+        font-size: 0.9rem;
+    }
+
+    .reply .comment-content {
+        font-size: 0.95rem;
+    }
+
+    .reply .comment-actions {
+        font-size: 0.85rem;
     }
 
     .loading {
@@ -792,25 +820,70 @@ $title = $title ?? '리소스 상세';
                     <form class="comment-form">
                         <input type="hidden" name="parent_id" value="${comment.id}">
                         <textarea name="content" placeholder="답글을 입력하세요..." maxlength="1000" required></textarea>
-                        <button type="submit">
-                            <i class="fas fa-paper-plane"></i>
-                            답글 작성
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button type="submit">
+                                <i class="fas fa-paper-plane"></i>
+                                답글 작성
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="hideReplyForm(${comment.id})">
+                                <i class="fas fa-times"></i> 취소
+                            </button>
+                        </div>
                     </form>
                 </div>
+                <div id="replies-${comment.id}" class="replies-container"></div>
             `;
+
+            // 답글 폼 제출 이벤트 처리
+            const replyForm = div.querySelector(`#reply-form-${comment.id} form`);
+            replyForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const content = formData.get('content').trim();
+                const parentId = formData.get('parent_id');
+
+                if (!content) {
+                    alert('답글 내용을 입력해주세요.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/resources/${resourceId}/comments`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
+                        },
+                        body: JSON.stringify({
+                            content: content,
+                            parent_id: parentId
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // 폼 초기화 및 숨기기
+                        this.reset();
+                        hideReplyForm(comment.id);
+                        
+                        // 답글 목록 새로고침
+                        await loadReplies(comment.id);
+                        
+                        alert(result.message);
+                    } else {
+                        alert(result.message || '답글 작성 중 오류가 발생했습니다.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('답글 작성 중 오류가 발생했습니다.');
+                }
+            });
 
             return div;
         }
 
-        // 댓글 수 업데이트
-        function updateCommentCount() {
-            const count = document.querySelectorAll('.comment').length;
-            const countElement = document.querySelector('.comments-section h3');
-            countElement.innerHTML = `<i class="fas fa-comments"></i> 댓글 (${count})`;
-        }
-
-        // 답글 폼 표시/숨김
+        // 답글 폼 표시
         window.showReplyForm = function(commentId) {
             const replyForm = document.getElementById(`reply-form-${commentId}`);
             const allReplyForms = document.querySelectorAll('.reply-form');
@@ -821,11 +894,44 @@ $title = $title ?? '리소스 상세';
                 }
             });
 
-            replyForm.classList.toggle('active');
-            if (replyForm.classList.contains('active')) {
-                replyForm.querySelector('textarea').focus();
-            }
+            replyForm.classList.add('active');
+            replyForm.querySelector('textarea').focus();
         };
+
+        // 답글 폼 숨기기
+        window.hideReplyForm = function(commentId) {
+            const replyForm = document.getElementById(`reply-form-${commentId}`);
+            replyForm.classList.remove('active');
+        };
+
+        // 답글 목록 로드
+        async function loadReplies(commentId) {
+            const repliesContainer = document.getElementById(`replies-${commentId}`);
+            if (!repliesContainer) return;
+
+            try {
+                const response = await fetch(`/api/comments/${commentId}/replies`);
+                const result = await response.json();
+
+                if (result.success) {
+                    repliesContainer.innerHTML = '';
+                    result.data.replies.forEach(reply => {
+                        const replyElement = createCommentElement(reply);
+                        replyElement.classList.add('reply');
+                        repliesContainer.appendChild(replyElement);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading replies:', error);
+            }
+        }
+
+        // 댓글 수 업데이트
+        function updateCommentCount() {
+            const count = document.querySelectorAll('.comment').length;
+            const countElement = document.querySelector('.comments-section h3');
+            countElement.innerHTML = `<i class="fas fa-comments"></i> 댓글 (${count})`;
+        }
 
         // 댓글 목록 로드
         async function loadComments(page = 1) {
@@ -846,9 +952,11 @@ $title = $title ?? '리소스 상세';
                     data.data.comments.forEach(comment => {
                         const commentElement = createCommentElement(comment);
                         commentsContainer.appendChild(commentElement);
+                        // 답글 로드
+                        loadReplies(comment.id);
                     });
 
-                    hasMoreComments = data.data.comments.length === 10; // 페이지당 10개씩 로드
+                    hasMoreComments = data.data.comments.length === 10;
                     currentPage = page;
                     updateCommentCount();
                 }
