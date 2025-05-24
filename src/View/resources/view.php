@@ -635,16 +635,19 @@ $title = $title ?? '리소스 상세';
                     }
                 });
 
-                const data = await response.json();
-                if (data.success) {
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 댓글 요소 제거
                     const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
                     if (commentElement) {
                         commentElement.remove();
                         // 댓글 수 업데이트
                         updateCommentCount();
                     }
+                    alert(result.message);
                 } else {
-                    alert(data.error || '댓글 삭제 중 오류가 발생했습니다.');
+                    alert(result.message || '댓글 삭제 중 오류가 발생했습니다.');
                 }
             } catch (error) {
                 console.error('Error:', error);

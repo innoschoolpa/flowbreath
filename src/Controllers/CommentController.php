@@ -189,17 +189,17 @@ class CommentController extends Controller
 
             $comment = $this->commentModel->find($commentId);
             if (!$comment) {
-                throw new \Exception('존재하지 않는 댓글입니다.');
+                throw new \Exception('존재하지 않는 댓글입니다.', 404);
             }
 
-            // 권한 확인
+            // 권한 확인 (작성자 또는 관리자만 삭제 가능)
             if ($comment['user_id'] !== $this->auth->id() && !$this->auth->isAdmin()) {
                 throw new \Exception('댓글을 삭제할 권한이 없습니다.', 403);
             }
 
             $deleted = $this->commentModel->delete($commentId);
             if (!$deleted) {
-                throw new \Exception('댓글 삭제에 실패했습니다.');
+                throw new \Exception('댓글 삭제에 실패했습니다.', 500);
             }
 
             return $this->response->json([
@@ -207,10 +207,14 @@ class CommentController extends Controller
                 'message' => '댓글이 삭제되었습니다.'
             ]);
         } catch (\Exception $e) {
+            $statusCode = $e->getCode() ?: 500;
+            if ($statusCode < 400 || $statusCode > 599) {
+                $statusCode = 500;
+            }
             return $this->response->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ], $e->getCode() ?: 500);
+            ], $statusCode);
         }
     }
 
