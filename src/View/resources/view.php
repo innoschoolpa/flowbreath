@@ -480,20 +480,6 @@ $title = $title ?? '리소스 상세';
         window.location.href = `/resources/view/${resourceId}?lang=${languageCode}`;
     }
     </script>
-
-    <!-- 언어 선택 버튼 추가 -->
-    <?php if (isset($resource) && !empty($resource)): ?>
-    <div class="mt-3 mb-4">
-        <div class="btn-group" role="group">
-            <button type="button" class="btn btn-outline-secondary" onclick="changeLanguage('<?= $resource['id'] ?>', 'ko')">
-                한국어
-            </button>
-            <button type="button" class="btn btn-outline-secondary" onclick="changeLanguage('<?= $resource['id'] ?>', 'en')">
-                English
-            </button>
-        </div>
-    </div>
-    <?php endif; ?>
 </body>
 </html>
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?> 
