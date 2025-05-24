@@ -74,17 +74,19 @@ class CommentController extends Controller
                 throw new \Exception('로그인이 필요합니다.', 401);
             }
 
-            $content = $request->get('content');
-            $parentId = $request->get('parent_id');
+            // JSON 요청 처리
+            $jsonData = json_decode(file_get_contents('php://input'), true);
+            $content = $jsonData['content'] ?? null;
+            $parentId = $jsonData['parent_id'] ?? null;
 
             if (empty($content)) {
-                throw new \Exception('댓글 내용을 입력해주세요.');
+                throw new \Exception('댓글 내용을 입력해주세요.', 400);
             }
 
             // 리소스 존재 확인
             $resource = $this->resourceModel->find($resourceId);
             if (!$resource) {
-                throw new \Exception('존재하지 않는 리소스입니다.');
+                throw new \Exception('존재하지 않는 리소스입니다.', 404);
             }
 
             $data = [
@@ -96,20 +98,28 @@ class CommentController extends Controller
 
             $commentId = $this->commentModel->create($data);
             if (!$commentId) {
-                throw new \Exception('댓글 등록에 실패했습니다.');
+                throw new \Exception('댓글 등록에 실패했습니다.', 500);
             }
 
             $comment = $this->commentModel->find($commentId);
+            if (!$comment) {
+                throw new \Exception('등록된 댓글을 찾을 수 없습니다.', 500);
+            }
+
             return $this->response->json([
                 'success' => true,
                 'message' => '댓글이 등록되었습니다.',
                 'data' => $comment
             ]);
         } catch (\Exception $e) {
+            $statusCode = $e->getCode() ?: 500;
+            if ($statusCode < 400 || $statusCode > 599) {
+                $statusCode = 500;
+            }
             return $this->response->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ], $e->getCode() ?: 500);
+            ], $statusCode);
         }
     }
 
