@@ -537,14 +537,15 @@ $title = $title ?? '리소스 상세';
     <script>
     // 전역 함수 선언
     window.deleteComment = async function(commentId) {
-        if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
+        if (!confirm('댓글을 삭제하시겠습니까?')) {
+            return;
+        }
 
         try {
             const response = await fetch(`/api/comments/${commentId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': '<?php echo $_SESSION['csrf_token']; ?>'
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 }
             });
 
@@ -555,9 +556,15 @@ $title = $title ?? '리소스 상세';
                 const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
                 if (commentElement) {
                     commentElement.remove();
-                    // 댓글 수 업데이트
-                    updateCommentCount();
                 }
+                
+                // 댓글 수 업데이트
+                const commentCountElement = document.getElementById('commentCount');
+                if (commentCountElement) {
+                    const currentCount = parseInt(commentCountElement.textContent);
+                    commentCountElement.textContent = currentCount - 1;
+                }
+                
                 alert(result.message);
             } else {
                 alert(result.message || '댓글 삭제 중 오류가 발생했습니다.');
