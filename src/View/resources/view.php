@@ -509,7 +509,7 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                             </div>
                         <?php endif; ?>
                         <div class="mb-4">
-                            <h5><?php echo $lang === 'en' ? 'Details' : '상세 내용'; ?></h5>
+                            <h5 style="color:#fff;"><?php echo $lang === 'en' ? 'Details' : '상세 내용'; ?></h5>
                             <div class="card-text">
                                 <?php
                                 // HTML 엔티티가 중첩되어 저장된 경우를 방지하고, 줄바꿈은 <br>로 변환
@@ -536,7 +536,7 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
 
                     <?php if (!empty($resource['tags'])): ?>
                         <div class="mb-4">
-                            <h5 class="card-title"><?php echo $lang === 'en' ? 'Tags' : '태그'; ?></h5>
+                            <h5 class="card-title" style="color:#fff;"><?php echo $lang === 'en' ? 'Tags' : '태그'; ?></h5>
                             <div class="d-flex flex-wrap gap-2">
                                 <?php foreach ($resource['tags'] as $tag): ?>
                                     <span class="badge bg-secondary"><?php echo htmlspecialchars($tag); ?></span>
@@ -546,7 +546,7 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                     <?php endif; ?>
 
                     <div class="mb-4">
-                        <h5 class="card-title"><?php echo $lang === 'en' ? 'DB Information' : 'DB 원본 정보'; ?></h5>
+                        <h5 class="card-title" style="color:#fff;"><?php echo $lang === 'en' ? 'DB Information' : 'DB 원본 정보'; ?></h5>
                         <ul class="list-unstyled small">
                             <li><b>ID:</b> <?= htmlspecialchars($resource['id']) ?></li>
                             <li><b><?php echo $lang === 'en' ? 'Language Code' : '언어 코드'; ?>:</b> <?= htmlspecialchars($resource['translation_language_code'] ?? $resource['language_code'] ?? 'ko') ?></li>
@@ -558,6 +558,12 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                             <li><b><?php echo $lang === 'en' ? 'Slug' : '슬러그'; ?>:</b> <?= htmlspecialchars($resource['slug'] ?? '-') ?></li>
                             <li><b><?php echo $lang === 'en' ? 'File' : '파일'; ?>:</b> <?= htmlspecialchars($resource['file_path'] ?? '-') ?></li>
                         </ul>
+                    </div>
+
+                    <!-- 조회수/좋아요 표시 (하단으로 이동) -->
+                    <div class="px-4 pt-2 pb-2 d-flex gap-4 align-items-center" style="font-size:1.08em; color:#cbd5e1;">
+                        <span><i class="fas fa-eye text-primary me-1"></i> <?= number_format($resource['view_count'] ?? 0) ?> 조회</span>
+                        <span><i class="fas fa-heart text-danger me-1"></i> <?= number_format($resource['like_count'] ?? 0) ?> 좋아요</span>
                     </div>
                 </div>
             </div>
