@@ -42,14 +42,50 @@
             text-decoration: underline;
         }
         .tag-badge {
-            background: #eaf4fb;
-            color: #3498db;
-            border-radius: 16px;
-            padding: 0.25em 0.9em;
-            font-size: 0.92em;
-            margin-right: 0.2em;
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(90deg, #1e40af 60%, #3b82f6 100%);
+            color: #e2e8f0;
+            padding: 0.45rem 1.1rem;
+            border-radius: 999px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.12);
+            border: 1px solid #3b82f6;
+            transition: all 0.3s ease;
+            margin-bottom: 0.3rem;
         }
-        .popular-tags .tag-badge { background: #0056b3; color: #fff; }
+        .tag-badge:hover {
+            background: linear-gradient(90deg, #2563eb 60%, #1d4ed8 100%);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
+            text-decoration: none;
+        }
+        .tag-badge i {
+            margin-right: 0.5rem;
+            font-size: 0.95em;
+            color: #93c5fd;
+        }
+        .tag-count {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+            padding: 0.22rem 0.7rem;
+            border-radius: 12px;
+            font-size: 0.82em;
+            margin-left: 0.7rem;
+            font-weight: 400;
+        }
+        .popular-tags .tag-badge {
+            background: linear-gradient(90deg, #1e40af 60%, #3b82f6 100%);
+            color: #e2e8f0;
+            border: 1px solid #3b82f6;
+        }
+        .popular-tags .tag-badge:hover {
+            background: linear-gradient(90deg, #2563eb 60%, #1d4ed8 100%);
+            color: #fff;
+        }
         .resource-meta {
             font-size: 0.93em;
             color: #888;
