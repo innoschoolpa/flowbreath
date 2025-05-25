@@ -196,9 +196,9 @@ input[type="text"]::placeholder {
   </div>
 </section>
 
-<!-- Add Resource Button (top right) -->
+<!-- Add Resource Button (centered) -->
 <?php if (isset($user) && $user): ?>
-  <div class="d-flex justify-content-end mb-4">
+  <div class="d-flex justify-content-center mb-4">
     <a href="/resources/create" class="btn btn-primary">
       <i class="fas fa-plus"></i> 자료 등록
     </a>
