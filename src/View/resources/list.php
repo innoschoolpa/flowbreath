@@ -189,9 +189,9 @@ input[type="text"]::placeholder {
   <div class="container text-center py-5">
     <h1 class="display-5 fw-bold mb-3" style="color:#fff;">호흡 자료 검색</h1>
     <p class="lead mb-4" style="color:#cbd5e1;">호흡, 명상, 건강을 위한 다양한 자료를 찾아보세요.</p>
-    <form action="/resources" method="GET" class="search-box mx-auto d-flex justify-content-center align-items-center" style="max-width:600px;">
+    <form action="/resources" method="GET" class="search-box mx-auto d-flex justify-content-center align-items-center" style="max-width:600px; white-space: nowrap;">
       <input type="text" name="keyword" class="form-control form-control-lg rounded-start" placeholder="키워드로 검색..." value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>">
-      <button type="submit" class="btn btn-primary btn-lg rounded-end ms-2 px-4"><i class="fas fa-search"></i> 검색</button>
+      <button type="submit" class="btn btn-primary btn-lg rounded-end ms-2 px-5" style="min-width: 120px;"><i class="fas fa-search"></i> 검색</button>
     </form>
   </div>
 </section>
