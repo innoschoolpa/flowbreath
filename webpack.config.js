@@ -14,7 +14,11 @@ module.exports = {
   mode: 'production',
   resolve: {
     extensions: ['.js'],
-    modules: [path.resolve(__dirname, 'node_modules')]
+    modules: [path.resolve(__dirname, 'node_modules')],
+    alias: {
+      // Prevent duplicate modules
+      '@ckeditor': path.resolve(__dirname, 'node_modules/@ckeditor'),
+    }
   },
   optimization: {
     minimize: true,
@@ -23,8 +27,13 @@ module.exports = {
         terserOptions: {
           compress: {
             drop_console: true,
+            drop_debugger: true,
+          },
+          format: {
+            comments: false,
           },
         },
+        extractComments: false,
       })
     ],
     splitChunks: {
@@ -37,18 +46,32 @@ module.exports = {
         vendor: {
           test: /[\\/]node_modules[\\/]/,
           name(module) {
+            // Get the package name
             const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+            // Remove @ from the package name if it exists
             return `vendor.${packageName.replace('@', '')}`;
           },
           priority: 20,
+          reuseExistingChunk: true,
         },
         common: {
           minChunks: 2,
           priority: 10,
           reuseExistingChunk: true,
         },
+        // Separate CKEditor into its own chunk
+        ckeditor: {
+          test: /[\\/]node_modules[\\/]@ckeditor[\\/]/,
+          name: 'ckeditor',
+          priority: 30,
+          reuseExistingChunk: true,
+        }
       },
     },
+    // Remove empty chunks
+    removeEmptyChunks: true,
+    // Merge chunks that contain the same modules
+    mergeDuplicateChunks: true,
   },
   performance: {
     hints: 'warning',
@@ -65,6 +88,7 @@ module.exports = {
           options: {
             presets: ['@babel/preset-env'],
             plugins: ['@babel/plugin-transform-runtime'],
+            cacheDirectory: true,
           },
         },
       },
@@ -76,6 +100,7 @@ module.exports = {
       algorithm: 'gzip',
       threshold: 10240,
       minRatio: 0.8,
+      deleteOriginalAssets: false,
     }),
   ],
 };
