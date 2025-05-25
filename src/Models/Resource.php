@@ -1575,9 +1575,11 @@ class Resource extends Model {
     }
 
     public function incrementViewCount($resourceId) {
+        error_log("[DEBUG] incrementViewCount SQL 실행: id = $resourceId");
         $sql = "UPDATE resources SET view_count = view_count + 1 WHERE id = ?";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$resourceId]);
+        $result = $stmt->execute([$resourceId]);
+        error_log("[DEBUG] incrementViewCount 쿼리 결과: " . var_export($result, true));
     }
 
     public function incrementLikeCount($resourceId) {
