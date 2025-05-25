@@ -14,6 +14,91 @@ $user = [
 ];
 ?>
 
+<style>
+body {
+    background: #0f172a;
+    color: #e2e8f0;
+}
+.container {
+    background: none;
+}
+.card {
+    background: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(30,64,175,0.10);
+}
+.card-title, .form-label, .form-check-label {
+    color: #e2e8f0;
+}
+.form-control, .form-select {
+    background: #223046;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+}
+.form-control:focus, .form-select:focus {
+    background: #223046;
+    color: #fff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+}
+.form-text {
+    color: #94a3b8;
+}
+.list-group-item {
+    background: #223046;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 0;
+    transition: background 0.2s, color 0.2s;
+}
+.list-group-item.active, .list-group-item:active {
+    background: linear-gradient(90deg, #2563eb 60%, #1e40af 100%);
+    color: #fff;
+    border: none;
+}
+.list-group-item-action:hover {
+    background: #334155;
+    color: #fff;
+}
+.btn-primary {
+    background: linear-gradient(90deg, #2563eb 60%, #1e40af 100%);
+    border: none;
+    color: #fff;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+    transition: background 0.2s, color 0.2s;
+}
+.btn-primary:hover, .btn-primary:focus {
+    background: linear-gradient(90deg, #1e40af 60%, #2563eb 100%);
+    color: #fff;
+}
+.form-check-input {
+    background-color: #223046;
+    border: 1px solid #334155;
+}
+.form-check-input:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+input[type="file"]::file-selector-button {
+    background: #223046;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 0.3em 1em;
+}
+input[type="file"]::file-selector-button:hover {
+    background: #334155;
+    color: #fff;
+}
+::-webkit-input-placeholder { color: #94a3b8; }
+::-moz-placeholder { color: #94a3b8; }
+:-ms-input-placeholder { color: #94a3b8; }
+::placeholder { color: #94a3b8; }
+</style>
+
 <div class="container py-5">
     <div class="row">
         <div class="col-md-3">
