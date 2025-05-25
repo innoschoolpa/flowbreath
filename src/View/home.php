@@ -74,15 +74,15 @@ body {
 .tag-badge {
     display: flex;
     align-items: center;
-    background: linear-gradient(90deg, #0ea5e9 60%, #38bdf8 100%);
-    color: #fff;
+    background: linear-gradient(90deg, #223046 60%, #334155 100%);
+    color: #cbd5e1;
     padding: 0.45rem 1.1rem;
     border-radius: 999px;
     font-size: 1rem;
     font-weight: 500;
     text-decoration: none;
-    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.08);
-    border: none;
+    box-shadow: 0 2px 8px rgba(30, 41, 59, 0.08);
+    border: 1px solid #334155;
     transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
@@ -92,16 +92,16 @@ body {
 }
 
 .tag-badge:hover {
-    background: linear-gradient(90deg, #38bdf8 60%, #0ea5e9 100%);
+    background: linear-gradient(90deg, #334155 60%, #223046 100%);
     color: #fff;
     transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 6px 18px rgba(14, 165, 233, 0.18);
+    box-shadow: 0 6px 18px rgba(30, 41, 59, 0.18);
     text-decoration: none;
 }
 
 .tag-count {
-    background: rgba(255,255,255,0.18);
-    color: #fff;
+    background: rgba(255,255,255,0.10);
+    color: #cbd5e1;
     padding: 0.22rem 0.7rem;
     border-radius: 12px;
     font-size: 0.82em;
