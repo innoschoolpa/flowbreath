@@ -5,36 +5,69 @@ require_once __DIR__ . '/../layouts/header.php';
 ?>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-.register-hero {
-    margin-top: 60px;
-    margin-bottom: 30px;
-    text-align: center;
-}
-.register-card {
-    max-width: 420px;
-    margin: 0 auto;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-    border-radius: 1.2rem;
-    padding: 2.5rem 2rem 2rem 2rem;
-    background: #fff;
-}
-.google-btn {
-    font-weight: 500;
-    border-radius: 2rem;
-    border-width: 2px;
-    /* margin-bottom: 1.2rem; */
-    /* outline 제거, w-100, btn-danger는 클래스에서 처리 */
-}
-.google-btn img {
-    width: 22px;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-.form-label { font-weight: 500; }
-.btn-primary { border-radius: 2rem; font-weight: 600; }
-@media (max-width: 600px) {
-    .register-card { padding: 1.5rem 0.5rem; }
-}
+    body {
+        background-color: #192133;
+        color: #fff;
+    }
+    .register-card, .card {
+        background: #232f47 !important;
+        color: #fff !important;
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    .form-control {
+        background-color: #232f47 !important;
+        color: #fff !important;
+        border-color: #2d3e50;
+    }
+    .form-label { color: #fff; }
+    .form-check-input:checked {
+        background-color: #3498db;
+        border-color: #3498db;
+    }
+    .btn-primary {
+        background-color: #3498db;
+        border-color: #3498db;
+    }
+    .btn-primary:hover {
+        background-color: #217dbb;
+        border-color: #217dbb;
+    }
+    .btn-outline-danger {
+        color: #fff;
+        border-color: #e74c3c;
+        background: transparent;
+    }
+    .btn-outline-danger:hover {
+        background: #e74c3c;
+        color: #fff;
+    }
+    a { color: #6cb2ff; }
+    a:hover { color: #3498db; }
+    .register-hero {
+        margin-top: 60px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .register-card {
+        max-width: 420px;
+        margin: 0 auto;
+        padding: 2.5rem 2rem 2rem 2rem;
+    }
+    .google-btn {
+        font-weight: 500;
+        border-radius: 2rem;
+        border-width: 2px;
+    }
+    .google-btn img {
+        width: 22px;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+    @media (max-width: 600px) {
+        .register-card { padding: 1.5rem 0.5rem; }
+    }
 </style>
 
 <div class="container mt-5">

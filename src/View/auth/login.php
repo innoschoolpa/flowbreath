@@ -3,6 +3,48 @@
 // 로그인 폼 뷰
 require_once __DIR__ . '/../layouts/header.php';
 ?>
+<style>
+    body {
+        background-color: #192133;
+        color: #fff;
+    }
+    .card.bg-dark, .card {
+        background-color: #232f47 !important;
+        color: #fff !important;
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    .form-control.bg-dark, .form-control {
+        background-color: #232f47 !important;
+        color: #fff !important;
+        border-color: #2d3e50;
+    }
+    .form-label { color: #fff; }
+    .form-check-input:checked {
+        background-color: #3498db;
+        border-color: #3498db;
+    }
+    .btn-primary {
+        background-color: #3498db;
+        border-color: #3498db;
+    }
+    .btn-primary:hover {
+        background-color: #217dbb;
+        border-color: #217dbb;
+    }
+    .btn-outline-light {
+        color: #fff;
+        border-color: #fff;
+        background: transparent;
+    }
+    .btn-outline-light:hover {
+        background: #fff;
+        color: #232f47;
+    }
+    a { color: #6cb2ff; }
+    a:hover { color: #3498db; }
+</style>
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
