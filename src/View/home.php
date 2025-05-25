@@ -185,7 +185,7 @@ h1, h2, h3, h4, h5, h6 {
     left: 0;
     width: 48px;
     height: 3px;
-    background: linear-gradient(90deg, #38bdf8 60%, #0ea5e9 100%);
+    background: linear-gradient(90deg, #3b82f6 60%, #60a5fa 100%);
     border-radius: 2px;
 }
 
