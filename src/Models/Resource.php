@@ -1559,4 +1559,18 @@ class Resource extends Model {
         }
         return $resources;
     }
+
+    public function countByUserId($userId) {
+        $sql = "SELECT COUNT(*) FROM resources WHERE user_id = :user_id AND deleted_at IS NULL";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+        return (int)$stmt->fetchColumn();
+    }
+
+    public function countPublicByUserId($userId) {
+        $sql = "SELECT COUNT(*) FROM resources WHERE user_id = :user_id AND visibility = 'public' AND deleted_at IS NULL";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+        return (int)$stmt->fetchColumn();
+    }
 }
