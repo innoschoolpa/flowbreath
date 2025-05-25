@@ -160,21 +160,22 @@ h1, h2, h3, h4, h5, h6 {
 
 .popular-tags {
     background: linear-gradient(135deg, #1e293b 60%, #0f172a 100%);
-    border-radius: 18px;
-    padding: 2.2rem 2rem 2rem 2rem;
-    margin-top: 3rem;
+    border-radius: 20px;
+    padding: 2.5rem 2.2rem 2.2rem 2.2rem;
     border: 1.5px solid #334155;
-    box-shadow: 0 4px 24px rgba(14, 165, 233, 0.07);
+    box-shadow: 0 4px 24px rgba(59, 130, 246, 0.09);
+    margin-top: 3rem;
 }
 
 .popular-tags h5 {
     font-size: 1.35rem;
     font-weight: 700;
     margin-bottom: 1.2rem;
-    color: #38bdf8;
+    color: #3b82f6;
     letter-spacing: 0.02em;
-    position: relative;
-    padding-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .popular-tags h5::after {
@@ -191,7 +192,7 @@ h1, h2, h3, h4, h5, h6 {
 .tags-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.7rem;
+    gap: 1.1rem;
 }
 </style>
 
@@ -320,11 +321,11 @@ h1, h2, h3, h4, h5, h6 {
             <h5><i class="fa fa-fire"></i> <?= $language->get('home.popular_tags.title') ?></h5>
             <div class="tags-container">
                 <?php foreach ($popularTags as $tag): ?>
-                    <a href="/resources?tags[]=<?= $tag['id'] ?>" class="tag-badge">
-                        <i class="fa fa-hashtag"></i>
-                        <?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?>
+                    <a href="/resources?tags[]=<?= $tag['id'] ?>" class="tag-badge" style="font-size:1.05rem;">
+                        <i class="fa fa-hashtag" style="color:#60a5fa; margin-right:0.4rem;"></i>
+                        <span style="font-weight:600; color:#e0e7ef;"> <?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?> </span>
                         <?php if (isset($tag['count'])): ?>
-                            <span class="tag-count"><?= $tag['count'] ?></span>
+                            <span class="tag-count" style="background:rgba(59,130,246,0.13); color:#60a5fa; margin-left:0.7rem;"> <?= $tag['count'] ?> </span>
                         <?php endif; ?>
                     </a>
                 <?php endforeach; ?>
