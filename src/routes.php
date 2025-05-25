@@ -44,6 +44,7 @@ return function (Router $router) {
     $router->add('GET', '/resources/search', [ResourceController::class, 'search']);
     $router->add('POST', '/resources/toggle-visibility/{id}', [ResourceController::class, 'toggleVisibility']);
     $router->add('GET', '/resources/view/{id}', [ResourceController::class, 'show']);
+    $router->add('POST', '/resources/view/{id}/like', [ResourceController::class, 'like']);
 
     // New routes for /tags and /api/docs
     $router->add('GET', '/tags', [ResourceController::class, 'tags']);
