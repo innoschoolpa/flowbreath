@@ -213,19 +213,29 @@ input[type="text"]::placeholder {
     <?php foreach ($resources as $resource): ?>
       <?php
       $videoId = null;
+      $hasYoutubeLink = false;
+      
+      // Check for YouTube link in link field
       if (!empty($resource['link'])) {
-        $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
-        if (preg_match($youtube_pattern, $resource['link'], $matches)) {
-          $videoId = $matches[1];
-        }
-        if (!$videoId && !empty($resource['content'])) {
-          if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
-            if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
+          $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
+          if (preg_match($youtube_pattern, $resource['link'], $matches)) {
               $videoId = $matches[1];
-            }
+              $hasYoutubeLink = true;
           }
-        }
       }
+      
+      // Check for YouTube link in content if not found in link field
+      if (!$hasYoutubeLink && !empty($resource['content'])) {
+          if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
+              if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
+                  $videoId = $matches[1];
+                  $hasYoutubeLink = true;
+              }
+          }
+      }
+      
+      // Determine content length based on YouTube link presence
+      $contentLength = $hasYoutubeLink ? 120 : 480; // 4x longer if no video
       ?>
       <div class="col-12 col-md-6 col-lg-4">
         <div class="card h-100 shadow-lg border-0">
@@ -241,7 +251,7 @@ input[type="text"]::placeholder {
               </a>
             </h5>
             <p class="card-text mb-2">
-              <?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']), 0, 120, '...')) ?>
+              <?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']), 0, $contentLength, '...')) ?>
             </p>
             <div class="mb-2">
               <?php foreach (($resource['tags'] ?? []) as $tag): ?>
