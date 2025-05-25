@@ -283,11 +283,11 @@ require_once PROJECT_ROOT . '/src/View/layouts/header.php';
     <!-- 인기 태그 -->
     <div class="row mt-5">
         <div class="col-12">
-            <h2 class="mb-4">인기 태그2</h2>
+            <h2 class="mb-4">인기 태그</h2>
             <div class="d-flex flex-wrap gap-2">
                 <?php foreach ($popularTags as $tag): ?>
                 <a href="/tags/<?= urlencode($tag['name']) ?>" class="dark-tag-badge">
-                    #<?= htmlspecialchars($tag['name']) ?>
+                    <?= htmlspecialchars($tag['name']) ?> <?= $tag['count'] ?? '' ?>
                 </a>
                 <?php endforeach; ?>
             </div>
