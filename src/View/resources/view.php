@@ -466,6 +466,11 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                         <?php endif; ?>
                     </div>
                 </div>
+                <!-- 조회수/좋아요 표시 -->
+                <div class="px-4 pt-3 pb-1 d-flex gap-4 align-items-center" style="font-size:1.08em; color:#cbd5e1;">
+                    <span><i class="fas fa-eye text-primary me-1"></i> <?= number_format($resource['view_count'] ?? 0) ?> 조회</span>
+                    <span><i class="fas fa-heart text-danger me-1"></i> <?= number_format($resource['like_count'] ?? 0) ?> 좋아요</span>
+                </div>
                 <div class="card-body">
                     <?php if (!empty($resource['content'])): ?>
                         <?php
