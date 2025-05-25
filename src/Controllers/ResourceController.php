@@ -146,10 +146,22 @@ class ResourceController extends BaseController {
                 throw new \Exception("리소스를 찾을 수 없습니다.", 404);
             }
 
+            // 조회수 증가
+            $this->resource->incrementViewCount($id);
+            $resource['view_count'] = $this->resource->findById($id, $lang)['view_count'];
+
+            // 좋아요 여부
+            $isLiked = false;
+            if (isset($_SESSION['user_id'])) {
+                $db = \App\Core\Database::getInstance();
+                $sql = "SELECT COUNT(*) as cnt FROM likes WHERE resource_id = ? AND user_id = ?";
+                $row = $db->fetch($sql, [$id, $_SESSION['user_id']]);
+                $isLiked = ($row && $row['cnt'] > 0);
+            }
+            $resource['is_liked_by_user'] = $isLiked;
+
             // DB 원본 정보에 작성자 이름 추가
             $resource['author_name'] = $resource['author_name'] ?? 'Unknown';
-            
-            // 언어 코드 설정
             $resource['translation_language_code'] = $resource['translation_language_code'] ?? $lang;
             $resource['language_code'] = $lang;
 
@@ -846,5 +858,33 @@ class ResourceController extends BaseController {
             error_log("[ERROR] Stack trace: " . $e->getTraceAsString());
             return $this->response->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
+    }
+
+    // 좋아요 토글 API
+    public function like(Request $request, $id)
+    {
+        if (!isset($_SESSION['user_id'])) {
+            return $this->response->json(['success' => false, 'error' => '로그인이 필요합니다.'], 401);
+        }
+        $userId = $_SESSION['user_id'];
+        $db = \App\Core\Database::getInstance();
+        $sql = "SELECT COUNT(*) as cnt FROM likes WHERE resource_id = ? AND user_id = ?";
+        $row = $db->fetch($sql, [$id, $userId]);
+        $liked = ($row && $row['cnt'] > 0);
+        if ($liked) {
+            // 좋아요 취소
+            $db->query("DELETE FROM likes WHERE resource_id = ? AND user_id = ?", [$id, $userId]);
+            $this->resource->decrementLikeCount($id);
+        } else {
+            // 좋아요 추가
+            $db->query("INSERT INTO likes (resource_id, user_id, created_at) VALUES (?, ?, NOW())", [$id, $userId]);
+            $this->resource->incrementLikeCount($id);
+        }
+        $likeCount = $this->resource->findById($id)['like_count'];
+        return $this->response->json([
+            'success' => true,
+            'liked' => !$liked,
+            'like_count' => $likeCount
+        ]);
     }
 }
