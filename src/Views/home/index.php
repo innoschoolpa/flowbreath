@@ -91,7 +91,10 @@
 
     <!-- 인기 태그 -->
     <div class="mt-12 bg-gradient-to-br from-[#1a1f2e] to-[#0f172a] rounded-2xl p-8 border border-[#334155] shadow-lg">
-        <h2 class="text-2xl font-bold mb-6 text-[#38bdf8]">인기 태그</h2>
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" class="inline-block text-[#3b82f6]"><circle cx="12" cy="12" r="10" fill="currentColor"/></svg>
+            <span class="text-[#3b82f6]">인기 태그</span>
+        </h2>
         <div class="flex flex-wrap gap-3">
             <?php foreach ($popular_tags as $tag): ?>
             <a href="/resources?tags[]=<?= $tag['id'] ?>" class="dark-tag-badge">
