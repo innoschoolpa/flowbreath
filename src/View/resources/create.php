@@ -143,15 +143,30 @@ input[type="file"]::file-selector-button:hover {
 
 /* 선택 상자 스타일 */
 select.form-control {
-    background-color: var(--input-bg);
-    border-color: var(--input-border);
-    color: var(--text-color);
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-color) !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23f1f5f9' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.75rem center !important;
+    background-size: 16px 12px !important;
+    padding-right: 2.5rem !important;
+}
+
+select.form-control option {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    padding: 0.5rem !important;
 }
 
 select.form-control:focus {
-    background-color: var(--input-focus-bg);
-    border-color: var(--input-focus-border);
-    color: var(--text-color);
+    background-color: var(--input-focus-bg) !important;
+    border-color: var(--input-focus-border) !important;
+    color: var(--text-color) !important;
+    box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25) !important;
 }
 
 /* 필수 입력 표시 */
