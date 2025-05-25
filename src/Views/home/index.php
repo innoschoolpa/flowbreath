@@ -1,5 +1,30 @@
 <?php require_once $_SERVER['DOCUMENT_ROOT'] . '/src/View/layouts/header.php'; ?>
 
+<style>
+.dark-tag-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(90deg, #223046 60%, #334155 100%);
+    color: #cbd5e1;
+    padding: 0.45rem 1.1rem;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(30, 41, 59, 0.08);
+    border: 1px solid #334155;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 0.3rem;
+}
+.dark-tag-badge:hover {
+    background: linear-gradient(90deg, #334155 60%, #223046 100%);
+    color: #fff;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 18px rgba(30, 41, 59, 0.18);
+    text-decoration: none;
+}
+</style>
+
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-8">호흡을 위한 최고의 자료, FlowBreath.io</h1>
     <p class="text-lg mb-8">호흡 건강, 운동, 명상, 치료 등 다양한 호흡 자료를 쉽고 빠르게 찾아보세요.</p>
@@ -26,7 +51,7 @@
                 // Extract YouTube video ID from URL
                 $youtubeId = null;
                 if (!empty($resource['link'])) {
-                    $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
+                    $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\\.be\/)([^"&?\/\\s]{11})/';
                     if (preg_match($youtube_pattern, $resource['link'], $matches)) {
                         $youtubeId = $matches[1];
                     }
@@ -69,8 +94,7 @@
         <h2 class="text-2xl font-bold mb-6">인기 태그</h2>
         <div class="flex flex-wrap gap-2">
             <?php foreach ($popular_tags as $tag): ?>
-            <a href="/resources?tags[]=<?= $tag['id'] ?>" 
-               class="px-3 py-1 bg-gray-100 rounded-full hover:bg-gray-200">
+            <a href="/resources?tags[]=<?= $tag['id'] ?>" class="dark-tag-badge">
                 #<?= htmlspecialchars($tag['name']) ?>
             </a>
             <?php endforeach; ?>
