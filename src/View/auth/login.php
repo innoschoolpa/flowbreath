@@ -10,8 +10,8 @@ require_once __DIR__ . '/../layouts/header.php';
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header"><?= __('profile.login.title') ?></div>
+            <div class="card bg-dark text-light">
+                <div class="card-header bg-dark text-light border-bottom border-secondary"><?= __('profile.login.title') ?></div>
                 <div class="card-body">
                     <?php if (isset($_SESSION['auth_error'])): ?>
                         <div class="alert alert-danger">
@@ -26,19 +26,19 @@ require_once __DIR__ . '/../layouts/header.php';
                         <input type="hidden" name="csrf_token" value="<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ''; ?>">
                         
                         <div class="form-group">
-                            <label for="email"><?= __('profile.login.email') ?></label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <label for="email" class="text-light"><?= __('profile.login.email') ?></label>
+                            <input type="email" class="form-control bg-dark text-light border-secondary" id="email" name="email" required>
                         </div>
 
                         <div class="form-group mt-3">
-                            <label for="password"><?= __('profile.login.password') ?></label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                            <label for="password" class="text-light"><?= __('profile.login.password') ?></label>
+                            <input type="password" class="form-control bg-dark text-light border-secondary" id="password" name="password" required>
                         </div>
 
                         <div class="form-group mt-3">
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                                <label class="form-check-label" for="remember"><?= __('profile.login.remember_me') ?></label>
+                                <label class="form-check-label text-light" for="remember"><?= __('profile.login.remember_me') ?></label>
                             </div>
                         </div>
 
@@ -48,13 +48,13 @@ require_once __DIR__ . '/../layouts/header.php';
                     </form>
 
                     <div class="text-center mt-3">
-                        <a href="/register"><?= __('profile.login.register') ?></a>
+                        <a href="/register" class="text-light"><?= __('profile.login.register') ?></a>
                     </div>
 
-                    <hr>
+                    <hr class="border-secondary">
 
                     <!-- 소셜 로그인 버튼 -->
-                    <a href="/auth/google" class="btn btn-outline-danger w-100 mt-2">
+                    <a href="/auth/google" class="btn btn-outline-light w-100 mt-2">
                         <i class="fab fa-google"></i> <?= __('profile.login.google_login') ?>
                     </a>
                 </div>
