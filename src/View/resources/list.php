@@ -235,7 +235,7 @@ input[type="text"]::placeholder {
       }
       
       // Determine content length based on YouTube link presence
-      $contentLength = $hasYoutubeLink ? 120 : 580; // Longer content for non-video resources
+      $contentLength = $hasYoutubeLink ? 120 : 680; // Longer content for non-video resources
       
       // Prepare content with preserved line breaks
       $content = strip_tags($resource['content'] ?? '');
