@@ -185,23 +185,23 @@ require_once PROJECT_ROOT . '/src/View/layouts/header.php';
 .dark-tag-badge {
     display: inline-flex;
     align-items: center;
-    background: linear-gradient(90deg, #223046 60%, #334155 100%);
-    color: #cbd5e1;
+    background: linear-gradient(90deg, #1e3a8a 60%, #2563eb 100%);
+    color: #e2e8f0;
     padding: 0.45rem 1.1rem;
     border-radius: 999px;
     font-size: 1rem;
     font-weight: 500;
     text-decoration: none;
-    box-shadow: 0 2px 8px rgba(30, 41, 59, 0.08);
-    border: 1px solid #334155;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.08);
+    border: 1px solid #2563eb;
     transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
     margin-bottom: 0.3rem;
 }
 .dark-tag-badge:hover {
-    background: linear-gradient(90deg, #334155 60%, #223046 100%);
+    background: linear-gradient(90deg, #2563eb 60%, #1e3a8a 100%);
     color: #fff;
     transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 6px 18px rgba(30, 41, 59, 0.18);
+    box-shadow: 0 6px 18px rgba(30, 58, 138, 0.18);
     text-decoration: none;
 }
 </style>
@@ -283,7 +283,7 @@ require_once PROJECT_ROOT . '/src/View/layouts/header.php';
     <!-- 인기 태그 -->
     <div class="row mt-5">
         <div class="col-12">
-            <h2 class="mb-4">인기 태그</h2>
+            <h2 class="mb-4">인기 태그2</h2>
             <div class="d-flex flex-wrap gap-2">
                 <?php foreach ($popularTags as $tag): ?>
                 <a href="/tags/<?= urlencode($tag['name']) ?>" class="dark-tag-badge">
