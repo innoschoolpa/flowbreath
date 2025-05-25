@@ -241,6 +241,45 @@ body {
             <p class="text-center text-muted">아직 선호하는 호흡 패턴이 없습니다.</p>
         <?php endif; ?>
     </div>
+
+    <div class="profile-section">
+        <h2 class="section-title">내 리소스</h2>
+        <?php if (!empty($resources)): ?>
+            <div class="row">
+                <?php foreach ($resources as $resource): ?>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100" style="background-color: var(--card-bg); border-color: var(--border-color);">
+                            <div class="card-body">
+                                <h5 class="card-title" style="color: var(--text-color);">
+                                    <a href="/resources/view/<?= $resource['id'] ?>" style="color: var(--accent-color);">
+                                        <?= htmlspecialchars($resource['title']) ?>
+                                    </a>
+                                    <?php if (($resource['visibility'] ?? '') === 'private'): ?>
+                                        <span class="badge bg-secondary ms-2">비공개</span>
+                                    <?php endif; ?>
+                                </h5>
+                                <p class="card-text" style="color: var(--secondary-color);">
+                                    <?= htmlspecialchars(mb_strimwidth(strip_tags($resource['description'] ?? $resource['content']), 0, 100, '...')) ?>
+                                </p>
+                                <div>
+                                    <?php foreach (($resource['tags'] ?? []) as $tag): ?>
+                                        <span class="tag-badge">#<?= htmlspecialchars($tag) ?></span>
+                                    <?php endforeach; ?>
+                                </div>
+                                <div class="text-muted mt-2" style="color: var(--secondary-color);">
+                                    <?= date('Y-m-d', strtotime($resource['created_at'])) ?>
+                                    · 조회수 <?= (int)($resource['view_count'] ?? 0) ?>
+                                    · 좋아요 <?= (int)($resource['like_count'] ?? 0) ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <p class="text-center text-muted">등록한 리소스가 없습니다.</p>
+        <?php endif; ?>
+    </div>
 </div>
 
 <?php require_once __DIR__ . '/layouts/footer.php'; ?> 
