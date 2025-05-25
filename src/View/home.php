@@ -14,7 +14,7 @@ require_once __DIR__ . '/layouts/header.php';
     --border-color: #334155;
     --primary-color: #3b82f6;
     --secondary-color: #64748b;
-    --accent-color: #0ea5e9;
+    --accent-color: #3b82f6;
 }
 
 body {

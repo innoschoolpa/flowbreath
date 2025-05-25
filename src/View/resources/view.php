@@ -34,7 +34,7 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
         --border-color: #334155;
         --primary-color: #3b82f6;
         --secondary-color: #64748b;
-        --accent-color: #0ea5e9;
+        --accent-color: #3b82f6;
         --success-color: #22c55e;
         --warning-color: #f59e0b;
         --error-color: #ef4444;
