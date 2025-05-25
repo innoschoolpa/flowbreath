@@ -148,7 +148,12 @@ class ResourceController extends BaseController {
 
             // 조회수 증가
             $this->resource->incrementViewCount($id);
-            $resource['view_count'] = $this->resource->findById($id, $lang)['view_count'];
+            
+            // 업데이트된 리소스 정보 가져오기
+            $updatedResource = $this->resource->findById($id, $lang);
+            if ($updatedResource) {
+                $resource['view_count'] = $updatedResource['view_count'] ?? 0;
+            }
 
             // 좋아요 여부
             $isLiked = false;
@@ -164,6 +169,15 @@ class ResourceController extends BaseController {
             $resource['author_name'] = $resource['author_name'] ?? 'Unknown';
             $resource['translation_language_code'] = $resource['translation_language_code'] ?? $lang;
             $resource['language_code'] = $lang;
+            $resource['title'] = $resource['title'] ?? 'Untitled';
+            $resource['content'] = $resource['content'] ?? '';
+            $resource['description'] = $resource['description'] ?? '';
+            $resource['created_at'] = $resource['created_at'] ?? date('Y-m-d H:i:s');
+            $resource['updated_at'] = $resource['updated_at'] ?? null;
+            $resource['visibility'] = $resource['visibility'] ?? 'public';
+            $resource['type'] = $resource['type'] ?? 'default';
+            $resource['slug'] = $resource['slug'] ?? '';
+            $resource['file_path'] = $resource['file_path'] ?? null;
 
             if ($request->wantsJson() || $request->isAjax()) {
                 return $this->response->json($resource);
