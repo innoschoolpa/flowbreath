@@ -90,9 +90,9 @@
     </div>
 
     <!-- 인기 태그 -->
-    <div>
-        <h2 class="text-2xl font-bold mb-6">인기 태그</h2>
-        <div class="flex flex-wrap gap-2">
+    <div class="mt-12 bg-gradient-to-br from-[#1a1f2e] to-[#0f172a] rounded-2xl p-8 border border-[#334155] shadow-lg">
+        <h2 class="text-2xl font-bold mb-6 text-[#38bdf8]">인기 태그</h2>
+        <div class="flex flex-wrap gap-3">
             <?php foreach ($popular_tags as $tag): ?>
             <a href="/resources?tags[]=<?= $tag['id'] ?>" class="dark-tag-badge">
                 #<?= htmlspecialchars($tag['name']) ?>
