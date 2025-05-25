@@ -269,7 +269,8 @@ input[type="text"]::placeholder {
             </p>
             <div class="mb-2">
               <?php foreach (($resource['tags'] ?? []) as $tag): ?>
-                <span class="tag-badge">#<?= htmlspecialchars(is_array($tag) ? $tag['name'] : $tag) ?></span>
+                <?php $tagName = is_array($tag) ? $tag['name'] : $tag; ?>
+                <a href="/resources/tag/<?= urlencode($tagName) ?>" class="tag-badge">#<?= htmlspecialchars($tagName) ?></a>
               <?php endforeach; ?>
             </div>
             <div class="mt-auto d-flex justify-content-between align-items-center" style="color:#94a3b8; font-size:0.95em;">
