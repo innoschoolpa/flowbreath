@@ -28,12 +28,18 @@ module.exports = {
           compress: {
             drop_console: true,
             drop_debugger: true,
+            pure_funcs: ['console.log', 'console.info', 'console.debug'],
+            passes: 2,
           },
           format: {
             comments: false,
           },
+          mangle: {
+            safari10: true,
+          },
         },
         extractComments: false,
+        parallel: true,
       })
     ],
     splitChunks: {
@@ -65,6 +71,7 @@ module.exports = {
           name: 'ckeditor',
           priority: 30,
           reuseExistingChunk: true,
+          chunks: 'async',
         }
       },
     },
@@ -72,6 +79,7 @@ module.exports = {
     removeEmptyChunks: true,
     // Merge chunks that contain the same modules
     mergeDuplicateChunks: true,
+    runtimeChunk: 'single',
   },
   performance: {
     hints: 'warning',
@@ -86,8 +94,24 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env'],
-            plugins: ['@babel/plugin-transform-runtime'],
+            presets: [
+              ['@babel/preset-env', {
+                targets: {
+                  browsers: ['>0.25%', 'not dead', 'not ie 11', 'not op_mini all']
+                },
+                useBuiltIns: 'usage',
+                corejs: 3,
+                modules: false,
+              }]
+            ],
+            plugins: [
+              ['@babel/plugin-transform-runtime', {
+                corejs: 3,
+                helpers: true,
+                regenerator: true,
+                useESModules: true,
+              }]
+            ],
             cacheDirectory: true,
           },
         },

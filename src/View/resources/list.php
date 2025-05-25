@@ -303,6 +303,8 @@ input[type="text"]::placeholder {
   <?php endif; ?>
 </div>
 
+<div id="editor" class="editor-container"></div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const searchForm = document.querySelector('form[action="/resources"]');
