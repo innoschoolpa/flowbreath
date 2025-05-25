@@ -174,7 +174,7 @@ select.form-control:focus {
         
         <div class="mb-3">
             <label for="title" class="form-label">제목 <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="title" name="title" required maxlength="100" value="<?php echo htmlspecialchars($resource['title'] ?? ''); ?>">
+            <input type="text" class="form-control" id="title" name="title" required maxlength="150" value="<?php echo htmlspecialchars($resource['title'] ?? ''); ?>">
         </div>
         
         <div class="mb-3">
