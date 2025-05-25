@@ -235,7 +235,12 @@ input[type="text"]::placeholder {
       }
       
       // Determine content length based on YouTube link presence
-      $contentLength = $hasYoutubeLink ? 120 : 480; // 4x longer if no video
+      $contentLength = $hasYoutubeLink ? 120 : 580; // Longer content for non-video resources
+      
+      // Prepare content with preserved line breaks
+      $content = strip_tags($resource['content'] ?? '');
+      $content = mb_strimwidth($content, 0, $contentLength, '...');
+      $content = nl2br(htmlspecialchars($content));
       ?>
       <div class="col-12 col-md-6 col-lg-4">
         <div class="card h-100 shadow-lg border-0">
@@ -250,8 +255,8 @@ input[type="text"]::placeholder {
                 <?= htmlspecialchars($resource['title'] ?? '') ?>
               </a>
             </h5>
-            <p class="card-text mb-2">
-              <?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']), 0, $contentLength, '...')) ?>
+            <p class="card-text mb-2" style="white-space: pre-line;">
+              <?= $content ?>
             </p>
             <div class="mb-2">
               <?php foreach (($resource['tags'] ?? []) as $tag): ?>
