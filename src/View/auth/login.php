@@ -3,6 +3,10 @@
 // 로그인 폼 뷰
 require_once __DIR__ . '/../layouts/header.php';
 ?>
+<button class="theme-toggle" id="themeToggle" title="테마 변경">
+    <i class="fas fa-sun"></i>
+</button>
+
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
@@ -58,6 +62,33 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
     </div>
 </div>
+
+<script>
+    // 테마 토글 기능
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = themeToggle.querySelector('i');
+    
+    // 저장된 테마 불러오기 (기본값을 dark로 설정)
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+    
+    // 테마 토글 이벤트
+    themeToggle.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        
+        document.documentElement.setAttribute('data-bs-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+    });
+    
+    // 아이콘 업데이트 함수
+    function updateThemeIcon(theme) {
+        themeIcon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+    }
+</script>
+
 <?php
 require_once __DIR__ . '/../layouts/footer.php';
 ?> 
