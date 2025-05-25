@@ -72,40 +72,42 @@ body {
 }
 
 .tag-badge {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    background: linear-gradient(90deg, #223046 60%, #334155 100%);
-    color: #cbd5e1;
+    background: linear-gradient(90deg, #1e3a8a 60%, #2563eb 100%);
+    color: #e2e8f0;
     padding: 0.45rem 1.1rem;
     border-radius: 999px;
     font-size: 1rem;
     font-weight: 500;
     text-decoration: none;
-    box-shadow: 0 2px 8px rgba(30, 41, 59, 0.08);
-    border: 1px solid #334155;
-    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.08);
+    border: 1px solid #2563eb;
+    transition: all 0.3s ease;
+    margin-bottom: 0.3rem;
+}
+
+.tag-badge:hover {
+    background: linear-gradient(90deg, #2563eb 60%, #1e3a8a 100%);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(30, 58, 138, 0.18);
+    text-decoration: none;
 }
 
 .tag-badge i {
     margin-right: 0.5rem;
     font-size: 0.95em;
-}
-
-.tag-badge:hover {
-    background: linear-gradient(90deg, #334155 60%, #223046 100%);
-    color: #fff;
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 6px 18px rgba(30, 41, 59, 0.18);
-    text-decoration: none;
+    color: #60a5fa;
 }
 
 .tag-count {
-    background: rgba(255,255,255,0.10);
-    color: #cbd5e1;
+    background: rgba(59, 130, 246, 0.13);
+    color: #60a5fa;
     padding: 0.22rem 0.7rem;
     border-radius: 12px;
     font-size: 0.82em;
-    margin-left: 0.6rem;
+    margin-left: 0.7rem;
     font-weight: 400;
 }
 
@@ -161,7 +163,7 @@ h1, h2, h3, h4, h5, h6 {
 .popular-tags {
     background: linear-gradient(135deg, #1e293b 60%, #0f172a 100%);
     border-radius: 20px;
-    padding: 2.5rem 2.2rem 2.2rem 2.2rem;
+    padding: 2.5rem 2.2rem;
     border: 1.5px solid #334155;
     box-shadow: 0 4px 24px rgba(59, 130, 246, 0.09);
     margin-top: 3rem;
@@ -170,7 +172,7 @@ h1, h2, h3, h4, h5, h6 {
 .popular-tags h5 {
     font-size: 1.35rem;
     font-weight: 700;
-    margin-bottom: 1.2rem;
+    margin-bottom: 1.5rem;
     color: #3b82f6;
     letter-spacing: 0.02em;
     display: flex;
@@ -178,21 +180,14 @@ h1, h2, h3, h4, h5, h6 {
     gap: 0.5rem;
 }
 
-.popular-tags h5::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 48px;
-    height: 3px;
-    background: linear-gradient(90deg, #3b82f6 60%, #60a5fa 100%);
-    border-radius: 2px;
+.popular-tags h5 i {
+    color: #60a5fa;
 }
 
 .tags-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.1rem;
+    gap: 1rem;
 }
 </style>
 
@@ -321,11 +316,11 @@ h1, h2, h3, h4, h5, h6 {
             <h5><i class="fa fa-fire"></i> <?= $language->get('home.popular_tags.title') ?></h5>
             <div class="tags-container">
                 <?php foreach ($popularTags as $tag): ?>
-                    <a href="/resources?tags[]=<?= $tag['id'] ?>" class="tag-badge" style="font-size:1.05rem;">
-                        <i class="fa fa-hashtag" style="color:#60a5fa; margin-right:0.4rem;"></i>
-                        <span style="font-weight:600; color:#e0e7ef;"> <?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?> </span>
+                    <a href="/resources?tags[]=<?= $tag['id'] ?>" class="tag-badge">
+                        <i class="fa fa-hashtag"></i>
+                        <span><?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
                         <?php if (isset($tag['count'])): ?>
-                            <span class="tag-count" style="background:rgba(59,130,246,0.13); color:#60a5fa; margin-left:0.7rem;"> <?= $tag['count'] ?> </span>
+                            <span class="tag-count"><?= $tag['count'] ?></span>
                         <?php endif; ?>
                     </a>
                 <?php endforeach; ?>
