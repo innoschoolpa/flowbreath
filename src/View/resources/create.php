@@ -158,6 +158,39 @@ select.form-control:focus {
 .text-danger {
     color: var(--error-color) !important;
 }
+
+/* Add dropdown menu styles */
+.dropdown-menu {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.dropdown-item {
+    color: var(--text-color) !important;
+    background-color: var(--card-bg) !important;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--text-color) !important;
+}
+
+.dropdown-item.active {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+/* Update form-select styles */
+.form-select {
+    background-color: var(--input-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--input-border) !important;
+}
+
+.form-select option {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
 </style>
 
 <div class="container mt-5">
