@@ -240,7 +240,7 @@ input[type="text"]::placeholder {
       // Prepare content with preserved line breaks
       $content = strip_tags($resource['content'] ?? '');
       $content = mb_strimwidth($content, 0, $contentLength, '...');
-      $content = nl2br(htmlspecialchars($content));
+      $content = htmlspecialchars($content);
       ?>
       <div class="col-12 col-md-6 col-lg-4">
         <div class="card h-100 shadow-lg border-0">
