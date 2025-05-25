@@ -190,6 +190,7 @@ input[type="text"]::placeholder {
 
 .dropdown-item {
     color: var(--text-color) !important;
+    background-color: var(--card-bg) !important;
 }
 
 .dropdown-item:hover {
@@ -200,6 +201,18 @@ input[type="text"]::placeholder {
 .dropdown-item.active {
     background-color: var(--primary-color) !important;
     color: white !important;
+}
+
+/* Add styles for form-select */
+.form-select {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+.form-select option {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
 }
 </style>
 
