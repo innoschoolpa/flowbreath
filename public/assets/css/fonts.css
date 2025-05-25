@@ -1,0 +1,37 @@
+/* Font Metric Overrides */
+@font-face {
+    font-family: 'Bootstrap Icons';
+    font-display: swap;
+    src: url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/fonts/bootstrap-icons.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    ascent-override: 90%;
+    descent-override: 20%;
+    line-gap-override: normal;
+}
+
+@font-face {
+    font-family: 'Font Awesome';
+    font-display: swap;
+    src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-solid-900.woff2') format('woff2');
+    font-weight: 900;
+    font-style: normal;
+    ascent-override: 90%;
+    descent-override: 20%;
+    line-gap-override: normal;
+}
+
+/* Preload critical fonts */
+@font-face {
+    font-family: 'Bootstrap Icons';
+    font-display: swap;
+    src: url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/fonts/bootstrap-icons.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Font fallbacks with similar metrics */
+.font-fallback {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size-adjust: 0.5;
+} 

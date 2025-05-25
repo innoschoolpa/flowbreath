@@ -4,9 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $language->get('common.site_name') ?> - <?= $language->get('home.hero.title') ?></title>
+    
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/fonts/bootstrap-icons.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+    
+    <!-- Stylesheets -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/assets/css/fonts.css" rel="stylesheet">
     <style>
+        /* Add font-display: swap to all font declarations */
+        @font-face {
+            font-family: 'Bootstrap Icons';
+            font-display: swap;
+            src: url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/fonts/bootstrap-icons.woff2') format('woff2');
+        }
+        
+        @font-face {
+            font-family: 'Font Awesome';
+            font-display: swap;
+            src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-solid-900.woff2') format('woff2');
+        }
+        
         body { background: #f8f9fa; }
         .navbar { background: #2d3e50; }
         .navbar-brand { font-weight: bold; letter-spacing: 1px; }
