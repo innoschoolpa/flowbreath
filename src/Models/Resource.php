@@ -1527,4 +1527,36 @@ class Resource extends Model {
             throw new Exception("번역본 개수를 조회하는 중 오류가 발생했습니다.");
         }
     }
+
+    public function findByUserIdWithDetails($userId, $lang = null) {
+        $lang = $lang ?? $_SESSION['lang'] ?? 'ko';
+        $defaultLang = 'en';
+
+        $sql = "SELECT r.*, 
+                    COALESCE(rt.title, rt_default.title) as title,
+                    COALESCE(rt.content, rt_default.content) as content,
+                    COALESCE(rt.description, rt_default.description) as description,
+                    rt.language_code as translation_language_code,
+                    u.name as author_name,
+                    GROUP_CONCAT(DISTINCT t.name) as tags,
+                    GROUP_CONCAT(DISTINCT t.id) as tag_ids,
+                    (SELECT COUNT(*) FROM likes l WHERE l.resource_id = r.id) as like_count,
+                    (SELECT COUNT(*) FROM comments c WHERE c.resource_id = r.id) as comment_count
+                FROM resources r
+                LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
+                LEFT JOIN resource_translations rt_default ON r.id = rt_default.resource_id AND rt_default.language_code = ?
+                LEFT JOIN users u ON r.user_id = u.id
+                LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id
+                LEFT JOIN tags t ON rtag.tag_id = t.id
+                WHERE r.user_id = ? AND r.deleted_at IS NULL
+                GROUP BY r.id
+                ORDER BY r.created_at DESC";
+
+        $resources = $this->db->fetchAll($sql, [$lang, $defaultLang, $userId]);
+        foreach ($resources as &$resource) {
+            $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
+            $resource['tag_ids'] = $resource['tag_ids'] ? explode(',', $resource['tag_ids']) : [];
+        }
+        return $resources;
+    }
 }

@@ -7,9 +7,11 @@ if (!isset($_SESSION['user_id'])) {
 
 // DB에서 최신 사용자 정보 불러오기
 require_once __DIR__ . '/../../Models/User.php';
+require_once __DIR__ . '/../../Models/Resource.php';
 require_once __DIR__ . '/../../Core/Database.php';
 $db = \App\Core\Database::getInstance();
 $userModel = new \App\Models\User($db);
+$resourceModel = new \App\Models\Resource($db);
 $userData = $userModel->findById((int)$_SESSION['user_id']);
 
 // 사용자 데이터가 없거나 null인 경우 기본값 설정
@@ -33,11 +35,13 @@ $stats = [
     'total_views' => 0,
     'total_comments' => 0,
     'recent_activity' => [],
-    'popular_resources' => []
+    'popular_resources' => [],
+    'public_resources' => 0
 ];
 
-// 리소스 목록 초기화
-$resources = [];
+// 개선된 쿼리로 내 리소스 불러오기
+$lang = $_SESSION['lang'] ?? 'ko';
+$resources = $resourceModel->findByUserIdWithDetails($user['id'], $lang);
 ?>
 
 <style>
@@ -240,50 +244,46 @@ a:hover {
                     <!-- 프로필 완성도 -->
                     <?php
                     $completion = 0;
-                    $total = 0;
-                    
-                    // 프로필 이미지
-                    if (!empty($user['profile_image'])) {
-                        $completion += 20;
+                    $total = 5;
+                    $checklist = [
+                        'profile_image' => !empty($user['profile_image']),
+                        'name' => !empty($user['name']),
+                        'bio' => !empty($user['bio']),
+                        'social_links' => !empty($user['social_links']),
+                        'resource' => ($stats['total_resources'] ?? 0) > 0,
+                    ];
+                    foreach ($checklist as $item) {
+                        if ($item) $completion++;
                     }
-                    $total += 20;
-                    
-                    // 이름
-                    if (!empty($user['name'])) {
-                        $completion += 20;
-                    }
-                    $total += 20;
-                    
-                    // 자기소개
-                    if (!empty($user['bio'])) {
-                        $completion += 20;
-                    }
-                    $total += 20;
-                    
-                    // 소셜 미디어 링크
-                    if (!empty($user['social_links'])) {
-                        $completion += 20;
-                    }
-                    $total += 20;
-                    
-                    // 활동 통계
-                    if ($stats['total_resources'] > 0) {
-                        $completion += 20;
-                    }
-                    $total += 20;
-                    
                     $percentage = ($completion / $total) * 100;
                     ?>
                     
                     <div class="mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-muted">프로필 완성도</span>
-                            <span class="text-primary"><?= round($percentage) ?>%</span>
+                            <span class="text-primary fw-bold"><?= round($percentage) ?>%</span>
                         </div>
                         <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: <?= $percentage ?>%" 
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: <?= $percentage ?>%"
                                  aria-valuenow="<?= $percentage ?>" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
+                        <ul class="list-unstyled mt-2 mb-0" style="font-size:0.97em;">
+                            <li>
+                                <?= $checklist['profile_image'] ? '✅' : '⬜' ?> 프로필 이미지
+                            </li>
+                            <li>
+                                <?= $checklist['name'] ? '✅' : '⬜' ?> 이름
+                            </li>
+                            <li>
+                                <?= $checklist['bio'] ? '✅' : '⬜' ?> 자기소개
+                            </li>
+                            <li>
+                                <?= $checklist['social_links'] ? '✅' : '⬜' ?> 소셜 링크
+                            </li>
+                            <li>
+                                <?= $checklist['resource'] ? '✅' : '⬜' ?> 리소스 등록
+                            </li>
+                        </ul>
                     </div>
 
                     <!-- 소셜 미디어 링크 -->
@@ -317,8 +317,20 @@ a:hover {
                     <h5 class="card-title mb-3"><?= __('profile.stats.title') ?></h5>
                     <div class="row text-center">
                         <div class="col">
-                            <h4 class="mb-1"><?= number_format($stats['total_resources']) ?></h4>
-                            <small class="text-muted"><?= __('profile.stats.resources') ?></small>
+                            <h4 class="mb-1">
+                                <?= number_format($stats['total_resources']) ?>
+                                <span class="fs-6 text-muted">/ <?= number_format($stats['public_resources'] ?? 0) ?> 공개</span>
+                            </h4>
+                            <small class="text-muted">전체 리소스</small>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <?php
+                                $public = (int)($stats['public_resources'] ?? 0);
+                                $total = (int)($stats['total_resources'] ?? 1);
+                                $percent = $total > 0 ? ($public / $total) * 100 : 0;
+                                ?>
+                                <div class="progress-bar bg-success" role="progressbar" style="width: <?= $percent ?>%" aria-valuenow="<?= $percent ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">공개 <?= $public ?> / 비공개 <?= $total - $public ?></small>
                         </div>
                         <div class="col">
                             <h4 class="mb-1"><?= number_format($stats['total_likes']) ?></h4>
