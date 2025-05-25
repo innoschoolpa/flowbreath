@@ -193,8 +193,8 @@ class ResourceController extends BaseController {
                 'title' => [
                     'required' => true,
                     'min' => 2,
-                    'max' => 100,
-                    'message' => '제목은 2~100자 사이로 입력해주세요.'
+                    'max' => 150,
+                    'message' => '제목은 2~150자 사이로 입력해주세요.'
                 ],
                 'content' => [
                     'required' => true,
