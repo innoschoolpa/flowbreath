@@ -214,58 +214,45 @@ a:hover {
     }
 }
 
-.table.my-resource-table {
-    background-color: #1e293b;
-    color: #f1f5f9;
-    border-radius: 0.75rem;
-    overflow: hidden;
+.table.my-resource-table,
+.table.my-resource-table thead th,
+.table.my-resource-table tbody tr,
+.table.my-resource-table td,
+.table.my-resource-table th,
+.table.my-resource-table .badge,
+.table.my-resource-table .btn-outline-primary,
+.table.my-resource-table .btn-outline-danger {
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-color: #334155 !important;
 }
 .table.my-resource-table thead th {
-    background-color: #223046;
-    color: #60a5fa;
-    border-bottom: 2px solid #334155;
-}
-.table.my-resource-table tbody tr {
-    border-top: 1px solid #334155;
-    transition: background 0.18s;
+    background-color: #223046 !important;
+    color: #60a5fa !important;
+    border-bottom: 2px solid #334155 !important;
 }
 .table.my-resource-table tbody tr:hover {
-    background-color: rgba(59,130,246,0.08);
-}
-.table.my-resource-table td, .table.my-resource-table th {
-    vertical-align: middle;
-}
-.table.my-resource-table a {
-    color: #3b82f6;
-    text-decoration: none;
-    font-weight: 500;
-}
-.table.my-resource-table a:hover {
-    color: #60a5fa;
-    text-decoration: underline;
+    background-color: rgba(59,130,246,0.08) !important;
 }
 .table.my-resource-table .badge {
-    background: #334155;
-    color: #e2e8f0;
-    font-size: 0.92em;
-    border-radius: 0.5em;
-    padding: 0.3em 0.8em;
+    background: #334155 !important;
+    color: #e2e8f0 !important;
 }
 .table.my-resource-table .btn-outline-primary {
-    border-color: #3b82f6;
-    color: #3b82f6;
+    border-color: #3b82f6 !important;
+    color: #3b82f6 !important;
 }
 .table.my-resource-table .btn-outline-primary:hover {
-    background: #3b82f6;
-    color: #fff;
+    background: #3b82f6 !important;
+    color: #fff !important;
 }
 .table.my-resource-table .btn-outline-danger {
-    border-color: #ef4444;
-    color: #ef4444;
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
 }
 .table.my-resource-table .btn-outline-danger:hover {
-    background: #ef4444;
-    color: #fff;
+    background: #ef4444 !important;
+    color: #fff !important;
 }
 
 .profile-header, .profile-header h4, .profile-header p, .profile-header .mb-3, .profile-header .profile-name, .profile-header .profile-email, .profile-header .mb-1, .profile-header .mb-3, .profile-header .fw-bold, .profile-header ul.list-unstyled li {
