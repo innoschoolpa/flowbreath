@@ -215,22 +215,22 @@ a:hover {
 }
 
 .table.my-resource-table {
-    background-color: var(--card-bg);
-    color: var(--text-color);
+    background-color: #1e293b;
+    color: #f1f5f9;
     border-radius: 0.75rem;
     overflow: hidden;
 }
 .table.my-resource-table thead th {
     background-color: #223046;
     color: #60a5fa;
-    border-bottom: 2px solid var(--border-color);
+    border-bottom: 2px solid #334155;
 }
 .table.my-resource-table tbody tr {
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid #334155;
     transition: background 0.18s;
 }
 .table.my-resource-table tbody tr:hover {
-    background-color: var(--hover-bg);
+    background-color: rgba(59,130,246,0.08);
 }
 .table.my-resource-table td, .table.my-resource-table th {
     vertical-align: middle;
@@ -283,7 +283,7 @@ a:hover {
     <div class="row">
         <!-- 프로필 정보 -->
         <div class="col-md-4">
-            <div class="card">
+            <div class="card profile-header">
                 <div class="card-body text-center">
                     <div class="position-relative d-inline-block mb-3">
                         <?php if (isset($user['profile_image']) && $user['profile_image']): ?>
