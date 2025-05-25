@@ -1573,4 +1573,22 @@ class Resource extends Model {
         $stmt->execute(['user_id' => $userId]);
         return (int)$stmt->fetchColumn();
     }
+
+    public function incrementViewCount($resourceId) {
+        $sql = "UPDATE resources SET view_count = view_count + 1 WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$resourceId]);
+    }
+
+    public function incrementLikeCount($resourceId) {
+        $sql = "UPDATE resources SET like_count = like_count + 1 WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$resourceId]);
+    }
+
+    public function decrementLikeCount($resourceId) {
+        $sql = "UPDATE resources SET like_count = GREATEST(like_count - 1, 0) WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$resourceId]);
+    }
 }
