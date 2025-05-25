@@ -72,24 +72,41 @@ body {
 }
 
 .tag-badge {
-    display: inline-block;
-    background: rgba(14, 165, 233, 0.1);
-    color: var(--text-color);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(90deg, #0ea5e9 60%, #38bdf8 100%);
+    color: #fff;
+    padding: 0.45rem 1.1rem;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 500;
     text-decoration: none;
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.08);
+    border: none;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.tag-badge i {
     margin-right: 0.5rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-    border: 1px solid rgba(14, 165, 233, 0.2);
+    font-size: 0.95em;
 }
 
 .tag-badge:hover {
-    background: rgba(14, 165, 233, 0.2);
-    color: var(--text-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(90deg, #38bdf8 60%, #0ea5e9 100%);
+    color: #fff;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 18px rgba(14, 165, 233, 0.18);
+    text-decoration: none;
+}
+
+.tag-count {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    padding: 0.22rem 0.7rem;
+    border-radius: 12px;
+    font-size: 0.82em;
+    margin-left: 0.6rem;
+    font-weight: 400;
 }
 
 .btn-warning {
@@ -142,20 +159,22 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .popular-tags {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 2rem;
-    margin-top: 4rem;
-    border: 1px solid var(--border-color);
+    background: linear-gradient(135deg, #1e293b 60%, #0f172a 100%);
+    border-radius: 18px;
+    padding: 2.2rem 2rem 2rem 2rem;
+    margin-top: 3rem;
+    border: 1.5px solid #334155;
+    box-shadow: 0 4px 24px rgba(14, 165, 233, 0.07);
 }
 
 .popular-tags h5 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: var(--text-color);
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+    color: #38bdf8;
+    letter-spacing: 0.02em;
     position: relative;
-    padding-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
 }
 
 .popular-tags h5::after {
@@ -163,30 +182,16 @@ h1, h2, h3, h4, h5, h6 {
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 50px;
+    width: 48px;
     height: 3px;
-    background: var(--accent-color);
+    background: linear-gradient(90deg, #38bdf8 60%, #0ea5e9 100%);
     border-radius: 2px;
 }
 
 .tags-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
-}
-
-.tag-badge i {
-    margin-right: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.tag-count {
-    background: rgba(14, 165, 233, 0.2);
-    color: var(--text-color);
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    margin-left: 0.5rem;
+    gap: 0.7rem;
 }
 </style>
 
