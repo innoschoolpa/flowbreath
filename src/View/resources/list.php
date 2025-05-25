@@ -182,6 +182,25 @@ input[type="text"]::placeholder {
   .card { min-height: 320px; }
   .search-box { padding: 1rem 0.5rem; }
 }
+
+.dropdown-menu {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.dropdown-item {
+    color: var(--text-color) !important;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--text-color) !important;
+}
+
+.dropdown-item.active {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
 </style>
 
 <!-- Hero Section -->
