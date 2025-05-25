@@ -93,10 +93,15 @@ input[type="file"]::file-selector-button:hover {
     background: #334155;
     color: #fff;
 }
-::-webkit-input-placeholder { color: #94a3b8; }
-::-moz-placeholder { color: #94a3b8; }
-:-ms-input-placeholder { color: #94a3b8; }
-::placeholder { color: #94a3b8; }
+/* Make all input placeholders white for dark mode */
+.form-control::placeholder, input::placeholder, textarea::placeholder {
+    color: #fff !important;
+    opacity: 0.8;
+}
+::-webkit-input-placeholder { color: #fff !important; opacity: 0.8; }
+::-moz-placeholder { color: #fff !important; opacity: 0.8; }
+:-ms-input-placeholder { color: #fff !important; opacity: 0.8; }
+::placeholder { color: #fff !important; opacity: 0.8; }
 </style>
 
 <div class="container py-5">
