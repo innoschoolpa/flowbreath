@@ -126,218 +126,156 @@ input[type="text"]::placeholder {
 .hover\:shadow-2xl:hover {
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
 }
+
+.hero-section {
+  background: linear-gradient(135deg, #1e293b 60%, #2563eb 100%);
+  border-radius: 0 0 32px 32px;
+  box-shadow: 0 8px 32px rgba(37,99,235,0.08);
+  margin-bottom: 2.5rem;
+}
+.search-box input {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border: 1px solid #334155;
+}
+.search-box input::placeholder {
+  color: #94a3b8;
+}
+.tag-badge {
+  display: inline-block;
+  background: linear-gradient(90deg, #1e40af 60%, #3b82f6 100%);
+  color: #e2e8f0;
+  padding: 0.35em 1em;
+  border-radius: 999px;
+  font-size: 0.95em;
+  font-weight: 500;
+  margin: 0.1em 0.2em 0.1em 0;
+  border: 1px solid #3b82f6;
+  transition: background 0.2s, color 0.2s;
+}
+.tag-badge:hover {
+  background: linear-gradient(90deg, #2563eb 60%, #1d4ed8 100%);
+  color: #fff;
+}
+.card {
+  background: #1e293b;
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(30,64,175,0.10);
+  border: none;
+}
+.card-title a {
+  color: #60a5fa;
+  text-decoration: none;
+}
+.card-title a:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+.card-text {
+  color: #cbd5e1;
+}
+@media (max-width: 991px) {
+  .col-lg-4, .col-lg-6 { flex: 0 0 100%; max-width: 100%; }
+}
+@media (max-width: 767px) {
+  .hero-section { padding: 2rem 0 1rem 0; }
+  .card { min-height: 320px; }
+  .search-box { padding: 1rem 0.5rem; }
+}
 </style>
 
-<div class="container mx-auto px-4 py-8">
-    <!-- Hero Section -->
-    <div class="text-center mb-12">
-        <h1 class="text-3xl font-bold mb-4"><?= $language->get('home.hero.title') ?></h1>
-        <p class="text-gray-600 mb-8"><?= $language->get('home.hero.subtitle') ?></p>
-        
-        <!-- Search Form -->
-        <div class="container mx-auto mb-6">
-            <div class="flex items-center justify-between gap-2 w-full">
-                <form action="/resources" method="GET" class="flex flex-1 gap-2 items-center">
-                    <input type="text" name="keyword" placeholder="<?= $language->get('home.hero.search_placeholder') ?>"
-                        class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>">
-                    <button type="submit" class="px-6 py-2 bg-yellow-400 text-gray-900 font-bold rounded-lg shadow hover:bg-yellow-500 transition-colors border border-yellow-500"
-                        style="height:44px; min-width:90px; font-size:1.1rem;">
-                        <i class="fas fa-search mr-1"></i><?= $language->get('common.search') ?>
-                    </button>
-                </form>
-                <?php if (isset($user) && $user['id']): ?>
-                    <a href="/resources/create"
-                        class="px-6 py-2 bg-yellow-300 text-black rounded-lg hover:bg-yellow-400 transition-colors ml-4"
-                        style="height:44px; min-width:110px; font-size:1.1rem; display:flex; align-items:center; justify-content:center;">
-                        <i class="fas fa-plus me-1"></i><?= $language->get('common.add_resource') ?>
-                    </a>
-                <?php endif; ?>
-            </div>
-        </div>
+<!-- Hero Section -->
+<section class="hero-section mb-8">
+  <div class="container text-center py-5">
+    <h1 class="display-5 fw-bold mb-3" style="color:#fff;">호흡 자료 검색</h1>
+    <p class="lead mb-4" style="color:#cbd5e1;">호흡, 명상, 건강을 위한 다양한 자료를 찾아보세요.</p>
+    <form action="/resources" method="GET" class="search-box mx-auto d-flex justify-content-center align-items-center" style="max-width:600px;">
+      <input type="text" name="keyword" class="form-control form-control-lg rounded-start" placeholder="키워드로 검색..." value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>">
+      <button type="submit" class="btn btn-primary btn-lg rounded-end ms-2 px-4"><i class="fas fa-search"></i> 검색</button>
+    </form>
+  </div>
+</section>
+
+<div class="container">
+  <!-- Error/Loading/No Result -->
+  <?php if (isset($error) && $error && $error !== 'unset'): ?>
+    <div class="d-flex justify-content-center align-items-center my-4">
+      <div class="alert alert-danger d-flex align-items-center"><i class="fas fa-exclamation-triangle me-2"></i><?= htmlspecialchars($error) ?></div>
     </div>
-
-    <!-- Error/Loading/No Result -->
-    <?php if (isset($error) && $error && $error !== 'unset'): ?>
-        <div class="flex justify-center items-center my-8">
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded flex items-center">
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                <?= htmlspecialchars($error) ?>
-            </div>
-        </div>
-    <?php elseif (empty($resources)): ?>
-        <div class="flex justify-center items-center my-8">
-            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded flex items-center">
-                <i class="fas fa-search mr-2"></i>
-                <?= $language->get('resources.no_results') ?>
-            </div>
-        </div>
-    <?php endif; ?>
-
-    <!-- Loading Spinner -->
-    <div id="loading-spinner" class="hidden text-center my-8">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+  <?php elseif (empty($resources)): ?>
+    <div class="d-flex justify-content-center align-items-center my-4">
+      <div class="alert alert-warning d-flex align-items-center"><i class="fas fa-search me-2"></i><?= $language->get('resources.no_results') ?></div>
     </div>
+  <?php endif; ?>
 
-    <!-- Resource Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <?php foreach ($resources as $resource): ?>
-            <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-4 flex flex-col justify-between transition-transform hover:-translate-y-1 hover:shadow-2xl">
-                <?php
-                $videoId = null;
-                if (!empty($resource['link'])) {
-                    $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
-                    if (preg_match($youtube_pattern, $resource['link'], $matches)) {
-                        $videoId = $matches[1];
-                    }
-                    if (!$videoId && !empty($resource['content'])) {
-                        if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
-                            if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
-                                $videoId = $matches[1];
-                            }
-                        }
-                    }
-                }
-                ?>
-                <?php if ($videoId): ?>
-                    <div class="flex flex-row gap-4 items-start">
-                        <div class="flex-shrink-0 w-64 max-w-full">
-                            <div class="aspect-w-16 aspect-h-9 mb-0">
-                                <iframe 
-                                    src="https://www.youtube.com/embed/<?= $videoId ?>?autoplay=0" 
-                                    title="YouTube video player"
-                                    frameborder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen
-                                    class="w-full h-full rounded-lg">
-                                </iframe>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="mb-2" style="font-size:1rem; font-weight:600;">
-                                <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" 
-                                   class="text-gray-900 hover:text-blue-600 transition-colors">
-                                    <?= htmlspecialchars($resource['title'] ?? '') ?>
-                                </a>
-                            </h3>
-                            <p class="text-gray-600 mb-2">
-                                <?php
-                                $preview = '';
-                                if (!empty($resource['content'])) {
-                                    $plain = strip_tags($resource['content']);
-                                    $preview = mb_strimwidth($plain, 0, 150, '...');
-                                }
-                                echo htmlspecialchars($preview ?? '');
-                                ?>
-                            </p>
-                            <?php if (!empty($resource['tags'])): ?>
-                            <div class="mb-2">
-                                <?php foreach (($resource['tags'] ?? []) as $tag): ?>
-                                    <span class="inline-block px-2 py-1 text-sm text-gray-600 bg-gray-100 rounded-full mr-1 mb-1">
-                                        #<?= htmlspecialchars(is_array($tag) ? $tag['name'] : $tag) ?>
-                                    </span>
-                                <?php endforeach; ?>
-                            </div>
-                            <?php endif; ?>
-                            <div class="text-sm text-gray-500 mt-2 border-t pt-3 flex flex-wrap gap-4">
-                                <span>
-                                    <i class="fas fa-user mr-1"></i>
-                                    <?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?>
-                                </span>
-                                <span>
-                                    <i class="fas fa-calendar mr-1"></i>
-                                    <?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?>
-                                </span>
-                                <?php if (isset($resource['view_count'])): ?>
-                                    <span>
-                                        <i class="fas fa-eye mr-1"></i>
-                                        <?= htmlspecialchars($resource['view_count']) ?>
-                                    </span>
-                                <?php endif; ?>
-                                <?php if (isset($resource['rating'])): ?>
-                                    <span>
-                                        <i class="fas fa-star mr-1"></i>
-                                        <?= number_format($resource['rating'], 1) ?>
-                                    </span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                <?php else: ?>
-                    <h3 class="mb-2" style="font-size:1rem; font-weight:600;">
-                        <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>" 
-                           class="text-gray-900 hover:text-blue-600 transition-colors">
-                            <?= htmlspecialchars($resource['title'] ?? '') ?>
-                        </a>
-                    </h3>
-                    <p class="text-gray-600 mb-2">
-                        <?php
-                        $preview = '';
-                        if (!empty($resource['content'])) {
-                            $plain = strip_tags($resource['content']);
-                            $preview = mb_strimwidth($plain, 0, 300, '...');
-                        }
-                        echo htmlspecialchars($preview ?? '');
-                        ?>
-                    </p>
-                    <?php if (!empty($resource['tags'])): ?>
-                    <div class="mb-2">
-                        <?php foreach (($resource['tags'] ?? []) as $tag): ?>
-                            <span class="inline-block px-2 py-1 text-sm text-gray-600 bg-gray-100 rounded-full mr-1 mb-1">
-                                #<?= htmlspecialchars(is_array($tag) ? $tag['name'] : $tag) ?>
-                            </span>
-                        <?php endforeach; ?>
-                    </div>
-                    <?php endif; ?>
-                    <div class="text-sm text-gray-500 mt-2 border-t pt-3 flex flex-wrap gap-4">
-                        <span>
-                            <i class="fas fa-user mr-1"></i>
-                            <?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?>
-                        </span>
-                        <span>
-                            <i class="fas fa-calendar mr-1"></i>
-                            <?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?>
-                        </span>
-                        <?php if (isset($resource['view_count'])): ?>
-                            <span>
-                                <i class="fas fa-eye mr-1"></i>
-                                <?= htmlspecialchars($resource['view_count']) ?>
-                            </span>
-                        <?php endif; ?>
-                        <?php if (isset($resource['rating'])): ?>
-                            <span>
-                                <i class="fas fa-star mr-1"></i>
-                                <?= number_format($resource['rating'], 1) ?>
-                            </span>
-                        <?php endif; ?>
-                    </div>
-                <?php endif; ?>
+  <!-- Resource Cards -->
+  <div class="row g-4">
+    <?php foreach ($resources as $resource): ?>
+      <?php
+      $videoId = null;
+      if (!empty($resource['link'])) {
+        $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
+        if (preg_match($youtube_pattern, $resource['link'], $matches)) {
+          $videoId = $matches[1];
+        }
+        if (!$videoId && !empty($resource['content'])) {
+          if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
+            if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
+              $videoId = $matches[1];
+            }
+          }
+        }
+      }
+      ?>
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100 shadow-lg border-0">
+          <?php if ($videoId): ?>
+            <div class="ratio ratio-16x9">
+              <iframe src="https://www.youtube.com/embed/<?= $videoId ?>?autoplay=0" class="rounded-top" allowfullscreen></iframe>
             </div>
-        <?php endforeach; ?>
-    </div>
-
-    <!-- Pagination -->
-    <?php if (($total_pages ?? 1) > 1): ?>
-        <div class="flex justify-center items-center mt-8 gap-2">
-            <?php if (($current_page ?? 1) > 1): ?>
-                <a href="/resources?<?= http_build_query(array_merge($_GET, ['page' => $current_page - 1])) ?>" 
-                   class="px-4 py-2 bg-white border rounded-lg hover:bg-gray-50 transition-colors">
-                    <?= $language->get('common.prev') ?>
-                </a>
-            <?php endif; ?>
-            
-            <span class="px-4 py-2 bg-gray-100 rounded-lg">
-                <?= ($current_page ?? 1) ?> / <?= $total_pages ?>
-            </span>
-            
-            <?php if (($current_page ?? 1) < $total_pages): ?>
-                <a href="/resources?<?= http_build_query(array_merge($_GET, ['page' => $current_page + 1])) ?>" 
-                   class="px-4 py-2 bg-white border rounded-lg hover:bg-gray-50 transition-colors">
-                    <?= $language->get('common.next') ?>
-                </a>
-            <?php endif; ?>
+          <?php endif; ?>
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title mb-2">
+              <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>">
+                <?= htmlspecialchars($resource['title'] ?? '') ?>
+              </a>
+            </h5>
+            <p class="card-text mb-2">
+              <?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']), 0, 120, '...')) ?>
+            </p>
+            <div class="mb-2">
+              <?php foreach (($resource['tags'] ?? []) as $tag): ?>
+                <span class="tag-badge">#<?= htmlspecialchars(is_array($tag) ? $tag['name'] : $tag) ?></span>
+              <?php endforeach; ?>
+            </div>
+            <div class="mt-auto d-flex justify-content-between align-items-center" style="color:#94a3b8; font-size:0.95em;">
+              <span><i class="fas fa-user me-1"></i><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></span>
+              <span><i class="fas fa-calendar me-1"></i><?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?></span>
+            </div>
+          </div>
         </div>
-    <?php endif; ?>
+      </div>
+    <?php endforeach; ?>
+  </div>
+
+  <!-- Pagination -->
+  <?php if (($total_pages ?? 1) > 1): ?>
+    <div class="d-flex justify-content-center align-items-center mt-5 gap-2">
+      <?php if (($current_page ?? 1) > 1): ?>
+        <a href="/resources?<?= http_build_query(array_merge($_GET, ['page' => $current_page - 1])) ?>" class="btn btn-outline-primary px-4 py-2">
+          <?= $language->get('common.prev') ?>
+        </a>
+      <?php endif; ?>
+      <span class="px-4 py-2 bg-dark text-white rounded">
+        <?= ($current_page ?? 1) ?> / <?= $total_pages ?>
+      </span>
+      <?php if (($current_page ?? 1) < $total_pages): ?>
+        <a href="/resources?<?= http_build_query(array_merge($_GET, ['page' => $current_page + 1])) ?>" class="btn btn-outline-primary px-4 py-2">
+          <?= $language->get('common.next') ?>
+        </a>
+      <?php endif; ?>
+    </div>
+  <?php endif; ?>
 </div>
 
 <script>
