@@ -196,6 +196,15 @@ input[type="text"]::placeholder {
   </div>
 </section>
 
+<!-- Add Resource Button (top right) -->
+<?php if (isset($user) && $user): ?>
+  <div class="d-flex justify-content-end mb-4">
+    <a href="/resources/create" class="btn btn-primary">
+      <i class="fas fa-plus"></i> 자료 등록
+    </a>
+  </div>
+<?php endif; ?>
+
 <div class="container">
   <!-- Error/Loading/No Result -->
   <?php if (isset($error) && $error && $error !== 'unset'): ?>
