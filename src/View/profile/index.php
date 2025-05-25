@@ -213,6 +213,70 @@ a:hover {
         margin-bottom: 1rem;
     }
 }
+
+.table.my-resource-table {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+.table.my-resource-table thead th {
+    background-color: #223046;
+    color: #60a5fa;
+    border-bottom: 2px solid var(--border-color);
+}
+.table.my-resource-table tbody tr {
+    border-top: 1px solid var(--border-color);
+    transition: background 0.18s;
+}
+.table.my-resource-table tbody tr:hover {
+    background-color: var(--hover-bg);
+}
+.table.my-resource-table td, .table.my-resource-table th {
+    vertical-align: middle;
+}
+.table.my-resource-table a {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+}
+.table.my-resource-table a:hover {
+    color: #60a5fa;
+    text-decoration: underline;
+}
+.table.my-resource-table .badge {
+    background: #334155;
+    color: #e2e8f0;
+    font-size: 0.92em;
+    border-radius: 0.5em;
+    padding: 0.3em 0.8em;
+}
+.table.my-resource-table .btn-outline-primary {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+.table.my-resource-table .btn-outline-primary:hover {
+    background: #3b82f6;
+    color: #fff;
+}
+.table.my-resource-table .btn-outline-danger {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+.table.my-resource-table .btn-outline-danger:hover {
+    background: #ef4444;
+    color: #fff;
+}
+
+.profile-header, .profile-header h4, .profile-header p, .profile-header .mb-3, .profile-header .profile-name, .profile-header .profile-email, .profile-header .mb-1, .profile-header .mb-3, .profile-header .fw-bold, .profile-header ul.list-unstyled li {
+    color: #fff !important;
+}
+.profile-header .text-muted {
+    color: #cbd5e1 !important;
+}
+.profile-header .text-primary {
+    color: #60a5fa !important;
+}
 </style>
 
 <div class="container py-5">
@@ -422,7 +486,7 @@ a:hover {
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-hover">
+                            <table class="table my-resource-table table-hover align-middle">
                                 <thead>
                                     <tr>
                                         <th>제목</th>
@@ -436,12 +500,14 @@ a:hover {
                                     <?php foreach ($resources as $resource): ?>
                                         <tr>
                                             <td>
-                                                <a href="/resources/view/<?= $resource['id'] ?>" class="text-decoration-none">
+                                                <a href="/resources/view/<?= $resource['id'] ?>">
                                                     <?= htmlspecialchars($resource['title']) ?>
                                                 </a>
                                             </td>
                                             <td>
-                                                <?= $resource['visibility'] === 'public' ? '공개' : '비공개' ?>
+                                                <span class="badge">
+                                                    <?= $resource['visibility'] === 'public' ? '공개' : '비공개' ?>
+                                                </span>
                                             </td>
                                             <td><?= number_format($resource['view_count']) ?></td>
                                             <td><?= date('Y-m-d', strtotime($resource['created_at'])) ?></td>
