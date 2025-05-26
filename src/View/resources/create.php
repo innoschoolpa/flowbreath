@@ -1,5 +1,8 @@
 <?php
 // src/View/resources/create.php
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 ?>
 <?php if (isset($_SESSION['error_message'])): ?>
     <div class="alert alert-danger">
@@ -398,50 +401,148 @@ function initTinyMCE(elementId, height = 400) {
         plugins: [
             'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
             'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-            'insertdatetime', 'media', 'table', 'help', 'wordcount', 'markdown'
+            'insertdatetime', 'media', 'table', 'help', 'wordcount'
         ],
         toolbar: 'undo redo | blocks | ' +
             'bold italic | alignleft aligncenter ' +
             'alignright alignjustify | bullist numlist outdent indent | ' +
-            'image media table | removeformat | markdown | help',
+            'image media table link | removeformat | code | help',
         skin: 'oxide-dark',
         content_css: 'dark',
         branding: false,
         promotion: false,
         statusbar: false,
         resize: false,
+        
+        // 이미지 업로드 설정
         images_upload_url: '/upload/image',
-        images_upload_handler: function (blobInfo, success, failure) {
-            const formData = new FormData();
-            formData.append('image', blobInfo.blob(), blobInfo.filename());
-            formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?>');
-
-            fetch('/upload/image', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    success(data.url);
-                } else {
-                    failure(data.error || '이미지 업로드에 실패했습니다.');
-                }
-            })
-            .catch(error => {
-                failure('이미지 업로드 중 오류가 발생했습니다.');
-            });
-        },
+        images_upload_base_path: '',
         images_reuse_filename: true,
         automatic_uploads: true,
         file_picker_types: 'image',
-        images_upload_base_path: '/',
+        
+        // 개선된 이미지 업로드 핸들러
+        images_upload_handler: function (blobInfo, progress) {
+            return new Promise((resolve, reject) => {
+                const formData = new FormData();
+                formData.append('image', blobInfo.blob(), blobInfo.filename());
+                formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?? '' ?>');
+
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        progress(e.loaded / e.total * 100);
+                    }
+                };
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.success) {
+                                resolve(response.url);
+                            } else {
+                                reject(response.error || '이미지 업로드에 실패했습니다.');
+                            }
+                        } catch (e) {
+                            reject('서버 응답을 파싱할 수 없습니다.');
+                        }
+                    } else {
+                        reject('서버 오류: ' + xhr.status);
+                    }
+                };
+
+                xhr.onerror = function() {
+                    reject('네트워크 오류가 발생했습니다.');
+                };
+
+                xhr.open('POST', '/upload/image');
+                xhr.send(formData);
+            });
+        },
+        
+        // 이미지 업로드 후 콜백
+        images_upload_callback: function(response) {
+            console.log('Image uploaded successfully:', response);
+        },
+        
+        // 파일 선택기 콜백
+        file_picker_callback: function(callback, value, meta) {
+            if (meta.filetype === 'image') {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
+                
+                input.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?? '' ?>');
+                        
+                        fetch('/upload/image', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                callback(data.url, { alt: file.name });
+                            } else {
+                                alert('이미지 업로드 실패: ' + (data.error || '알 수 없는 오류'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Upload error:', error);
+                            alert('이미지 업로드 중 오류가 발생했습니다.');
+                        });
+                    }
+                });
+                
+                input.click();
+            }
+        },
+        
         setup: function(editor) {
             editor.on('init', function() {
                 if (elementId === 'content') {
                     contentEditor = editor;
                 } else {
                     descriptionEditor = editor;
+                }
+                console.log('TinyMCE initialized for:', elementId);
+            });
+            
+            // 이미지 드래그 앤 드롭 지원
+            editor.on('drop', function(e) {
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('image/')) {
+                        e.preventDefault();
+                        
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?? '' ?>');
+                        
+                        fetch('/upload/image', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                editor.insertContent(`<img src="${data.url}" alt="${file.name}" />`);
+                            } else {
+                                alert('이미지 업로드 실패: ' + (data.error || '알 수 없는 오류'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Upload error:', error);
+                            alert('이미지 업로드 중 오류가 발생했습니다.');
+                        });
+                    }
                 }
             });
         }
