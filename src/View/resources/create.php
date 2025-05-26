@@ -441,8 +441,14 @@ function initTinyMCE(elementId, height = 400) {
                         try {
                             const response = JSON.parse(xhr.responseText);
                             if (response.success) {
-                                // Ensure the URL is absolute
-                                const imageUrl = response.url.startsWith('/') ? response.url : '/' + response.url;
+                                // Ensure the URL is absolute and starts with /uploads/images/
+                                let imageUrl = response.url;
+                                if (!imageUrl.startsWith('/')) {
+                                    imageUrl = '/' + imageUrl;
+                                }
+                                if (!imageUrl.startsWith('/uploads/images/')) {
+                                    imageUrl = '/uploads/images/' + imageUrl.replace(/^\/+/, '');
+                                }
                                 resolve(imageUrl);
                             } else {
                                 reject(response.error || '이미지 업로드에 실패했습니다.');
@@ -462,11 +468,6 @@ function initTinyMCE(elementId, height = 400) {
                 xhr.open('POST', '/upload/image');
                 xhr.send(formData);
             });
-        },
-        
-        // 이미지 업로드 후 콜백
-        images_upload_callback: function(response) {
-            console.log('Image uploaded successfully:', response);
         },
         
         // 파일 선택기 콜백
@@ -490,7 +491,15 @@ function initTinyMCE(elementId, height = 400) {
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                callback(data.url, { alt: file.name });
+                                // Ensure the URL is absolute and starts with /uploads/images/
+                                let imageUrl = data.url;
+                                if (!imageUrl.startsWith('/')) {
+                                    imageUrl = '/' + imageUrl;
+                                }
+                                if (!imageUrl.startsWith('/uploads/images/')) {
+                                    imageUrl = '/uploads/images/' + imageUrl.replace(/^\/+/, '');
+                                }
+                                callback(imageUrl, { alt: file.name });
                             } else {
                                 alert('이미지 업로드 실패: ' + (data.error || '알 수 없는 오류'));
                             }
