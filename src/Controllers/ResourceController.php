@@ -200,12 +200,8 @@ class ResourceController extends BaseController {
     }
 
     public function store(Request $request) {
-        error_log('[DEBUG] Entered ResourceController::store');
         try {
-            error_log('[DEBUG] Start: 인증 체크');
             $user = $this->auth->user();
-            error_log('[DEBUG] 인증 체크 완료');
-
             if (!$user) {
                 $_SESSION['error_message'] = '로그인이 필요합니다.';
                 return $this->response->redirect('/login');
@@ -213,7 +209,6 @@ class ResourceController extends BaseController {
             $userId = is_array($user) ? $user['id'] : $user->id;
 
             // 입력값 검증
-            error_log('[DEBUG] Start: 입력값 검증');
             $validator = new \App\Core\Validator();
             $validator->validate([
                 'title' => [
@@ -234,30 +229,27 @@ class ResourceController extends BaseController {
                     'message' => '설명은 10~500자 사이로 입력해주세요.'
                 ]
             ]);
-            error_log('[DEBUG] 입력값 검증 완료');
 
             if ($validator->hasErrors()) {
-                error_log('[DEBUG] 입력값 검증 에러: ' . json_encode($validator->getErrors()));
-                error_log('[DEBUG] wantsJson: ' . ($request->wantsJson() ? 'true' : 'false'));
-                error_log('[DEBUG] isAjax: ' . ($request->isAjax() ? 'true' : 'false'));
                 if ($request->wantsJson() || $request->isAjax()) {
-                    error_log('[DEBUG] Returning JSON response');
                     return $this->response->json(['error' => $validator->getErrors()], 422);
                 }
-                error_log('[DEBUG] Setting error message and redirecting');
                 $_SESSION['error_message'] = $validator->getFirstError();
                 return $this->response->redirect('/resources/create');
             }
 
+            // HTML 엔티티를 실제 문자로 변환
+            $title = html_entity_decode($_POST['title'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $content = html_entity_decode($_POST['content'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $description = html_entity_decode($_POST['description'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
             // 파일 업로드 처리
-            error_log('[DEBUG] Start: 파일 업로드 처리');
             $filePath = null;
             if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
                 $allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
                 $maxSize = 5 * 1024 * 1024; // 5MB
 
                 if (!in_array($_FILES['file']['type'], $allowedTypes)) {
-                    error_log('[DEBUG] 파일 타입 에러: ' . $_FILES['file']['type']);
                     if ($request->wantsJson() || $request->isAjax()) {
                         return $this->response->json(['error' => '지원하지 않는 파일 형식입니다.'], 422);
                     }
@@ -266,7 +258,6 @@ class ResourceController extends BaseController {
                 }
 
                 if ($_FILES['file']['size'] > $maxSize) {
-                    error_log('[DEBUG] 파일 크기 에러: ' . $_FILES['file']['size']);
                     if ($request->wantsJson() || $request->isAjax()) {
                         return $this->response->json(['error' => '파일 크기는 5MB를 초과할 수 없습니다.'], 422);
                     }
@@ -283,7 +274,6 @@ class ResourceController extends BaseController {
                 $filePath = '/uploads/resources/' . $fileName;
 
                 if (!move_uploaded_file($_FILES['file']['tmp_name'], $uploadDir . $fileName)) {
-                    error_log('[DEBUG] 파일 업로드 실패');
                     if ($request->wantsJson() || $request->isAjax()) {
                         return $this->response->json(['error' => '파일 업로드에 실패했습니다.'], 500);
                     }
@@ -291,27 +281,21 @@ class ResourceController extends BaseController {
                     return $this->response->redirect('/resources/create');
                 }
             }
-            error_log('[DEBUG] 파일 업로드 처리 완료');
 
             // 태그 처리
-            error_log('[DEBUG] Start: 태그 처리');
             $tags = [];
             if (!empty($_POST['tags'])) {
                 $tags = array_map('trim', explode(',', $_POST['tags']));
                 $tags = array_filter($tags);
             }
-            error_log('[DEBUG] 태그 처리 완료: ' . json_encode($tags));
 
-            // 리소스 데이터 준비 (기본 테이블용 - title, content, description 제외)
-            error_log('[DEBUG] Start: 리소스 데이터 준비');
-            
-            $slug = $this->slugify($_POST['title']);
+            // 리소스 데이터 준비
+            $slug = $this->slugify($title);
             $status = $_POST['status'] ?? 'draft';
             $visibility = $_POST['visibility'] ?? 'private';
             $languageCode = $_POST['language_code'] ?? 'ko';
             $category = $_POST['category'] ?? null;
             
-            // resources 테이블에 저장될 데이터 (title, content, description 제외)
             $resourceData = [
                 'user_id' => $userId,
                 'file_path' => $filePath,
@@ -322,37 +306,20 @@ class ResourceController extends BaseController {
                 'visibility' => $visibility,
                 'language_code' => $languageCode,
                 'link' => $_POST['link'] ?? null,
-                'category' => $category
+                'category' => $category,
+                'title' => $title,
+                'content' => $content,
+                'description' => $description
             ];
-            error_log('[DEBUG] 리소스 데이터 준비 완료: ' . json_encode($resourceData));
 
-            // 리소스 생성 (기본 테이블만)
-            error_log('[DEBUG] Start: 리소스 생성');
+            // 리소스 생성
             $resourceId = $this->resource->create($resourceData);
-            error_log('[DEBUG] 리소스 생성 결과: ' . json_encode($resourceId));
-
-            // 번역 테이블에 다국어 데이터 저장
-            if ($resourceId) {
-                error_log('[DEBUG] Start: 번역 데이터 저장');
-                $db = \App\Core\Database::getInstance();
-                $sql = "INSERT INTO resource_translations (resource_id, language_code, title, content, description) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = VALUES(title), content = VALUES(content), description = VALUES(description)";
-                $result = $db->query($sql, [
-                    $resourceId,
-                    $languageCode,
-                    $_POST['title'],
-                    $_POST['content'], // CKEditor 내용 그대로 저장
-                    $_POST['description']
-                ]);
-                error_log('[DEBUG] 번역 데이터 저장 결과: ' . json_encode($result));
-            }
 
             if (!$resourceId) {
-                error_log('[DEBUG] 리소스 생성 실패');
                 throw new \Exception('리소스 생성에 실패했습니다.');
             }
 
             if ($request->wantsJson() || $request->isAjax()) {
-                error_log('[DEBUG] 리소스 생성 성공 - JSON 반환');
                 return $this->response->json([
                     'message' => '리소스가 성공적으로 생성되었습니다.',
                     'data' => ['id' => $resourceId]
@@ -364,19 +331,13 @@ class ResourceController extends BaseController {
             } else {
                 return $this->response->redirect('/resources');
             }
-
-            error_log('[DEBUG] End of try block in store');
-            return $this->response->json(['error' => 'Unknown error (try block fallthrough)'], 500);
         } catch (\Exception $e) {
-            error_log("Error in ResourceController::store: " . $e->getMessage());
-            error_log($e->getTraceAsString());
             if ($request->wantsJson() || $request->isAjax()) {
                 return $this->response->json(['error' => $e->getMessage()], 500);
             }
             $_SESSION['error_message'] = $e->getMessage();
             return $this->response->redirect('/resources/create');
         }
-        error_log('[DEBUG] End of store method');
     }
 
     public function update(Request $request, $id) {

@@ -435,6 +435,17 @@ class Resource extends Model {
         try {
             $this->db->beginTransaction();
 
+            // HTML 엔티티 변환
+            if (isset($data['title'])) {
+                $data['title'] = $this->convertHtmlEntities($data['title']);
+            }
+            if (isset($data['content'])) {
+                $data['content'] = $this->convertHtmlEntities($data['content']);
+            }
+            if (isset($data['description'])) {
+                $data['description'] = $this->convertHtmlEntities($data['description']);
+            }
+
             // 리소스 기본 정보 저장
             $publishedAt = (isset($data['status']) && $data['status'] === 'published') ? date('Y-m-d H:i:s') : null;
             $sql = "INSERT INTO resources (
@@ -561,6 +572,17 @@ class Resource extends Model {
     public function update($id, array $data): ?array {
         try {
             $this->db->beginTransaction();
+
+            // HTML 엔티티 변환
+            if (isset($data['title'])) {
+                $data['title'] = $this->convertHtmlEntities($data['title']);
+            }
+            if (isset($data['content'])) {
+                $data['content'] = $this->convertHtmlEntities($data['content']);
+            }
+            if (isset($data['description'])) {
+                $data['description'] = $this->convertHtmlEntities($data['description']);
+            }
 
             // 기본 정보 업데이트 (title, content, description 제외)
             $updateFields = [];
@@ -1592,5 +1614,9 @@ class Resource extends Model {
         $sql = "UPDATE resources SET like_count = GREATEST(like_count - 1, 0) WHERE id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$resourceId]);
+    }
+
+    private function convertHtmlEntities($content) {
+        return html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 }
