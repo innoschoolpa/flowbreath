@@ -206,6 +206,100 @@ select.form-control:focus {
     background-color: var(--card-bg) !important;
     color: var(--text-color) !important;
 }
+
+/* TinyMCE 다크모드 스타일 */
+.tox-tinymce {
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-toolbar__primary {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-toolbar__overflow {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-toolbar__group {
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-tbtn {
+    color: var(--text-color) !important;
+}
+
+.tox .tox-tbtn:hover {
+    background-color: var(--input-focus-bg) !important;
+}
+
+.tox .tox-menu {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-collection__item {
+    color: var(--text-color) !important;
+}
+
+.tox .tox-collection__item:hover {
+    background-color: var(--input-focus-bg) !important;
+}
+
+.tox .tox-dialog {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-dialog__header {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-dialog__body {
+    background-color: var(--card-bg) !important;
+}
+
+.tox .tox-dialog__footer {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-textfield {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+.tox .tox-textfield:focus {
+    background-color: var(--input-focus-bg) !important;
+    border-color: var(--input-focus-border) !important;
+}
+
+.tox .tox-dialog__body-content {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
+
+.tox .tox-dialog__body-nav-item {
+    color: var(--text-color) !important;
+}
+
+.tox .tox-dialog__body-nav-item--active {
+    background-color: var(--input-focus-bg) !important;
+}
+
+.tox .tox-dialog__footer-end button {
+    background-color: var(--accent-color) !important;
+    color: var(--text-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+.tox .tox-dialog__footer-end button:hover {
+    background-color: #0284c7 !important;
+    border-color: #0284c7 !important;
+}
 </style>
 
 <div class="container mt-5">
