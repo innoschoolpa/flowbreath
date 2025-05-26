@@ -74,15 +74,15 @@
                 <?php endif; ?>
                 <h3 class="text-xl font-semibold mb-2">
                     <a href="/resources/<?= $resource['id'] ?>" class="hover:text-blue-600">
-                        <?= html_entity_decode(htmlspecialchars($resource['title']), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
+                        <?= htmlspecialchars($resource['title']) ?>
                     </a>
                 </h3>
                 <div class="text-gray-600 mb-4">
-                    <?= html_entity_decode(mb_strimwidth(strip_tags($resource['content']), 0, 150, '...'), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
+                    <?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']), 0, 150, '...')) ?>
                 </div>
                 <div class="flex justify-between items-center text-sm text-gray-500">
                     <span><?= date('Y-m-d', strtotime($resource['created_at'])) ?></span>
-                    <span><?= html_entity_decode(htmlspecialchars($resource['user_name']), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></span>
+                    <span><?= htmlspecialchars($resource['user_name']) ?></span>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -98,7 +98,7 @@
         <div class="flex flex-wrap gap-3">
             <?php foreach ($popular_tags as $tag): ?>
             <a href="/resources?tags[]=<?= $tag['id'] ?>" class="dark-tag-badge">
-                #<?= html_entity_decode(htmlspecialchars($tag['name']), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
+                #<?= htmlspecialchars($tag['name']) ?>
             </a>
             <?php endforeach; ?>
         </div>
