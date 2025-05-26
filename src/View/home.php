@@ -245,10 +245,7 @@ h1, h2, h3, h4, h5, h6 {
                         // Prepare content with only line breaks preserved
                         $content = strip_tags($resource['content'] ?? '');
                         $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                        // Strictly limit content length
-                        if (mb_strlen($content) > $contentLength) {
-                            $content = mb_substr($content, 0, $contentLength) . '...';
-                        }
+                        $content = mb_strimwidth($content, 0, $contentLength, '...');
                         $content = nl2br(htmlspecialchars($content));
                         
                         // Display video if found
@@ -319,10 +316,7 @@ h1, h2, h3, h4, h5, h6 {
                         // Prepare content with only line breaks preserved
                         $content = strip_tags($resource['content'] ?? '');
                         $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                        // Strictly limit content length
-                        if (mb_strlen($content) > $contentLength) {
-                            $content = mb_substr($content, 0, $contentLength) . '...';
-                        }
+                        $content = mb_strimwidth($content, 0, $contentLength, '...');
                         $content = nl2br(htmlspecialchars($content));
                         
                         // Display video if found
