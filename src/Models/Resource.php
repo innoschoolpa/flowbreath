@@ -430,8 +430,7 @@ class Resource extends Model {
     /**
      * 리소스 생성 (수정됨: title, content, description 제거)
      */
-    public function create(array $data): ?int
-    {
+    public function create(array $data): ?int {
         try {
             $this->db->beginTransaction();
 
@@ -496,65 +495,35 @@ class Resource extends Model {
                 }
             }
 
-            // 번역 데이터 저장
-            if (!empty($data['translations'])) {
-                foreach ($data['translations'] as $lang => $translation) {
-                    $translationSql = "INSERT INTO resource_translations (
-                        resource_id, language_code, title, content, description
-                    ) VALUES (?, ?, ?, ?, ?)";
-                    
-                    $translationParams = [
-                        $resourceId,
-                        $lang,
-                        $translation['title'],
-                        $translation['content'] ?? null,
-                        $translation['description'] ?? null
-                    ];
-                    
-                    error_log('[DEBUG] Translation INSERT SQL: ' . $translationSql);
-                    error_log('[DEBUG] Translation INSERT Params: ' . json_encode($translationParams));
-                    
-                    $translationStmt = $this->db->prepare($translationSql);
-                    $translationResult = $translationStmt->execute($translationParams);
-                    
-                    if (!$translationResult) {
-                        error_log('[ERROR] Translation insert failed. Error: ' . json_encode($translationStmt->errorInfo()));
-                        throw new \Exception('번역 데이터 저장 실패: ' . implode(', ', $translationStmt->errorInfo()));
-                    }
-                }
+            // 번역 정보 저장
+            $translationSql = "INSERT INTO resource_translations (
+                resource_id, language_code, title, content, description
+            ) VALUES (?, ?, ?, ?, ?)";
+
+            $translationParams = [
+                $resourceId,
+                $data['language_code'] ?? 'ko',
+                $data['title'] ?? '',
+                $data['content'] ?? '',
+                $data['description'] ?? ''
+            ];
+
+            $translationStmt = $this->db->prepare($translationSql);
+            $translationResult = $translationStmt->execute($translationParams);
+
+            if (!$translationResult) {
+                error_log('[ERROR] Translation insert failed. Error: ' . json_encode($translationStmt->errorInfo()));
+                throw new \Exception('번역 정보 저장 실패: ' . implode(', ', $translationStmt->errorInfo()));
             }
 
             // 태그 처리
             if (!empty($data['tags'])) {
-                foreach ($data['tags'] as $tagName) {
-                    // 태그 생성 또는 조회
-                    $tagSql = "INSERT IGNORE INTO tags (name, created_at) VALUES (?, NOW())";
-                    $tagStmt = $this->db->prepare($tagSql);
-                    $tagStmt->execute([$tagName]);
-                    
-                    // 태그 ID 조회
-                    $tagIdSql = "SELECT id FROM tags WHERE name = ?";
-                    $tagIdStmt = $this->db->prepare($tagIdSql);
-                    $tagIdStmt->execute([$tagName]);
-                    $tagResult = $tagIdStmt->fetch(PDO::FETCH_ASSOC);
-                    
-                    if ($tagResult && isset($tagResult['id'])) {
-                        $tagId = $tagResult['id'];
-                        // 리소스-태그 관계 생성
-                        $relationSql = "INSERT IGNORE INTO resource_tags (resource_id, tag_id) VALUES (?, ?)";
-                        $relationStmt = $this->db->prepare($relationSql);
-                        $relationResult = $relationStmt->execute([$resourceId, $tagId]);
-                        
-                        if (!$relationResult) {
-                            error_log('[ERROR] Tag relation insert failed. Error: ' . json_encode($relationStmt->errorInfo()));
-                            throw new \Exception('태그 관계 저장 실패: ' . implode(', ', $relationStmt->errorInfo()));
-                        }
-                    }
-                }
+                $this->updateResourceTags($resourceId, $data['tags']);
             }
 
             $this->db->commit();
             return (int)$resourceId;
+
         } catch (\Exception $e) {
             $pdo = $this->db->getConnection();
             if (method_exists($pdo, 'inTransaction') && $pdo->inTransaction()) {
