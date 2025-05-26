@@ -240,7 +240,7 @@ h1, h2, h3, h4, h5, h6 {
                         }
                         
                         // Determine content length based on YouTube link presence
-                        $contentLength = $hasYoutubeLink ? 130 : 300;
+                        $contentLength = $hasYoutubeLink ? 130 : 500;
                         
                         // Prepare content with only line breaks preserved
                         $content = strip_tags($resource['content'] ?? '');
