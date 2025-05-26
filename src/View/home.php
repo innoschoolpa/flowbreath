@@ -4,6 +4,25 @@ $title = $language->get('common.site_name') . ' - ' . $language->get('home.hero.
 
 // 공통 레이아웃 포함
 require_once __DIR__ . '/layouts/header.php';
+
+function formatContent($content, $hasYoutubeLink) {
+    // Determine content length based on YouTube link presence
+    $contentLength = $hasYoutubeLink ? 130 : 500;
+    
+    // Prepare content with only line breaks preserved
+    $content = strip_tags($content ?? '');
+    $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $content = mb_strimwidth($content, 0, $contentLength, '...');
+    return nl2br(htmlspecialchars($content));
+}
+
+class HomeController {
+    public function index() {
+        // ... existing code ...
+        // ... existing code ...
+        // ... existing code ...
+    }
+}
 ?>
 
 <style>
@@ -239,14 +258,8 @@ h1, h2, h3, h4, h5, h6 {
                             }
                         }
                         
-                        // Determine content length based on YouTube link presence
-                        $contentLength = $hasYoutubeLink ? 130 : 500;
-                        
-                        // Prepare content with only line breaks preserved
-                        $content = strip_tags($resource['content'] ?? '');
-                        $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                        $content = mb_strimwidth($content, 0, $contentLength, '...');
-                        $content = nl2br(htmlspecialchars($content));
+                        // Format content
+                        $content = formatContent($resource['content'], $hasYoutubeLink);
                         
                         // Display video if found
                         if ($videoId): ?>
@@ -310,14 +323,8 @@ h1, h2, h3, h4, h5, h6 {
                             }
                         }
                         
-                        // Determine content length based on YouTube link presence
-                        $contentLength = $hasYoutubeLink ? 130 : 500;
-                        
-                        // Prepare content with only line breaks preserved
-                        $content = strip_tags($resource['content'] ?? '');
-                        $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                        $content = mb_strimwidth($content, 0, $contentLength, '...');
-                        $content = nl2br(htmlspecialchars($content));
+                        // Format content
+                        $content = formatContent($resource['content'], $hasYoutubeLink);
                         
                         // Display video if found
                         if ($videoId): ?>
