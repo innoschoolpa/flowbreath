@@ -190,4 +190,14 @@ input[type="text"]::placeholder {
     </div>
 </div>
 
+<!-- 호흡 기법 설명 -->
+<div class="container mx-auto px-4 py-8">
+    <div class="card p-6">
+        <h2 class="text-2xl font-bold mb-4">호흡 기법의 이해</h2>
+        <p class="mb-4">
+            1. 공통점 복식 호흡과 단전 호흡은 기술적 기반과 생리적·정신적 효과에서 여러 공통점을 공유합니다. 호흡 방식 둘 다 횡격막을 적극적으로 사용해 하복부를 확장하며 깊고 느린 호흡을 수행합니다. 코로 천천히 흡입(4–5초)해 배를 부풀리고, 코나 입으로 천천히 호기(4–
+        </p>
+    </div>
+</div>
+
 <?php require_once $_SERVER['DOCUMENT_ROOT'] . '/src/View/layouts/footer.php'; ?> 
