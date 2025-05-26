@@ -4,6 +4,14 @@ $youtubeId = null;
 if (!empty($resource['link'])) {
     $youtubeId = extractYoutubeId($resource['link']);
 }
+
+// null 값 처리
+$title = $resource['title'] ?? '';
+$username = $resource['username'] ?? '익명';
+$createdAt = $resource['created_at'] ?? '';
+$description = $resource['description'] ?? '';
+$type = $resource['type'] ?? '';
+$id = $resource['id'] ?? '';
 ?>
 
 <div class="col-md-4 mb-4">
@@ -22,13 +30,13 @@ if (!empty($resource['link'])) {
         <?php endif; ?>
         
         <div class="card-body">
-            <h5 class="card-title"><?= htmlspecialchars($resource['title']) ?></h5>
+            <h5 class="card-title"><?= htmlspecialchars($title) ?></h5>
             <p class="resource-meta">
-                <?= htmlspecialchars($resource['username'] ?? '익명') ?> · 
-                <?= date('Y-m-d', strtotime($resource['created_at'])) ?>
+                <?= htmlspecialchars($username) ?> · 
+                <?= $createdAt ? date('Y-m-d', strtotime($createdAt)) : '' ?>
             </p>
             <p class="card-text">
-                <?= formatContent($resource['description'], !empty($youtubeId)) ?>
+                <?= formatContent($description, !empty($youtubeId)) ?>
             </p>
             
             <?php if (!empty($resource['tags'])): ?>
@@ -43,8 +51,8 @@ if (!empty($resource['link'])) {
             <?php endif; ?>
             
             <div class="d-flex justify-content-between align-items-center mt-3">
-                <span class="badge bg-primary"><?= htmlspecialchars($resource['type']) ?></span>
-                <a href="/resources/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm">
+                <span class="badge bg-primary"><?= htmlspecialchars($type) ?></span>
+                <a href="/resources/<?= $id ?>" class="btn btn-outline-primary btn-sm">
                     <?= $language->get('common.view_details') ?>
                 </a>
             </div>
