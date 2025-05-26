@@ -516,7 +516,8 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                                 $content = $resource['content'] ?? '';
                                 // 1. 중첩된 엔티티를 한 번만 디코딩
                                 $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                                // 2. <br>이 아닌 \n은 <br>로 변환
+                                // 2. <br>이 아닌 \n은 <br>로 변환하되, 연속된 줄바꿈은 하나로 처리
+                                $content = preg_replace('/\n\s*\n/', "\n", $content);
                                 $content = nl2br($content, false);
                                 echo $content;
                                 ?>

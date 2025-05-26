@@ -320,6 +320,10 @@ function initTinyMCE(elementId, height = 400) {
         `,
         skin: 'oxide-dark',
         content_css: 'dark',
+        branding: false,
+        promotion: false,
+        statusbar: false,
+        resize: false,
         images_upload_url: '/upload/image',
         images_upload_handler: function (blobInfo, success, failure) {
             const formData = new FormData();
