@@ -568,12 +568,13 @@ initTinyMCE('description', 200);
 
 // 폼 submit 시 에디터 내용 textarea에 복사
 document.getElementById('resource-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent default form submission
+    
     if (contentEditor) {
         const content = contentEditor.getContent();
         document.getElementById('content').value = content;
         if (!content.trim()) {
             alert('내용을 입력하세요.');
-            e.preventDefault();
             return false;
         }
     }
@@ -582,10 +583,19 @@ document.getElementById('resource-form').addEventListener('submit', function(e) 
         document.getElementById('description').value = description;
         if (!description.trim()) {
             alert('설명을 입력하세요.');
-            e.preventDefault();
             return false;
         }
     }
+    
+    // Add CSRF token to form
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrf_token';
+    csrfInput.value = '<?php echo $_SESSION['csrf_token']; ?>';
+    this.appendChild(csrfInput);
+    
+    // Submit the form
+    this.submit();
 });
 
 // 태그 입력 처리
