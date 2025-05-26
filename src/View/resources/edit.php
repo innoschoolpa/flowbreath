@@ -75,21 +75,16 @@ file_picker_callback: function(callback, value, meta) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Ensure the URL is absolute and starts with /uploads/images/
-                        let imageUrl = data.url;
-                        if (!imageUrl.startsWith('/')) {
-                            imageUrl = '/' + imageUrl;
-                        }
-                        if (!imageUrl.startsWith('/uploads/images/')) {
-                            imageUrl = '/uploads/images/' + imageUrl.replace(/^\/+/, '');
-                        }
-                        callback(imageUrl, { alt: file.name });
+                        // 절대 경로로 이미지 URL 생성
+                        const imageUrl = data.url.startsWith('/') ? data.url : '/uploads/images/' + data.url;
+                        const imageHtml = `<img src="${imageUrl}" alt="${file.name}">`;
+                        document.querySelector('#content').value += imageHtml;
                     } else {
-                        alert('이미지 업로드 실패: ' + (data.error || '알 수 없는 오류'));
+                        alert('이미지 업로드 실패: ' + data.message);
                     }
                 })
                 .catch(error => {
-                    console.error('Upload error:', error);
+                    console.error('Error:', error);
                     alert('이미지 업로드 중 오류가 발생했습니다.');
                 });
             }
@@ -98,3 +93,33 @@ file_picker_callback: function(callback, value, meta) {
         input.click();
     }
 }, 
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 이미지 업로드 처리
+    function handleImageUpload(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        fetch('/upload/image', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 절대 경로로 이미지 URL 생성
+                const imageUrl = data.url.startsWith('/') ? data.url : '/uploads/images/' + data.url;
+                const imageHtml = `<img src="${imageUrl}" alt="${file.name}">`;
+                document.querySelector('#content').value += imageHtml;
+            } else {
+                alert('이미지 업로드 실패: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('이미지 업로드 중 오류가 발생했습니다.');
+        });
+    }
+});
+</script> 

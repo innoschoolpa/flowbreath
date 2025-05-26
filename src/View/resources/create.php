@@ -623,4 +623,32 @@ linkInput.addEventListener('change', updateYoutubePreview);
 
 // 초기 로드 시 미리보기 업데이트
 updateYoutubePreview();
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 이미지 업로드 처리
+    function handleImageUpload(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        fetch('/upload/image', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 절대 경로로 이미지 URL 생성
+                const imageUrl = data.url.startsWith('/') ? data.url : '/uploads/images/' + data.url;
+                const imageHtml = `<img src="${imageUrl}" alt="${file.name}">`;
+                document.querySelector('#content').value += imageHtml;
+            } else {
+                alert('이미지 업로드 실패: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('이미지 업로드 중 오류가 발생했습니다.');
+        });
+    }
+});
 </script>

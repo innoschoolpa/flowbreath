@@ -516,16 +516,9 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                                 $content = html_entity_decode($resource['content'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
                                 
                                 // 이미지 URL을 절대 경로로 변환
-                                $content = preg_replace_callback(
-                                    '/<img[^>]+src="([^"]+)"[^>]*>/i',
-                                    function($matches) {
-                                        $src = $matches[1];
-                                        // 상대 경로인 경우 절대 경로로 변환
-                                        if (strpos($src, 'http') !== 0) {
-                                            $src = (strpos($src, '/') === 0) ? $src : '/uploads/images/' . $src;
-                                        }
-                                        return str_replace($matches[1], $src, $matches[0]);
-                                    },
+                                $content = preg_replace(
+                                    '/src="(\.\.\/)?uploads\//',
+                                    'src="/uploads/',
                                     $content
                                 );
                                 
