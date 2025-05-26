@@ -213,20 +213,24 @@ HTML;
     public function post($path, $controller, $action)
     {
         $this->add('POST', $path, [$controller, $action]);
+        return $this;
     }
 
     public function delete($path, $controller, $action)
     {
         $this->add('DELETE', $path, [$controller, $action]);
+        return $this;
     }
 
     public function put($path, $controller, $action)
     {
         $this->add('PUT', $path, [$controller, $action]);
+        return $this;
     }
 
     public function patch($path, $controller, $action)
     {
         $this->add('PATCH', $path, [$controller, $action]);
+        return $this;
     }
 } 
