@@ -217,20 +217,42 @@ h1, h2, h3, h4, h5, h6 {
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card card-resource h-100">
                         <?php
-                        // Extract YouTube video ID from URL
-                        $youtubeId = null;
+                        $videoId = null;
+                        $hasYoutubeLink = false;
+                        
+                        // Check for YouTube link in link field
                         if (!empty($resource['link'])) {
-                            $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
+                            $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
                             if (preg_match($youtube_pattern, $resource['link'], $matches)) {
-                                $youtubeId = $matches[1];
+                                $videoId = $matches[1];
+                                $hasYoutubeLink = true;
                             }
                         }
                         
+                        // Check for YouTube link in content if not found in link field
+                        if (!$hasYoutubeLink && !empty($resource['content'])) {
+                            if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
+                                if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
+                                    $videoId = $matches[1];
+                                    $hasYoutubeLink = true;
+                                }
+                            }
+                        }
+                        
+                        // Determine content length based on YouTube link presence
+                        $contentLength = $hasYoutubeLink ? 130 : 500;
+                        
+                        // Prepare content with only line breaks preserved
+                        $content = strip_tags($resource['content'] ?? '');
+                        $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                        $content = mb_strimwidth($content, 0, $contentLength, '...');
+                        $content = nl2br(htmlspecialchars($content));
+                        
                         // Display video if found
-                        if ($youtubeId): ?>
+                        if ($videoId): ?>
                             <div class="ratio ratio-16x9 mb-3">
                                 <iframe 
-                                    src="https://www.youtube.com/embed/<?= htmlspecialchars($youtubeId) ?>?autoplay=0&rel=0" 
+                                    src="https://www.youtube.com/embed/<?= htmlspecialchars($videoId) ?>?autoplay=0" 
                                     title="YouTube video player"
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -244,7 +266,7 @@ h1, h2, h3, h4, h5, h6 {
                                 <i class="fa fa-user"></i> <?= htmlspecialchars($resource['username'] ?? $language->get('common.anonymous')) ?> ·
                                 <i class="fa fa-calendar"></i> <?= htmlspecialchars(substr($resource['created_at'],0,10)) ?>
                             </div>
-                            <p class="card-text mb-2"><?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']),0,180,'...')) ?></p>
+                            <p class="card-text mb-2"><?= $content ?></p>
                             <div class="mb-2">
                                 <?php foreach (($resource['tags'] ?? []) as $tag): ?>
                                     <span class="tag-badge">#<?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
@@ -266,20 +288,42 @@ h1, h2, h3, h4, h5, h6 {
                 <div class="col-md-6 col-lg-6 mb-4">
                     <div class="card card-resource h-100">
                         <?php
-                        // Extract YouTube video ID from URL
-                        $youtubeId = null;
+                        $videoId = null;
+                        $hasYoutubeLink = false;
+                        
+                        // Check for YouTube link in link field
                         if (!empty($resource['link'])) {
-                            $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
+                            $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
                             if (preg_match($youtube_pattern, $resource['link'], $matches)) {
-                                $youtubeId = $matches[1];
+                                $videoId = $matches[1];
+                                $hasYoutubeLink = true;
                             }
                         }
                         
+                        // Check for YouTube link in content if not found in link field
+                        if (!$hasYoutubeLink && !empty($resource['content'])) {
+                            if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
+                                if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
+                                    $videoId = $matches[1];
+                                    $hasYoutubeLink = true;
+                                }
+                            }
+                        }
+                        
+                        // Determine content length based on YouTube link presence
+                        $contentLength = $hasYoutubeLink ? 130 : 500;
+                        
+                        // Prepare content with only line breaks preserved
+                        $content = strip_tags($resource['content'] ?? '');
+                        $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                        $content = mb_strimwidth($content, 0, $contentLength, '...');
+                        $content = nl2br(htmlspecialchars($content));
+                        
                         // Display video if found
-                        if ($youtubeId): ?>
+                        if ($videoId): ?>
                             <div class="ratio ratio-16x9 mb-3">
                                 <iframe 
-                                    src="https://www.youtube.com/embed/<?= htmlspecialchars($youtubeId) ?>?autoplay=0&rel=0" 
+                                    src="https://www.youtube.com/embed/<?= htmlspecialchars($videoId) ?>?autoplay=0" 
                                     title="YouTube video player"
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -299,7 +343,7 @@ h1, h2, h3, h4, h5, h6 {
                             </div>
                             <p class="card-text mb-2">
                                 <a href="/resources/view/<?= $resource['id'] ?>" class="text-decoration-none text-dark">
-                                    <?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']),0,280,'...')) ?>
+                                    <?= $content ?>
                                 </a>
                             </p>
                             <div class="mb-2">
