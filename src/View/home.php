@@ -282,7 +282,10 @@ h1, h2, h3, h4, h5, h6 {
                             <p class="card-text mb-2"><?= $content ?></p>
                             <div class="mb-2">
                                 <?php foreach (($resource['tags'] ?? []) as $tag): ?>
-                                    <span class="tag-badge">#<?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
+                                    <a href="/resources?tags[]=<?= is_array($tag) ? ($tag['id'] ?? '') : '' ?>" class="tag-badge">
+                                        <i class="fa fa-hashtag"></i>
+                                        <span><?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
+                                    </a>
                                 <?php endforeach; ?>
                             </div>
                             <a href="/resources/view/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm"><?= $language->get('common.read_more') ?></a>
@@ -355,9 +358,13 @@ h1, h2, h3, h4, h5, h6 {
                             </p>
                             <div class="mb-2">
                                 <?php foreach (($resource['tags'] ?? []) as $tag): ?>
-                                    <span class="tag-badge">#<?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
+                                    <a href="/resources?tags[]=<?= is_array($tag) ? ($tag['id'] ?? '') : '' ?>" class="tag-badge">
+                                        <i class="fa fa-hashtag"></i>
+                                        <span><?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
+                                    </a>
                                 <?php endforeach; ?>
                             </div>
+                            <a href="/resources/view/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm"><?= $language->get('common.read_more') ?></a>
                         </div>
                     </div>
                 </div>
