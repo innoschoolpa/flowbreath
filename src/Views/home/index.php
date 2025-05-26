@@ -78,7 +78,12 @@
                     </a>
                 </h3>
                 <div class="text-gray-600 mb-4">
-                    <?= htmlspecialchars(mb_strimwidth(strip_tags($resource['content']), 0, 150, '...')) ?>
+                    <?php
+                    $content = strip_tags($resource['content'] ?? '');
+                    $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                    $content = mb_strimwidth($content, 0, 150, '...');
+                    echo nl2br(htmlspecialchars($content));
+                    ?>
                 </div>
                 <div class="flex justify-between items-center text-sm text-gray-500">
                     <span><?= date('Y-m-d', strtotime($resource['created_at'])) ?></span>
