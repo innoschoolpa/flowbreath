@@ -684,6 +684,30 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
         }
     };
 
+    // 리소스 삭제 함수 추가
+    window.confirmDelete = function(resourceId, lang) {
+        if (confirm(lang === 'en' ? 'Are you sure you want to delete this resource?' : '정말로 이 리소스를 삭제하시겠습니까?')) {
+            fetch(`/resources/${resourceId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-Token': '<?= $_SESSION['csrf_token'] ?? '' ?>'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(lang === 'en' ? 'Deleted successfully.' : '삭제되었습니다.');
+                    window.location.href = '/resources';
+                } else {
+                    alert(data.error || (lang === 'en' ? 'Delete failed.' : '삭제에 실패했습니다.'));
+                }
+            })
+            .catch(() => {
+                alert(lang === 'en' ? 'Delete failed.' : '삭제에 실패했습니다.');
+            });
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const commentForm = document.getElementById('comment-form');
         const commentsContainer = document.getElementById('comments-container');
