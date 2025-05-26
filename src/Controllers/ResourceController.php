@@ -782,7 +782,7 @@ class ResourceController extends BaseController {
             }
             $this->resource->delete($id);
             $_SESSION['success_message'] = '리소스가 삭제되었습니다.';
-            return $this->response->redirect('/resources');
+            return $this->response->redirect('https://flowbreath.io/resources');
         } catch (\Exception $e) {
             $_SESSION['error_message'] = $e->getMessage();
             return $this->response->redirect("/resources/{$id}");
