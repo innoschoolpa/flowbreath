@@ -1,33 +1,97 @@
 <?php require_once $_SERVER['DOCUMENT_ROOT'] . '/src/View/layouts/header.php'; ?>
 
 <style>
+:root {
+    --background-color: #0f172a;
+    --text-color: #f1f5f9;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    --primary-color: #3b82f6;
+    --secondary-color: #64748b;
+    --accent-color: #3b82f6;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.text-gray-600 {
+    color: var(--text-color) !important;
+    opacity: 0.8;
+}
+
+.text-gray-500 {
+    color: var(--text-color) !important;
+    opacity: 0.6;
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(30,64,175,0.10);
+    border: none;
+}
+
+.card-title a {
+    color: #60a5fa;
+    text-decoration: none;
+}
+
+.card-title a:hover {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+.card-text {
+    color: #cbd5e1;
+}
+
 .dark-tag-badge {
     display: inline-flex;
     align-items: center;
-    background: linear-gradient(90deg, #223046 60%, #334155 100%);
-    color: #cbd5e1;
-    padding: 0.45rem 1.1rem;
+    background: linear-gradient(90deg, #1e40af 60%, #3b82f6 100%);
+    color: #e2e8f0;
+    padding: 0.35em 1em;
     border-radius: 999px;
-    font-size: 1rem;
+    font-size: 0.95em;
     font-weight: 500;
-    text-decoration: none;
-    box-shadow: 0 2px 8px rgba(30, 41, 59, 0.08);
-    border: 1px solid #334155;
-    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
-    margin-bottom: 0.3rem;
+    margin: 0.1em 0.2em 0.1em 0;
+    border: 1px solid #3b82f6;
+    transition: background 0.2s, color 0.2s;
 }
+
 .dark-tag-badge:hover {
-    background: linear-gradient(90deg, #334155 60%, #223046 100%);
+    background: linear-gradient(90deg, #2563eb 60%, #1d4ed8 100%);
     color: #fff;
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 6px 18px rgba(30, 41, 59, 0.18);
     text-decoration: none;
+}
+
+input[type="text"] {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+input[type="text"]:focus {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.25) !important;
+}
+
+input[type="text"]::placeholder {
+    color: var(--text-color) !important;
+    opacity: 0.5;
+}
+
+@media (max-width: 991px) {
+    .col-lg-4, .col-lg-6 { flex: 0 0 100%; max-width: 100%; }
 }
 </style>
 
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8">호흡을 위한 최고의 자료, FlowBreath.io</h1>
-    <p class="text-lg mb-8">호흡 건강, 운동, 명상, 치료 등 다양한 호흡 자료를 쉽고 빠르게 찾아보세요.</p>
+    <h1 class="text-3xl font-bold mb-8" style="color:#fff;">호흡을 위한 최고의 자료, FlowBreath.io</h1>
+    <p class="text-lg mb-8" style="color:#cbd5e1;">호흡 건강, 운동, 명상, 치료 등 다양한 호흡 자료를 쉽고 빠르게 찾아보세요.</p>
 
     <!-- 검색 폼 -->
     <div class="mb-12">
@@ -40,54 +104,70 @@
     <!-- 최근 등록된 호흡 자료 -->
     <div class="mb-12">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold">최근 등록된 호흡 자료</h2>
+            <h2 class="text-2xl font-bold" style="color:#fff;">최근 등록된 호흡 자료</h2>
             <a href="/resources" class="text-blue-600 hover:text-blue-800">전체보기</a>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <?php foreach ($recent_resources as $resource): ?>
-            <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow">
-                <?php
-                // Extract YouTube video ID from URL
-                $youtubeId = null;
-                if (!empty($resource['link'])) {
-                    $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\\.be\/)([^"&?\/\\s]{11})/';
-                    if (preg_match($youtube_pattern, $resource['link'], $matches)) {
-                        $youtubeId = $matches[1];
+            <?php
+            $videoId = null;
+            $hasYoutubeLink = false;
+            
+            // Check for YouTube link in link field
+            if (!empty($resource['link'])) {
+                $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
+                if (preg_match($youtube_pattern, $resource['link'], $matches)) {
+                    $videoId = $matches[1];
+                    $hasYoutubeLink = true;
+                }
+            }
+            
+            // Check for YouTube link in content if not found in link field
+            if (!$hasYoutubeLink && !empty($resource['content'])) {
+                if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
+                    if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
+                        $videoId = $matches[1];
+                        $hasYoutubeLink = true;
                     }
                 }
-                
-                // Display video if found
-                if ($youtubeId): ?>
-                    <div class="mb-4">
-                        <div class="relative pb-[56.25%] h-0">
-                            <iframe 
-                                src="https://www.youtube.com/embed/<?= htmlspecialchars($youtubeId) ?>?autoplay=0&rel=0" 
-                                title="YouTube video player"
-                                class="absolute top-0 left-0 w-full h-full"
-                                frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowfullscreen>
-                            </iframe>
-                        </div>
+            }
+            
+            // Determine content length based on YouTube link presence
+            $contentLength = $hasYoutubeLink ? 130 : 500;
+            
+            // Prepare content with only line breaks preserved
+            $content = strip_tags($resource['content'] ?? '');
+            $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $content = mb_strimwidth($content, 0, $contentLength, '...');
+            $content = nl2br(htmlspecialchars($content));
+            ?>
+            <div class="card h-100 shadow-lg border-0">
+                <?php if ($videoId): ?>
+                    <div class="ratio ratio-16x9">
+                        <iframe 
+                            src="https://www.youtube.com/embed/<?= htmlspecialchars($videoId) ?>?autoplay=0&rel=0" 
+                            title="YouTube video player"
+                            class="rounded-top"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
                     </div>
                 <?php endif; ?>
-                <h3 class="text-xl font-semibold mb-2">
-                    <a href="/resources/<?= $resource['id'] ?>" class="hover:text-blue-600">
-                        <?= htmlspecialchars($resource['title']) ?>
-                    </a>
-                </h3>
-                <div class="text-gray-600 mb-4">
-                    <?php
-                    $content = strip_tags($resource['content'] ?? '');
-                    $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                    $content = mb_strimwidth($content, 0, 150, '...');
-                    echo nl2br(htmlspecialchars($content));
-                    ?>
-                </div>
-                <div class="flex justify-between items-center text-sm text-gray-500">
-                    <span><?= date('Y-m-d', strtotime($resource['created_at'])) ?></span>
-                    <span><?= htmlspecialchars($resource['user_name']) ?></span>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title mb-2">
+                        <a href="/resources/<?= $resource['id'] ?>">
+                            <?= htmlspecialchars($resource['title']) ?>
+                        </a>
+                    </h5>
+                    <p class="card-text mb-2">
+                        <?= $content ?>
+                    </p>
+                    <div class="mt-auto d-flex justify-content-between align-items-center" style="color:#94a3b8; font-size:0.95em;">
+                        <span><i class="fas fa-user me-1"></i><?= htmlspecialchars($resource['user_name']) ?></span>
+                        <span><i class="fas fa-calendar me-1"></i><?= date('Y-m-d', strtotime($resource['created_at'])) ?></span>
+                    </div>
                 </div>
             </div>
             <?php endforeach; ?>
