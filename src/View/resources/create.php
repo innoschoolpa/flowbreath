@@ -295,6 +295,44 @@ select.form-control:focus {
 <script>
 let ckeditorInstance, descriptionEditorInstance;
 
+// CKEditor 로드 실패 시 대체 에디터 사용
+function initFallbackEditor(elementId) {
+    const textarea = document.getElementById(elementId);
+    if (textarea) {
+        textarea.style.height = '300px';
+        textarea.style.width = '100%';
+        textarea.style.padding = '10px';
+        textarea.style.backgroundColor = 'var(--input-bg)';
+        textarea.style.color = 'var(--text-color)';
+        textarea.style.border = '1px solid var(--input-border)';
+        textarea.style.borderRadius = '4px';
+    }
+}
+
+// CKEditor 초기화 함수
+function initCKEditor(elementId, config) {
+    if (typeof ClassicEditor === 'undefined') {
+        console.error('CKEditor failed to load. Using fallback editor.');
+        initFallbackEditor(elementId);
+        return;
+    }
+
+    ClassicEditor
+        .create(document.querySelector(`#${elementId}`), config)
+        .then(editor => {
+            if (elementId === 'content') {
+                ckeditorInstance = editor;
+            } else {
+                descriptionEditorInstance = editor;
+            }
+            console.log(`${elementId} editor initialized successfully`);
+        })
+        .catch(error => {
+            console.error(`${elementId} editor initialization failed:`, error);
+            initFallbackEditor(elementId);
+        });
+}
+
 // 이미지 업로드 핸들러
 function uploadImage(file) {
     const formData = new FormData();
@@ -419,26 +457,10 @@ const editorConfig = {
 };
 
 // content 에디터 초기화
-ClassicEditor
-    .create(document.querySelector('#content'), editorConfig)
-    .then(editor => {
-        ckeditorInstance = editor;
-        console.log('Content editor initialized');
-    })
-    .catch(error => {
-        console.error('Content editor error:', error);
-    });
+initCKEditor('content', editorConfig);
 
 // description 에디터 초기화
-ClassicEditor
-    .create(document.querySelector('#description'), editorConfig)
-    .then(editor => {
-        descriptionEditorInstance = editor;
-        console.log('Description editor initialized');
-    })
-    .catch(error => {
-        console.error('Description editor error:', error);
-    });
+initCKEditor('description', editorConfig);
 
 // 폼 submit 시 에디터 내용 textarea에 복사
 document.getElementById('resource-form').addEventListener('submit', function(e) {
