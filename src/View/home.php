@@ -11,6 +11,10 @@ try {
     $resourceModel = new \App\Models\Resource();
     $recentResources = $resourceModel->getRecentPublic(6);
 
+    // 인기 태그 가져오기
+    $tagModel = new \App\Models\Tag();
+    $popularTags = $tagModel->getPopularTags(8);
+
     // 검색 처리
     $searchQuery = isset($_GET['q']) ? trim($_GET['q']) : '';
     $searchResults = [];
@@ -28,6 +32,7 @@ try {
     $recentResources = [];
     $searchResults = [];
     $searchQuery = '';
+    $popularTags = [];
 }
 
 // 로그인 상태
