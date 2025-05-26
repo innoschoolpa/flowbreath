@@ -52,8 +52,8 @@ $id = $resource['id'] ?? '';
             
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <span class="badge bg-primary"><?= htmlspecialchars($type) ?></span>
-                <a href="/resources/<?= $id ?>" class="btn btn-outline-primary btn-sm">
-                    <?= $language->get('common.view_details') ?>
+                <a href="/resources/view/<?= $id ?>" class="btn btn-outline-primary btn-sm">
+                    더보기
                 </a>
             </div>
         </div>
