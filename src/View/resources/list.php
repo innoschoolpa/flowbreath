@@ -280,6 +280,7 @@ input[type="text"]::placeholder {
       
       // Prepare content with only line breaks preserved
       $content = strip_tags($resource['content'] ?? '');
+      $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
       $content = mb_strimwidth($content, 0, $contentLength, '...');
       $content = nl2br(htmlspecialchars($content));
       ?>
