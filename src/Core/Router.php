@@ -52,7 +52,7 @@ class Router
                 continue;
             }
 
-            if (preg_match('#^' . $route['pattern'] . '$#', $path, $matches)) {
+            if (preg_match('#^' . $route['pattern'] . '$#i', $path, $matches)) {
                 $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
                 error_log("[DEBUG] Route matched: {$route['method']} {$route['path']}");
                 return [
