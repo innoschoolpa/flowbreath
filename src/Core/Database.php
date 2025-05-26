@@ -74,73 +74,45 @@ class Database
         return self::$instance;
     }
 
-    private function loadConfig()
+    public static function initializeConnection()
     {
-        try {
-            $app = Application::getInstance();
-            $config = $app->getConfig('database');
+        if (self::$instance === null) {
+            $config = self::loadConfig();
+            $dsn = sprintf(
+                'mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',
+                $config['host'],
+                $config['port'],
+                $config['database']
+            );
             
-            if (empty($config)) {
-                error_log("Database configuration not found in Application config. Attempting to load from file...");
-                
-                // 호스팅 환경의 실제 경로 사용
-                $possiblePaths = [
-                    '/domains/flowbreath.io/public_html/config/database.php',
-                    '/domains/flowbreath.io/public_html/src/Config/database.php',
-                    $_SERVER['DOCUMENT_ROOT'] . '/config/database.php',
-                    dirname($_SERVER['DOCUMENT_ROOT']) . '/config/database.php',
-                    __DIR__ . '/../../config/database.php',
-                    __DIR__ . '/../Config/database.php',
-                ];
-
-                $dbConfigPath = null;
-                foreach ($possiblePaths as $path) {
-                    error_log("Trying database config path: " . $path);
-                    if (file_exists($path)) {
-                        $dbConfigPath = $path;
-                        error_log("Found database config at: " . $path);
-                        break;
-                    }
-                }
-
-                if (!$dbConfigPath) {
-                    throw new \Exception("Database configuration file not found in any of the possible locations");
-                }
-
-                $config = require $dbConfigPath;
+            try {
+                self::$instance = new \PDO($dsn, $config['username'], $config['password'], [
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                    \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    \PDO::ATTR_EMULATE_PREPARES => false
+                ]);
+            } catch (\PDOException $e) {
+                throw new \RuntimeException('Database connection failed: ' . $e->getMessage());
             }
-
-            if (empty($config)) {
-                throw new \Exception("Database configuration is empty");
-            }
-
-            // 기본 설정값 정의
-            $this->config = [
-                'driver' => 'mysql',
-                'host' => $_ENV['DB_HOST'] ?? 'localhost',
-                'port' => $_ENV['DB_PORT'] ?? '3306',
-                'database' => $_ENV['DB_NAME'] ?? '',
-                'username' => $_ENV['DB_USER'] ?? '',
-                'password' => $_ENV['DB_PASS'] ?? '',
-                'charset' => 'utf8mb4'
-            ];
-
-            // 설정 병합
-            $this->config = array_merge($this->config, $config);
-
-            // 필수 설정 확인
-            $requiredFields = ['host', 'database', 'username', 'password'];
-            foreach ($requiredFields as $field) {
-                if (empty($this->config[$field])) {
-                    throw new \Exception("Required database configuration field '{$field}' is missing");
-                }
-            }
-
-            error_log("Database configuration loaded successfully");
-        } catch (\Exception $e) {
-            error_log("Failed to load database configuration: " . $e->getMessage());
-            throw $e;
         }
+        return self::$instance;
+    }
+
+    private static function loadConfig()
+    {
+        $configPaths = [
+            '/domains/flowbreath.io/public_html/config/database.php',
+            '/domains/flowbreath.io/public_html/src/Config/database.php',
+            __DIR__ . '/../../config/database.php'
+        ];
+
+        foreach ($configPaths as $path) {
+            if (file_exists($path)) {
+                return require $path;
+            }
+        }
+
+        throw new \RuntimeException('Database configuration file not found');
     }
 
     private function initializeConnection()

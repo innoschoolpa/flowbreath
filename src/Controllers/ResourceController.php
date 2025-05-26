@@ -35,102 +35,29 @@ class ResourceController extends BaseController {
         return empty($text) ? 'n-a' : $text;
     }
 
-    public function index(Request $request) {
-        error_log('ResourceController::index 진입');
-        // 로그인 사용자 정보 세팅
-        $user = null;
-        if (isset($_SESSION['user_id'])) {
-            $user = [
-                'id' => $_SESSION['user_id'],
-                'name' => $_SESSION['user_name'] ?? '',
-                'email' => $_SESSION['user_email'] ?? '',
-                'profile_image' => $_SESSION['user_avatar'] ?? null,
-                'is_admin' => $_SESSION['is_admin'] ?? false
-            ];
-        }
-        $keyword = $request->get('keyword', '');
-        $selected_tags = $request->get('tags', []);
-        $sort = $request->get('sort', 'created_desc');
-        $type = $request->get('type', '');
-        $visibility = $request->get('visibility', null);
-        $page = max(1, (int)$request->get('page', 1));
+    public function index()
+    {
+        $current_lang = $this->request->getLanguage();
+        $page = $this->request->getQuery('page', 1);
         $limit = 12;
         $offset = ($page - 1) * $limit;
 
-        // 현재 언어 설정
-        $current_lang = $_SESSION['lang'] ?? 'ko';
-        error_log("Current language: " . $current_lang);
-
-        $params = [
-            'keyword' => $keyword,
-            'tag_ids' => $selected_tags,
-            'sort' => $sort,
-            'limit' => $limit,
-            'offset' => $offset,
-            'type' => $type,
-            'visibility' => $visibility,
-            'language_code' => (isset($_SESSION['lang']) && $_SESSION['lang'] === 'en') ? 'en' : null,
-        ];
-
         try {
-            $resourceModel = new \App\Models\Resource();
-            
-            // 리소스 검색 전에 번역 데이터 존재 여부 확인
-            $sql = "SELECT DISTINCT r.id 
-                    FROM resources r 
-                    JOIN resource_translations rt ON r.id = rt.resource_id 
-                    WHERE rt.language_code = ?";
-            $resources_with_translations = $resourceModel->getDb()->fetchAll($sql, [$current_lang]);
-            $resource_ids = array_column($resources_with_translations, 'id');
-            
-            if (!empty($resource_ids)) {
-                $params['resource_ids'] = $resource_ids;
-            } else {
-                error_log("No resources found with translations for language: " . $current_lang);
-            }
+            $resources = $this->resourceModel->searchWithLang([
+                'language_code' => $current_lang,
+                'limit' => $limit,
+                'offset' => $offset
+            ]);
 
-            $resources = $resourceModel->search($params);
-            $total_count = $resourceModel->count($params);
-            $total_pages = ceil($total_count / $limit);
-            $all_tags = $resourceModel->getAllTags();
-
-            // 디버깅을 위한 로그
-            error_log("Found resources: " . count($resources));
-            foreach ($resources as $resource) {
-                error_log("Resource ID: " . $resource['id'] . ", Title: " . ($resource['title'] ?? 'NULL'));
-            }
-
-            return $this->view('resources/list', [
+            return $this->view('resources/index', [
                 'resources' => $resources,
-                'all_tags' => $all_tags,
-                'selected_tags' => $selected_tags,
-                'keyword' => $keyword,
-                'sort' => $sort,
-                'type' => $type,
-                'visibility' => $visibility,
-                'current_page' => $page,
-                'total_pages' => $total_pages,
-                'user' => $user,
-                'error' => null,
-                'types' => \App\Models\Resource::getTypes(),
+                'current_lang' => $current_lang,
+                'page' => $page
             ]);
         } catch (\Exception $e) {
-            error_log("Error in ResourceController::index: " . $e->getMessage());
-            error_log($e->getTraceAsString());
-            return $this->view('resources/list', [
-                'resources' => [],
-                'all_tags' => [],
-                'selected_tags' => $selected_tags,
-                'keyword' => $keyword,
-                'sort' => $sort,
-                'type' => $type,
-                'visibility' => $visibility,
-                'current_page' => $page,
-                'total_pages' => 1,
-                'user' => $user,
-                'error' => $e->getMessage(),
-                'types' => \App\Models\Resource::getTypes(),
-            ]);
+            return $this->view('error', [
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 

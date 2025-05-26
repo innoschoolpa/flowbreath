@@ -28,11 +28,12 @@ class Router
     private function convertPathToPattern($path)
     {
         if ($path === '*') {
-            return '.*';
+            return '/.*/';
         }
         // 숫자와 문자를 모두 허용하도록 패턴 수정하고, 경로 구분자(/)를 이스케이프
         $pattern = str_replace('/', '\/', $path);
-        return preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<$1>[^\/]+)', $pattern);
+        $pattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<$1>[^\/]+)', $pattern);
+        return '/^' . $pattern . '$/i';
     }
 
     public function resolve($method, $path)
