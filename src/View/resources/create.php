@@ -404,14 +404,6 @@ function initTinyMCE(elementId, height = 400) {
             'bold italic | alignleft aligncenter ' +
             'alignright alignjustify | bullist numlist outdent indent | ' +
             'image media table | removeformat | help',
-        content_style: `
-            body { 
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-                font-size: 14px;
-                background-color: var(--input-bg);
-                color: var(--text-color);
-            }
-        `,
         skin: 'oxide-dark',
         content_css: 'dark',
         branding: false,
