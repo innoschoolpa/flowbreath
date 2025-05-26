@@ -74,15 +74,15 @@
                 <?php endif; ?>
                 <h3 class="text-xl font-semibold mb-2">
                     <a href="/resources/<?= $resource['id'] ?>" class="hover:text-blue-600">
-                        <?= htmlspecialchars($resource['title']) ?>
+                        <?= html_entity_decode(htmlspecialchars($resource['title']), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
                     </a>
                 </h3>
                 <div class="text-gray-600 mb-4">
-                    <?= mb_strimwidth(strip_tags($resource['content']), 0, 150, '...') ?>
+                    <?= html_entity_decode(mb_strimwidth(strip_tags($resource['content']), 0, 150, '...'), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
                 </div>
                 <div class="flex justify-between items-center text-sm text-gray-500">
                     <span><?= date('Y-m-d', strtotime($resource['created_at'])) ?></span>
-                    <span><?= htmlspecialchars($resource['user_name']) ?></span>
+                    <span><?= html_entity_decode(htmlspecialchars($resource['user_name']), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></span>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -93,12 +93,12 @@
     <div class="mt-12 bg-gradient-to-br from-[#1a1f2e] to-[#0f172a] rounded-2xl p-8 border border-[#334155] shadow-lg">
         <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
             <svg width="22" height="22" fill="none" viewBox="0 0 24 24" class="inline-block text-[#3b82f6]"><circle cx="12" cy="12" r="10" fill="currentColor"/></svg>
-            <span class="text-[#3b82f6]">인기 태그1</span>
+            <span class="text-[#3b82f6]">인기 태그</span>
         </h2>
         <div class="flex flex-wrap gap-3">
             <?php foreach ($popular_tags as $tag): ?>
             <a href="/resources?tags[]=<?= $tag['id'] ?>" class="dark-tag-badge">
-                #<?= htmlspecialchars($tag['name']) ?>
+                #<?= html_entity_decode(htmlspecialchars($tag['name']), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
             </a>
             <?php endforeach; ?>
         </div>
