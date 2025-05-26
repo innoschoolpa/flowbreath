@@ -30,7 +30,9 @@ class Router
         if ($path === '*') {
             return '.*';
         }
-        return preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<$1>[^/]+)', $path);
+        // 숫자와 문자를 모두 허용하도록 패턴 수정하고, 경로 구분자(/)를 이스케이프
+        $pattern = str_replace('/', '\/', $path);
+        return preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<$1>[^\/]+)', $pattern);
     }
 
     public function resolve($method, $path)
@@ -42,6 +44,7 @@ class Router
         
         foreach ($this->routes as $route) {
             error_log("[DEBUG] Checking route: {$route['method']} {$route['path']}");
+            error_log("[DEBUG] Pattern: {$route['pattern']}");
             
             if ($route['method'] !== $method) {
                 continue;
@@ -52,9 +55,14 @@ class Router
                 continue;
             }
 
-            if (preg_match('#^' . $route['pattern'] . '$#', $path, $matches)) {
+            // 경로 패턴 매칭 시 대소문자 구분 없이 비교하고, 경로 구분자(/)를 이스케이프
+            $pattern = '#^' . $route['pattern'] . '$#i';
+            error_log("[DEBUG] Testing pattern: {$pattern}");
+            
+            if (preg_match($pattern, $path, $matches)) {
                 $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
                 error_log("[DEBUG] Route matched: {$route['method']} {$route['path']}");
+                error_log("[DEBUG] Matched params: " . json_encode($params));
                 return [
                     'handler' => $route['handler'],
                     'params' => $params,
@@ -79,63 +87,69 @@ class Router
 
     public function dispatch($method, $path)
     {
-        $route = $this->resolve($method, $path);
-        
-        if ($route === null) {
-            throw new \Exception("Route not found", 404);
-        }
-
-        $handler = $route['handler'];
-        $params = $route['params'];
-
-        if (is_array($handler)) {
-            [$class, $method] = $handler;
-            if (!class_exists($class)) {
-                throw new \Exception("Controller class {$class} not found", 500);
+        try {
+            $route = $this->resolve($method, $path);
+            
+            if ($route === null) {
+                throw new \Exception("Route not found", 404);
             }
 
-            // Create controller instance with Request object
-            $controller = new $class($this->request);
-            
-            if (!method_exists($controller, $method)) {
-                throw new \Exception("Method {$method} not found in controller {$class}", 500);
-            }
+            $handler = $route['handler'];
+            $params = $route['params'];
 
-            // Log which controller and method are being dispatched to
-            error_log("[ROUTER] Dispatching to: {$class}::{$method}");
+            if (is_array($handler)) {
+                [$class, $method] = $handler;
+                if (!class_exists($class)) {
+                    throw new \Exception("Controller class {$class} not found", 500);
+                }
 
-            // Get method parameters using reflection
-            $reflection = new \ReflectionMethod($controller, $method);
-            $methodParams = $reflection->getParameters();
-            
-            // Prepare arguments array
-            $args = [];
-            foreach ($methodParams as $param) {
-                $paramName = $param->getName();
-                $paramType = $param->getType();
+                // Create controller instance with Request object
+                $controller = new $class($this->request);
                 
-                // If parameter is Request type, pass the request object
-                if ($paramType && $paramType->getName() === 'App\\Core\\Request') {
-                    $args[] = $this->request;
+                if (!method_exists($controller, $method)) {
+                    throw new \Exception("Method {$method} not found in controller {$class}", 500);
                 }
-                // Otherwise, try to get the value from route parameters
-                else if (isset($params[$paramName])) {
-                    $args[] = $params[$paramName];
-                }
-                // If parameter is optional, use default value
-                else if ($param->isOptional()) {
-                    $args[] = $param->getDefaultValue();
-                }
-                // Required parameter is missing
-                else {
-                    throw new \Exception("Required parameter {$paramName} is missing", 400);
-                }
-            }
-            
-            return $controller->$method(...$args);
-        }
 
-        return $handler(...array_values($params));
+                // Log which controller and method are being dispatched to
+                error_log("[ROUTER] Dispatching to: {$class}::{$method}");
+
+                // Get method parameters using reflection
+                $reflection = new \ReflectionMethod($controller, $method);
+                $methodParams = $reflection->getParameters();
+                
+                // Prepare arguments array
+                $args = [];
+                foreach ($methodParams as $param) {
+                    $paramName = $param->getName();
+                    $paramType = $param->getType();
+                    
+                    // If parameter is Request type, pass the request object
+                    if ($paramType && $paramType->getName() === 'App\\Core\\Request') {
+                        $args[] = $this->request;
+                    }
+                    // Otherwise, try to get the value from route parameters
+                    else if (isset($params[$paramName])) {
+                        $args[] = $params[$paramName];
+                    }
+                    // If parameter is optional, use default value
+                    else if ($param->isOptional()) {
+                        $args[] = $param->getDefaultValue();
+                    }
+                    // Required parameter is missing
+                    else {
+                        throw new \Exception("Required parameter {$paramName} is missing", 400);
+                    }
+                }
+                
+                return $controller->$method(...$args);
+            }
+
+            return $handler(...array_values($params));
+        } catch (\Exception $e) {
+            error_log("[ERROR] Router dispatch error: " . $e->getMessage());
+            error_log($e->getTraceAsString());
+            return $this->renderErrorPage($e);
+        }
     }
 
     private function renderErrorPage(\Exception $e)
@@ -213,6 +227,24 @@ HTML;
     public function post($path, $controller, $action)
     {
         $this->add('POST', $path, [$controller, $action]);
+        return $this;
+    }
+
+    public function delete($path, $controller, $action)
+    {
+        $this->add('DELETE', $path, [$controller, $action]);
+        return $this;
+    }
+
+    public function put($path, $controller, $action)
+    {
+        $this->add('PUT', $path, [$controller, $action]);
+        return $this;
+    }
+
+    public function patch($path, $controller, $action)
+    {
+        $this->add('PATCH', $path, [$controller, $action]);
         return $this;
     }
 } 

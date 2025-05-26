@@ -516,7 +516,8 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                                 $content = $resource['content'] ?? '';
                                 // 1. 중첩된 엔티티를 한 번만 디코딩
                                 $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                                // 2. <br>이 아닌 \n은 <br>로 변환
+                                // 2. <br>이 아닌 \n은 <br>로 변환하되, 연속된 줄바꿈은 하나로 처리
+                                $content = preg_replace('/\n\s*\n/', "\n", $content);
                                 $content = nl2br($content, false);
                                 echo $content;
                                 ?>
@@ -709,6 +710,30 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
             alert('댓글 삭제 중 오류가 발생했습니다.');
         }
     };
+
+    // 리소스 삭제 함수 추가
+    window.confirmDelete = function(resourceId, lang) {
+        if (confirm(lang === 'en' ? 'Are you sure you want to delete this resource?' : '정말로 이 리소스를 삭제하시겠습니까?')) {
+            fetch(`/resources/${resourceId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-Token': '<?= $_SESSION['csrf_token'] ?? '' ?>'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(lang === 'en' ? 'Deleted successfully.' : '삭제되었습니다.');
+                    window.location.href = '/resources';
+                } else {
+                    alert(data.error || (lang === 'en' ? 'Delete failed.' : '삭제에 실패했습니다.'));
+                }
+            })
+            .catch(() => {
+                alert(lang === 'en' ? 'Delete failed.' : '삭제에 실패했습니다.');
+            });
+        }
+    }
 
     document.addEventListener('DOMContentLoaded', function() {
         const commentForm = document.getElementById('comment-form');

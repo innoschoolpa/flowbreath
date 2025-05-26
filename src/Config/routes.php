@@ -8,8 +8,9 @@ $router->get('/api/tags/suggest', [ApiController::class, 'tagSuggestions']);
 
 // About 페이지 라우트
 $router->get('/about', function() {
-    require __DIR__ . '/../View/home/about.php'
+    require __DIR__ . '/../View/home/about.php';
 }); 
 
 // 리소스 관련 라우트
 $router->post('/resources/toggle-visibility/{id}', [ResourceController::class, 'toggleVisibility']); 
+$router->post('/resources/{id}/delete', [ResourceController::class, 'delete']); 

@@ -10,6 +10,146 @@ error_log("Tags data: " . print_r($tags, true));
 
 require_once __DIR__ . '/../layout/header.php'; ?>
 
+<style>
+:root {
+    --background-color: #0f172a;
+    --text-color: #f1f5f9;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    --primary-color: #3b82f6;
+    --secondary-color: #64748b;
+    --accent-color: #3b82f6;
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --input-bg: rgba(255, 255, 255, 0.1);
+    --input-border: var(--border-color);
+    --input-focus-bg: rgba(255, 255, 255, 0.15);
+    --input-focus-border: var(--accent-color);
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.form-control {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+.form-control:focus {
+    background-color: var(--input-focus-bg);
+    border-color: var(--input-focus-border);
+    color: var(--text-color);
+    box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25);
+}
+
+.form-label {
+    color: var(--text-color);
+}
+
+/* TinyMCE 다크모드 스타일 */
+.tox-tinymce {
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-toolbar__primary {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-toolbar__overflow {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-toolbar__group {
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-tbtn {
+    color: var(--text-color) !important;
+}
+
+.tox .tox-tbtn:hover {
+    background-color: var(--input-focus-bg) !important;
+}
+
+.tox .tox-menu {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-collection__item {
+    color: var(--text-color) !important;
+}
+
+.tox .tox-collection__item:hover {
+    background-color: var(--input-focus-bg) !important;
+}
+
+.tox .tox-dialog {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-dialog__header {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-dialog__body {
+    background-color: var(--card-bg) !important;
+}
+
+.tox .tox-dialog__footer {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.tox .tox-textfield {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+.tox .tox-textfield:focus {
+    background-color: var(--input-focus-bg) !important;
+    border-color: var(--input-focus-border) !important;
+}
+
+.tox .tox-dialog__body-content {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
+
+.tox .tox-dialog__body-nav-item {
+    color: var(--text-color) !important;
+}
+
+.tox .tox-dialog__body-nav-item--active {
+    background-color: var(--input-focus-bg) !important;
+}
+
+.tox .tox-dialog__footer-end button {
+    background-color: var(--accent-color) !important;
+    color: var(--text-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+.tox .tox-dialog__footer-end button:hover {
+    background-color: #0284c7 !important;
+    border-color: #0284c7 !important;
+}
+</style>
+
 <div class="container mt-4">
     <div class="card">
         <div class="card-body">
@@ -228,8 +368,65 @@ require_once __DIR__ . '/../layout/header.php'; ?>
 </div>
 
 <!-- Select2 및 폼 검증 스크립트 -->
+<script src="https://cdn.tiny.cloud/1/3p683d001w10l44tgvyk034uz5nsntitn1eiyjs24ufhx67a/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // TinyMCE 초기화
+    tinymce.init({
+        selector: '.tinymce-editor',
+        height: 400,
+        menubar: true,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'help', 'wordcount'
+        ],
+        toolbar: 'undo redo | blocks | ' +
+            'bold italic | alignleft aligncenter ' +
+            'alignright alignjustify | bullist numlist outdent indent | ' +
+            'image media table | removeformat | help',
+        content_style: `
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+                font-size: 14px;
+                background-color: var(--input-bg);
+                color: var(--text-color);
+            }
+        `,
+        skin: 'oxide-dark',
+        content_css: 'dark',
+        branding: false,
+        promotion: false,
+        statusbar: false,
+        resize: false,
+        images_upload_url: '/upload/image',
+        images_upload_handler: function (blobInfo, success, failure) {
+            const formData = new FormData();
+            formData.append('image', blobInfo.blob(), blobInfo.filename());
+            formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?>');
+
+            fetch('/upload/image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    success(data.url);
+                } else {
+                    failure(data.error || '이미지 업로드에 실패했습니다.');
+                }
+            })
+            .catch(error => {
+                failure('이미지 업로드 중 오류가 발생했습니다.');
+            });
+        },
+        images_reuse_filename: true,
+        automatic_uploads: true,
+        file_picker_types: 'image',
+        images_upload_base_path: '/'
+    });
+
     // Select2 초기화
     $('#tags').select2({
         tags: true,
@@ -255,22 +452,6 @@ function confirmDelete(resourceId) {
     var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     deleteModal.show();
 }
-</script>
-
-<!-- Add this before the closing </body> tag -->
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        tinymce.init({
-            selector: '.tinymce-editor',
-            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-            height: 300,
-            menubar: false,
-            language: 'ko_KR',
-            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; }'
-        });
-    });
 </script>
 </body>
 </html> 
