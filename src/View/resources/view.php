@@ -511,18 +511,7 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                         <div class="mb-4">
                             <h5 style="color:#fff;"><?php echo $lang === 'en' ? 'Details' : '상세 내용'; ?></h5>
                             <div class="card-text">
-                                <?php
-                                // HTML 엔티티가 중첩되어 저장된 경우를 방지하고, 줄바꿈은 <br>로 변환
-                                $content = $resource['content'] ?? '';
-                                // 1. 중첩된 엔티티를 한 번만 디코딩
-                                $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                                // 2. 연속된 줄바꿈을 하나로 처리하고, 단일 줄바꿈은 <br>로 변환
-                                $content = preg_replace('/\n\s*\n/', "\n", $content);
-                                $content = nl2br($content, false);
-                                // 3. 연속된 <br> 태그를 하나로 통합
-                                $content = preg_replace('/(<br\s*\/?>\s*){2,}/', '<br>', $content);
-                                echo $content;
-                                ?>
+                                <?php echo $resource['content'] ?? ''; ?>
                             </div>
                         </div>
                         <?php if (!empty($resource['link'])): ?>
@@ -532,7 +521,7 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                         <?php endif; ?>
                         <?php if (!empty($resource['description'])): ?>
                         <div class="alert alert-info mb-4">
-                            <strong><?php echo $lang === 'en' ? 'Description' : '설명'; ?>:</strong> <?php echo html_entity_decode($resource['description'], ENT_QUOTES | ENT_HTML5, 'UTF-8'); ?>
+                            <strong><?php echo $lang === 'en' ? 'Description' : '설명'; ?>:</strong> <?php echo $resource['description']; ?>
                         </div>
                         <?php endif; ?>
                     <?php endif; ?>
