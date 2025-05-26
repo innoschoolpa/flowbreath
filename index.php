@@ -239,6 +239,16 @@ require_once PROJECT_ROOT . '/src/View/layouts/header.php';
                             <p class="card-text">
                                 <?= htmlspecialchars(mb_substr($resource['description'], 0, 500)) ?>...
                             </p>
+                            <div class="mb-2">
+                                <?php if (!empty($resource['tags'])): ?>
+                                    <?php foreach ($resource['tags'] as $tag): ?>
+                                        <a href="/resources?tags[]=<?= is_array($tag) ? ($tag['id'] ?? '') : '' ?>" class="tag-badge">
+                                            <i class="fa fa-hashtag"></i>
+                                            <span><?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
+                                        </a>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="badge bg-primary"><?= htmlspecialchars($resource['type']) ?></span>
                                 <a href="/resources/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm">자세히 보기</a>
@@ -253,3 +263,47 @@ require_once PROJECT_ROOT . '/src/View/layouts/header.php';
 </div>
 
 <?php require_once PROJECT_ROOT . '/src/View/layouts/footer.php'; ?>
+
+<style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f8f9fa;
+    }
+    .tag-badge {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(90deg, #1e40af 60%, #3b82f6 100%);
+        color: #e2e8f0;
+        padding: 0.45rem 1.1rem;
+        border-radius: 999px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.12);
+        border: 1px solid #3b82f6;
+        transition: all 0.3s ease;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .tag-badge:hover {
+        background: linear-gradient(90deg, #2563eb 60%, #1d4ed8 100%);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
+        text-decoration: none;
+    }
+
+    .tag-badge i {
+        margin-right: 0.5rem;
+        font-size: 0.95em;
+        color: #93c5fd;
+    }
+</style>
