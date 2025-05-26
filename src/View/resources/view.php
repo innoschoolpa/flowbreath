@@ -633,6 +633,33 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
         </div>
     </div>
 
+    <!-- 삭제 확인 모달 -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><?php echo $lang === 'en' ? 'Delete Resource' : '리소스 삭제'; ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><?php echo $lang === 'en' ? 'Are you sure you want to delete this resource?' : '이 리소스를 삭제하시겠습니까?'; ?></p>
+                    <p class="text-danger"><?php echo $lang === 'en' ? 'This action cannot be undone.' : '이 작업은 되돌릴 수 없습니다.'; ?></p>
+                </div>
+                <div class="modal-footer">
+                    <form id="deleteForm" method="POST">
+                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <?php echo $lang === 'en' ? 'Cancel' : '취소'; ?>
+                        </button>
+                        <button type="submit" class="btn btn-danger">
+                            <?php echo $lang === 'en' ? 'Delete' : '삭제'; ?>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     // 현재 사용자 정보 설정
@@ -1049,6 +1076,13 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
             });
         }
     });
+
+    function confirmDelete(resourceId) {
+        const deleteForm = document.getElementById('deleteForm');
+        deleteForm.action = `/resources/${resourceId}/delete`;
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show();
+    }
     </script>
 </body>
 </html>
