@@ -439,7 +439,7 @@ class ResourceController extends BaseController {
                 return $this->response->json(['message' => '리소스가 수정되었습니다.']);
             }
             $_SESSION['success_message'] = '리소스가 수정되었습니다.';
-            return $this->response->redirect("/resources/view/{$id}");
+            return $this->response->redirect("/resources/view/{$id}?lang={$languageCode}");
         } catch (\Exception $e) {
             error_log("Error in ResourceController::update: " . $e->getMessage());
             error_log($e->getTraceAsString());
