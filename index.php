@@ -23,23 +23,22 @@ if (file_exists(PROJECT_ROOT . '/.env')) {
     $dotenv->load();
 }
 
-// --- 라우터 분기 추가 시작 ---
+// Core 클래스 로드
 require_once PROJECT_ROOT . '/src/Core/Router.php';
-require_once PROJECT_ROOT . '/src/Controllers/LanguageController.php';
-// 필요시 다른 컨트롤러도 require
-
 require_once PROJECT_ROOT . '/src/Core/Request.php';
 require_once PROJECT_ROOT . '/src/Core/Response.php';
+require_once PROJECT_ROOT . '/src/Core/Language.php';
+require_once PROJECT_ROOT . '/src/Controllers/LanguageController.php';
 
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Router;
+use App\Core\Language;
 
+// 라우터 초기화 및 설정
 $request = new Request();
 $uri = $request->getPath();
 $method = $request->getMethod();
-
-// 라우터 초기화 및 라우트 설정
 $router = new Router($request);
 $routes = require PROJECT_ROOT . '/src/routes.php';
 $routes($router);
@@ -66,84 +65,21 @@ try {
 } catch (\Exception $e) {
     error_log('[FATAL] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
     error_log($e->getTraceAsString());
-    // 에러 처리
+    
+    // 에러 페이지 표시
     $response = new Response();
     $response->setContentType('text/html; charset=UTF-8');
     $response->setStatusCode($e->getCode() ?: 500);
-    
-    // 에러 페이지 HTML 생성
-    $errorHtml = <<<HTML
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error {$e->getCode()}</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #f8f9fa;
-        }
-        .error-container {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 500px;
-        }
-        h1 {
-            color: #e74c3c;
-            margin: 0 0 20px;
-        }
-        p {
-            color: #34495e;
-            margin: 0 0 20px;
-        }
-        .home-link {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-        .home-link:hover {
-            background-color: #2980b9;
-        }
-    </style>
-</head>
-<body>
-    <div class="error-container">
-        <h1>Error {$e->getCode()}</h1>
-        <p>{$e->getMessage()}</p>
-        <a href="/" class="home-link">홈으로 돌아가기</a>
-    </div>
-</body>
-</html>
-HTML;
-    
-    $response->setContent($errorHtml);
+    $response->setContent(require PROJECT_ROOT . '/src/View/errors/500.php');
     $response->send();
 }
 exit;
-// --- 라우터 분기 추가 끝 ---
 
 // DB 연결 (config/database.php 사용)
 require_once PROJECT_ROOT . '/config/database.php';
 $pdo = getDbConnection();
 
 // Language 객체 생성
-require_once PROJECT_ROOT . '/src/Core/Language.php';
-use App\Core\Language;
 $language = Language::getInstance();
 
 // 최근 리소스
@@ -265,17 +201,35 @@ require_once PROJECT_ROOT . '/src/View/layouts/header.php';
 <?php require_once PROJECT_ROOT . '/src/View/layouts/footer.php'; ?>
 
 <style>
+    :root {
+        --background-color: #0f172a;
+        --text-color: #f1f5f9;
+        --card-bg: #1e293b;
+        --border-color: #334155;
+        --primary-color: #3b82f6;
+        --secondary-color: #64748b;
+        --accent-color: #3b82f6;
+    }
+
     body {
+        background-color: var(--background-color);
+        color: var(--text-color);
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         line-height: 1.6;
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        background-color: #f8f9fa;
     }
+
+    .card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
     .tag-badge {
         display: inline-flex;
         align-items: center;
@@ -305,5 +259,27 @@ require_once PROJECT_ROOT . '/src/View/layouts/header.php';
         margin-right: 0.5rem;
         font-size: 0.95em;
         color: #93c5fd;
+    }
+
+    .btn-primary {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        color: var(--text-color);
+    }
+
+    .btn-primary:hover {
+        background-color: #0284c7;
+        border-color: #0284c7;
+        color: var(--text-color);
+    }
+
+    .btn-outline-primary {
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .btn-outline-primary:hover {
+        background-color: var(--primary-color);
+        color: var(--text-color);
     }
 </style>
