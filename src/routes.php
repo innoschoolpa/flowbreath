@@ -45,6 +45,7 @@ return function (Router $router) {
     $router->add('POST', '/resources/toggle-visibility/{id}', [ResourceController::class, 'toggleVisibility']);
     $router->add('GET', '/resources/view/{id}', [ResourceController::class, 'show']);
     $router->add('POST', '/resources/view/{id}/like', [ResourceController::class, 'like']);
+    $router->add('POST', '/resources/{id}/delete', [ResourceController::class, 'destroy']);
 
     // 태그명 기반 자료 검색 라우트 추가
     $router->add('GET', '/resources/tag/{tag}', [ResourceController::class, 'tagResources']);
