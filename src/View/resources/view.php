@@ -711,28 +711,12 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
         }
     };
 
-    // 리소스 삭제 함수 추가
-    window.confirmDelete = function(resourceId, lang) {
-        if (confirm(lang === 'en' ? 'Are you sure you want to delete this resource?' : '정말로 이 리소스를 삭제하시겠습니까?')) {
-            fetch(`/resources/${resourceId}/delete`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-Token': '<?= $_SESSION['csrf_token'] ?? '' ?>'
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert(lang === 'en' ? 'Deleted successfully.' : '삭제되었습니다.');
-                    window.location.href = '/resources';
-                } else {
-                    alert(data.error || (lang === 'en' ? 'Delete failed.' : '삭제에 실패했습니다.'));
-                }
-            })
-            .catch(() => {
-                alert(lang === 'en' ? 'Delete failed.' : '삭제에 실패했습니다.');
-            });
-        }
+    // 리소스 삭제 함수 수정
+    function confirmDelete(resourceId) {
+        const deleteForm = document.getElementById('deleteForm');
+        deleteForm.action = `/resources/${resourceId}/delete`;
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show();
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -1100,14 +1084,41 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                 .finally(() => { likeBtn.disabled = false; });
             });
         }
-    });
 
-    function confirmDelete(resourceId) {
+        // 삭제 폼 제출 이벤트 처리
         const deleteForm = document.getElementById('deleteForm');
-        deleteForm.action = `/resources/${resourceId}/delete`;
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        deleteModal.show();
-    }
+        if (deleteForm) {
+            deleteForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                
+                try {
+                    const response = await fetch(this.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-Token': '<?php echo $_SESSION['csrf_token'] ?? ''; ?>'
+                        },
+                        body: formData
+                    });
+
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return;
+                    }
+
+                    const result = await response.json();
+                    if (result.success) {
+                        window.location.href = '/resources';
+                    } else {
+                        alert(result.error || '<?php echo $lang === 'en' ? 'Delete failed.' : '삭제에 실패했습니다.'; ?>');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('<?php echo $lang === 'en' ? 'Delete failed.' : '삭제에 실패했습니다.'; ?>');
+                }
+            });
+        }
+    });
     </script>
 </body>
 </html>
