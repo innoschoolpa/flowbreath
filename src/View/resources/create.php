@@ -290,193 +290,95 @@ select.form-control:focus {
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
 
-<!-- CKEditor 5 CDN -->
-<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+<!-- TinyMCE CDN -->
+<script src="https://cdn.tiny.cloud/1/3p683d001w10l44tgvyk034uz5nsntitn1eiyjs24ufhx67a/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
-let ckeditorInstance, descriptionEditorInstance;
+let contentEditor, descriptionEditor;
 
-// CKEditor 로드 실패 시 대체 에디터 사용
-function initFallbackEditor(elementId) {
-    const textarea = document.getElementById(elementId);
-    if (textarea) {
-        textarea.style.height = '300px';
-        textarea.style.width = '100%';
-        textarea.style.padding = '10px';
-        textarea.style.backgroundColor = 'var(--input-bg)';
-        textarea.style.color = 'var(--text-color)';
-        textarea.style.border = '1px solid var(--input-border)';
-        textarea.style.borderRadius = '4px';
-    }
-}
-
-// CKEditor 초기화 함수
-function initCKEditor(elementId, config) {
-    if (typeof ClassicEditor === 'undefined') {
-        console.error('CKEditor failed to load. Using fallback editor.');
-        initFallbackEditor(elementId);
-        return;
-    }
-
-    ClassicEditor
-        .create(document.querySelector(`#${elementId}`), config)
-        .then(editor => {
-            if (elementId === 'content') {
-                ckeditorInstance = editor;
-            } else {
-                descriptionEditorInstance = editor;
+// TinyMCE 초기화 함수
+function initTinyMCE(elementId, height = 400) {
+    tinymce.init({
+        selector: `#${elementId}`,
+        height: height,
+        menubar: true,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'help', 'wordcount'
+        ],
+        toolbar: 'undo redo | blocks | ' +
+            'bold italic | alignleft aligncenter ' +
+            'alignright alignjustify | bullist numlist outdent indent | ' +
+            'image media table | removeformat | help',
+        content_style: `
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+                font-size: 14px;
+                background-color: var(--input-bg);
+                color: var(--text-color);
             }
-            console.log(`${elementId} editor initialized successfully`);
-        })
-        .catch(error => {
-            console.error(`${elementId} editor initialization failed:`, error);
-            initFallbackEditor(elementId);
-        });
-}
+        `,
+        skin: 'oxide-dark',
+        content_css: 'dark',
+        images_upload_url: '/upload/image',
+        images_upload_handler: function (blobInfo, success, failure) {
+            const formData = new FormData();
+            formData.append('image', blobInfo.blob(), blobInfo.filename());
+            formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?>');
 
-// 이미지 업로드 핸들러
-function uploadImage(file) {
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?>');
-
-    return fetch('/upload/image', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            return {
-                default: data.url
-            };
-        } else {
-            throw new Error(data.error || '이미지 업로드에 실패했습니다.');
+            fetch('/upload/image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    success(data.url);
+                } else {
+                    failure(data.error || '이미지 업로드에 실패했습니다.');
+                }
+            })
+            .catch(error => {
+                failure('이미지 업로드 중 오류가 발생했습니다.');
+            });
+        },
+        images_reuse_filename: true,
+        automatic_uploads: true,
+        file_picker_types: 'image',
+        images_upload_base_path: '/',
+        setup: function(editor) {
+            editor.on('init', function() {
+                if (elementId === 'content') {
+                    contentEditor = editor;
+                } else {
+                    descriptionEditor = editor;
+                }
+            });
         }
     });
 }
 
-// CKEditor 이미지 업로드 어댑터 설정
-class CustomUploadAdapter {
-    constructor(loader) {
-        this.loader = loader;
-    }
-
-    upload() {
-        return this.loader.file
-            .then(file => uploadImage(file));
-    }
-
-    abort() {
-        // 업로드 중단 처리
-    }
-}
-
-function CustomUploadAdapterPlugin(editor) {
-    editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
-        return new CustomUploadAdapter(loader);
-    };
-}
-
-// 공통 에디터 설정
-const editorConfig = {
-    extraPlugins: [CustomUploadAdapterPlugin],
-    toolbar: {
-        items: [
-            'heading',
-            '|',
-            'bold',
-            'italic',
-            'link',
-            'bulletedList',
-            'numberedList',
-            '|',
-            'outdent',
-            'indent',
-            '|',
-            'imageUpload',
-            'blockQuote',
-            'insertTable',
-            'undo',
-            'redo'
-        ]
-    },
-    image: {
-        toolbar: [
-            'imageTextAlternative',
-            'imageStyle:inline',
-            'imageStyle:block',
-            'imageStyle:side'
-        ],
-        styles: [
-            'full',
-            'side',
-            'alignLeft',
-            'alignCenter',
-            'alignRight'
-        ],
-        resizeOptions: [
-            {
-                name: 'imageResize:original',
-                value: null,
-                label: 'Original'
-            },
-            {
-                name: 'imageResize:50',
-                value: '50',
-                label: '50%'
-            },
-            {
-                name: 'imageResize:75',
-                value: '75',
-                label: '75%'
-            }
-        ],
-        resizeUnit: '%',
-        upload: {
-            types: ['jpeg', 'png', 'gif', 'jpg']
-        },
-        insert: {
-            type: 'block'
-        },
-        styles: {
-            options: [
-                'inline',
-                'block',
-                'side'
-            ]
-        }
-    },
-    table: {
-        contentToolbar: [
-            'tableColumn',
-            'tableRow',
-            'mergeTableCells'
-        ]
-    },
-    language: 'ko'
-};
-
 // content 에디터 초기화
-initCKEditor('content', editorConfig);
+initTinyMCE('content', 400);
 
 // description 에디터 초기화
-initCKEditor('description', editorConfig);
+initTinyMCE('description', 200);
 
 // 폼 submit 시 에디터 내용 textarea에 복사
 document.getElementById('resource-form').addEventListener('submit', function(e) {
-    if (ckeditorInstance) {
-        document.getElementById('content').value = ckeditorInstance.getData();
-        // CKEditor 내용이 비어 있으면 제출 막기
-        if (!ckeditorInstance.getData().trim()) {
+    if (contentEditor) {
+        const content = contentEditor.getContent();
+        document.getElementById('content').value = content;
+        if (!content.trim()) {
             alert('내용을 입력하세요.');
             e.preventDefault();
             return false;
         }
     }
-    if (descriptionEditorInstance) {
-        document.getElementById('description').value = descriptionEditorInstance.getData();
-        // CKEditor 내용이 비어 있으면 제출 막기
-        if (!descriptionEditorInstance.getData().trim()) {
+    if (descriptionEditor) {
+        const description = descriptionEditor.getContent();
+        document.getElementById('description').value = description;
+        if (!description.trim()) {
             alert('설명을 입력하세요.');
             e.preventDefault();
             return false;
