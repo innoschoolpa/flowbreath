@@ -134,7 +134,7 @@ input[type="text"]::placeholder {
             }
             
             // Determine content length based on YouTube link presence
-            $contentLength = $hasYoutubeLink ? 130 : 500;
+            $contentLength = $hasYoutubeLink ? 130 : 500; // Longer content for non-video resources
             
             // Prepare content with only line breaks preserved
             $content = strip_tags($resource['content'] ?? '');
@@ -146,7 +146,7 @@ input[type="text"]::placeholder {
                 <?php if ($videoId): ?>
                     <div class="ratio ratio-16x9">
                         <iframe 
-                            src="https://www.youtube.com/embed/<?= htmlspecialchars($videoId) ?>?autoplay=0&rel=0" 
+                            src="https://www.youtube.com/embed/<?= htmlspecialchars($videoId) ?>?autoplay=0" 
                             title="YouTube video player"
                             class="rounded-top"
                             frameborder="0"
