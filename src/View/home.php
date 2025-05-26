@@ -2,13 +2,33 @@
 // 페이지 제목 설정
 $title = $language->get('common.site_name') . ' - ' . $language->get('home.hero.title');
 
-// DB 연결 (config/database.php 사용)
-require_once PROJECT_ROOT . '/config/database.php';
-$pdo = getDbConnection();
+// DB 연결 관리
+try {
+    $db = \App\Core\Database::getInstance();
+    $pdo = $db->getConnection();
 
-// 최근 리소스
-$resourceModel = new \App\Models\Resource();
-$recentResources = $resourceModel->getRecentPublic(6);
+    // 최근 리소스
+    $resourceModel = new \App\Models\Resource();
+    $recentResources = $resourceModel->getRecentPublic(6);
+
+    // 검색 처리
+    $searchQuery = isset($_GET['q']) ? trim($_GET['q']) : '';
+    $searchResults = [];
+    if ($searchQuery !== '') {
+        try {
+            $searchResults = $resourceModel->searchResources($searchQuery, 10, 0);
+        } catch (Exception $e) {
+            error_log("Search error: " . $e->getMessage());
+            $searchResults = [];
+        }
+    }
+} catch (\Exception $e) {
+    error_log("Database error: " . $e->getMessage());
+    // 에러 발생 시 빈 결과 반환
+    $recentResources = [];
+    $searchResults = [];
+    $searchQuery = '';
+}
 
 // 로그인 상태
 $isLoggedIn = isset($_SESSION['user_id']);
@@ -20,18 +40,6 @@ $user = $isLoggedIn ? [
     'bio' => $_SESSION['user_bio'] ?? '',
     'social_links' => $_SESSION['user_social_links'] ?? ''
 ] : null;
-
-// 검색 처리
-$searchQuery = isset($_GET['q']) ? trim($_GET['q']) : '';
-$searchResults = [];
-if ($searchQuery !== '') {
-    try {
-        $searchResults = $resourceModel->searchResources($searchQuery, 10, 0);
-    } catch (Exception $e) {
-        error_log("Search error: " . $e->getMessage());
-        $searchResults = [];
-    }
-}
 
 // 공통 레이아웃 포함
 require_once __DIR__ . '/layouts/header.php';

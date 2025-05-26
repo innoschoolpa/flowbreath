@@ -28,12 +28,18 @@ require_once PROJECT_ROOT . '/src/Core/Router.php';
 require_once PROJECT_ROOT . '/src/Core/Request.php';
 require_once PROJECT_ROOT . '/src/Core/Response.php';
 require_once PROJECT_ROOT . '/src/Core/Language.php';
+require_once PROJECT_ROOT . '/src/Core/Database.php';
+require_once PROJECT_ROOT . '/src/Core/ConnectionManager.php';
 require_once PROJECT_ROOT . '/src/Controllers/LanguageController.php';
 
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Router;
 use App\Core\Language;
+use App\Core\ConnectionManager;
+
+// 데이터베이스 연결 카운터 체크 및 리셋
+ConnectionManager::checkAndResetConnections();
 
 // 라우터 초기화 및 설정
 $request = new Request();

@@ -705,4 +705,16 @@ class Database
             throw $e;
         }
     }
+
+    public function resetConnectionCount()
+    {
+        self::$connectionCount = 0;
+    }
+
+    public function closeConnection()
+    {
+        if ($this->connection !== null) {
+            $this->connection = null;
+        }
+    }
 } 
