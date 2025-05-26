@@ -2,6 +2,37 @@
 // 페이지 제목 설정
 $title = $language->get('common.site_name') . ' - ' . $language->get('home.hero.title');
 
+// DB 연결 (config/database.php 사용)
+require_once PROJECT_ROOT . '/config/database.php';
+$pdo = getDbConnection();
+
+// 최근 리소스
+$resourceModel = new \App\Models\Resource();
+$recentResources = $resourceModel->getRecentPublic(6);
+
+// 로그인 상태
+$isLoggedIn = isset($_SESSION['user_id']);
+$user = $isLoggedIn ? [
+    'id' => $_SESSION['user_id'],
+    'name' => $_SESSION['user_name'] ?? '',
+    'email' => $_SESSION['user_email'] ?? '',
+    'profile_image' => $_SESSION['user_avatar'] ?? null,
+    'bio' => $_SESSION['user_bio'] ?? '',
+    'social_links' => $_SESSION['user_social_links'] ?? ''
+] : null;
+
+// 검색 처리
+$searchQuery = isset($_GET['q']) ? trim($_GET['q']) : '';
+$searchResults = [];
+if ($searchQuery !== '') {
+    try {
+        $searchResults = $resourceModel->searchResources($searchQuery, 10, 0);
+    } catch (Exception $e) {
+        error_log("Search error: " . $e->getMessage());
+        $searchResults = [];
+    }
+}
+
 // 공통 레이아웃 포함
 require_once __DIR__ . '/layouts/header.php';
 
@@ -14,6 +45,15 @@ function formatContent($content, $hasYoutubeLink) {
     $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $content = mb_strimwidth($content, 0, $contentLength, '...');
     return nl2br(htmlspecialchars($content));
+}
+
+// YouTube 동영상 ID 추출 함수
+function extractYoutubeId($url) {
+    $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
+    if (preg_match($youtube_pattern, $url, $matches)) {
+        return $matches[1];
+    }
+    return null;
 }
 
 class HomeController {
@@ -39,6 +79,8 @@ class HomeController {
 body {
     background-color: var(--background-color);
     color: var(--text-color);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
 }
 
 .hero-section {
@@ -233,65 +275,7 @@ h1, h2, h3, h4, h5, h6 {
             <?php if (empty($searchResults)): ?>
                 <div class="col-12"><div class="alert alert-warning"><?= $language->get('home.recent_resources.no_results') ?></div></div>
             <?php else: foreach ($searchResults as $resource): ?>
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card card-resource h-100">
-                        <?php
-                        $videoId = null;
-                        $hasYoutubeLink = false;
-                        
-                        // Check for YouTube link in link field
-                        if (!empty($resource['link'])) {
-                            $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
-                            if (preg_match($youtube_pattern, $resource['link'], $matches)) {
-                                $videoId = $matches[1];
-                                $hasYoutubeLink = true;
-                            }
-                        }
-                        
-                        // Check for YouTube link in content if not found in link field
-                        if (!$hasYoutubeLink && !empty($resource['content'])) {
-                            if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
-                                if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
-                                    $videoId = $matches[1];
-                                    $hasYoutubeLink = true;
-                                }
-                            }
-                        }
-                        
-                        // Format content
-                        $content = formatContent($resource['content'], $hasYoutubeLink);
-                        
-                        // Display video if found
-                        if ($videoId): ?>
-                            <div class="ratio ratio-16x9 mb-3">
-                                <iframe 
-                                    src="https://www.youtube.com/embed/<?= htmlspecialchars($videoId) ?>?autoplay=0" 
-                                    title="YouTube video player"
-                                    frameborder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen>
-                                </iframe>
-                            </div>
-                        <?php endif; ?>
-                        <div class="card-body">
-                            <h5 class="card-title mb-2"><?= htmlspecialchars($resource['title']) ?></h5>
-                            <div class="resource-meta mb-2">
-                                <i class="fa fa-user"></i> <?= htmlspecialchars($resource['username'] ?? $language->get('common.anonymous')) ?> ·
-                                <i class="fa fa-calendar"></i> <?= htmlspecialchars(substr($resource['created_at'],0,10)) ?>
-                            </div>
-                            <p class="card-text mb-2"><?= $content ?></p>
-                            <div class="mb-2">
-                                <?php foreach (($resource['tags'] ?? []) as $tag): ?>
-                                    <a href="/resources?tags[]=<?= is_array($tag) ? ($tag['id'] ?? '') : '' ?>" class="tag-badge">
-                                        <i class="fa fa-hashtag"></i>
-                                        <span><?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
-                                    </a>
-                                <?php endforeach; ?>
-                            </div>
-                            <a href="/resources/view/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm"><?= $language->get('common.read_more') ?></a>
-                        </div>
-                    </div>
-                </div>
+                <?php include __DIR__ . '/partials/resource-card.php'; ?>
             <?php endforeach; endif; ?>
         </div>
     <?php else: ?>
@@ -301,73 +285,7 @@ h1, h2, h3, h4, h5, h6 {
         </div>
         <div class="row">
             <?php foreach ($recentResources as $resource): ?>
-                <div class="col-md-6 col-lg-6 mb-4">
-                    <div class="card card-resource h-100">
-                        <?php
-                        $videoId = null;
-                        $hasYoutubeLink = false;
-                        
-                        // Check for YouTube link in link field
-                        if (!empty($resource['link'])) {
-                            $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
-                            if (preg_match($youtube_pattern, $resource['link'], $matches)) {
-                                $videoId = $matches[1];
-                                $hasYoutubeLink = true;
-                            }
-                        }
-                        
-                        // Check for YouTube link in content if not found in link field
-                        if (!$hasYoutubeLink && !empty($resource['content'])) {
-                            if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
-                                if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
-                                    $videoId = $matches[1];
-                                    $hasYoutubeLink = true;
-                                }
-                            }
-                        }
-                        
-                        // Format content
-                        $content = formatContent($resource['content'], $hasYoutubeLink);
-                        
-                        // Display video if found
-                        if ($videoId): ?>
-                            <div class="ratio ratio-16x9 mb-3">
-                                <iframe 
-                                    src="https://www.youtube.com/embed/<?= htmlspecialchars($videoId) ?>?autoplay=0" 
-                                    title="YouTube video player"
-                                    frameborder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen>
-                                </iframe>
-                            </div>
-                        <?php endif; ?>
-                        <div class="card-body">
-                            <h5 class="card-title mb-2">
-                                <a href="/resources/view/<?= $resource['id'] ?>" class="text-decoration-none text-dark">
-                                    <?= htmlspecialchars($resource['title']) ?>
-                                </a>
-                            </h5>
-                            <div class="resource-meta mb-2">
-                                <i class="fa fa-user"></i> <?= htmlspecialchars($resource['username'] ?? $language->get('common.anonymous')) ?> ·
-                                <i class="fa fa-calendar"></i> <?= htmlspecialchars(substr($resource['created_at'],0,10)) ?>
-                            </div>
-                            <p class="card-text mb-2">
-                                <a href="/resources/view/<?= $resource['id'] ?>" class="text-decoration-none text-dark">
-                                    <?= $content ?>
-                                </a>
-                            </p>
-                            <div class="mb-2">
-                                <?php foreach (($resource['tags'] ?? []) as $tag): ?>
-                                    <a href="/resources?tags[]=<?= is_array($tag) ? ($tag['id'] ?? '') : '' ?>" class="tag-badge">
-                                        <i class="fa fa-hashtag"></i>
-                                        <span><?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
-                                    </a>
-                                <?php endforeach; ?>
-                            </div>
-                            <a href="/resources/view/<?= $resource['id'] ?>" class="btn btn-outline-primary btn-sm"><?= $language->get('common.read_more') ?></a>
-                        </div>
-                    </div>
-                </div>
+                <?php include __DIR__ . '/partials/resource-card.php'; ?>
             <?php endforeach; ?>
         </div>
         <div class="popular-tags">
