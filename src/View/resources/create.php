@@ -398,12 +398,12 @@ function initTinyMCE(elementId, height = 400) {
         plugins: [
             'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
             'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-            'insertdatetime', 'media', 'table', 'help', 'wordcount'
+            'insertdatetime', 'media', 'table', 'help', 'wordcount', 'markdown'
         ],
         toolbar: 'undo redo | blocks | ' +
             'bold italic | alignleft aligncenter ' +
             'alignright alignjustify | bullist numlist outdent indent | ' +
-            'image media table | removeformat | help',
+            'image media table | removeformat | markdown | help',
         skin: 'oxide-dark',
         content_css: 'dark',
         branding: false,
