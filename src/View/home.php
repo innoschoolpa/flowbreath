@@ -7,7 +7,7 @@ require_once __DIR__ . '/layouts/header.php';
 
 function formatContent($content, $hasYoutubeLink) {
     // Determine content length based on YouTube link presence
-    $contentLength = $hasYoutubeLink ? 130 : 500;
+    $contentLength = $hasYoutubeLink ? 130 : 600;
     
     // Prepare content with only line breaks preserved
     $content = strip_tags($content ?? '');
