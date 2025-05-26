@@ -323,4 +323,248 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resourceId) {
         window.commentManager = new CommentManager(resourceId);
     }
+});
+
+// Comments functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const commentForm = document.getElementById('comment-form');
+    const commentsContainer = document.getElementById('comments-container');
+    const loadingIndicator = document.querySelector('.loading');
+    let currentPage = 1;
+    let isLoading = false;
+    let hasMoreComments = true;
+    const resourceId = window.location.pathname.split('/').pop();
+
+    // Comment form submission
+    if (commentForm) {
+        commentForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const content = formData.get('content').trim();
+            const parentId = formData.get('parent_id');
+
+            if (!content) {
+                alert('댓글 내용을 입력해주세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/resources/${resourceId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        parent_id: parentId || null
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    this.reset();
+                    commentsContainer.innerHTML = '';
+                    currentPage = 1;
+                    hasMoreComments = true;
+                    await loadComments(currentPage);
+                    alert(result.message);
+                } else {
+                    alert(result.message || '댓글 작성 중 오류가 발생했습니다.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('댓글 작성 중 오류가 발생했습니다.');
+            }
+        });
+    }
+
+    // Load comments
+    async function loadComments(page = 1) {
+        if (isLoading || !hasMoreComments) return;
+        
+        isLoading = true;
+        loadingIndicator.style.display = 'block';
+
+        try {
+            const response = await fetch(`/api/resources/${resourceId}/comments?page=${page}`);
+            const data = await response.json();
+
+            if (data.success) {
+                if (page === 1) {
+                    commentsContainer.innerHTML = '';
+                }
+                
+                data.data.comments.forEach(comment => {
+                    const commentElement = createCommentElement(comment);
+                    commentsContainer.appendChild(commentElement);
+                });
+
+                hasMoreComments = data.data.comments.length === 10;
+                currentPage = page;
+                updateCommentCount();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        } finally {
+            isLoading = false;
+            loadingIndicator.style.display = 'none';
+        }
+    }
+
+    // Create comment element
+    function createCommentElement(comment) {
+        const div = document.createElement('div');
+        div.className = 'comment';
+        div.dataset.commentId = comment.id;
+        
+        const isAuthor = comment.user_id === window.currentUserId;
+        const isAdmin = window.isAdmin;
+
+        div.innerHTML = `
+            <div class="comment-header">
+                <span class="comment-author">${comment.author_name}</span>
+                <span class="comment-date">${new Date(comment.created_at).toLocaleString()}</span>
+            </div>
+            <div class="comment-content">${comment.content}</div>
+            <div class="comment-actions">
+                <button class="comment-action-btn reply-btn" onclick="showReplyForm(${comment.id})">
+                    <i class="fas fa-reply"></i> ${window.currentLang === 'en' ? 'Reply' : '답글'}
+                </button>
+                ${(isAuthor || isAdmin) ? `
+                    <button class="comment-action-btn edit-btn" onclick="editComment(${comment.id}, '${comment.content.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-edit"></i> ${window.currentLang === 'en' ? 'Edit' : '수정'}
+                    </button>
+                    <button class="comment-action-btn delete-btn" onclick="deleteComment(${comment.id})">
+                        <i class="fas fa-trash"></i> ${window.currentLang === 'en' ? 'Delete' : '삭제'}
+                    </button>
+                ` : ''}
+            </div>
+            <div id="reply-form-${comment.id}" class="reply-form">
+                <form class="comment-form">
+                    <input type="hidden" name="parent_id" value="${comment.id}">
+                    <textarea name="content" placeholder="${window.currentLang === 'en' ? 'Write a reply...' : '답글을 입력하세요...'}" maxlength="1000" required></textarea>
+                    <div class="d-flex gap-2">
+                        <button type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                            ${window.currentLang === 'en' ? 'Post Reply' : '답글 작성'}
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="hideReplyForm(${comment.id})">
+                            <i class="fas fa-times"></i> ${window.currentLang === 'en' ? 'Cancel' : '취소'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div id="replies-${comment.id}" class="replies-container"></div>
+        `;
+
+        // Setup reply form
+        const replyForm = div.querySelector(`#reply-form-${comment.id} form`);
+        setupReplyForm(replyForm, comment.id);
+
+        // Display nested replies
+        if (comment.replies && comment.replies.length > 0) {
+            const repliesContainer = div.querySelector(`#replies-${comment.id}`);
+            comment.replies.forEach(reply => {
+                const replyElement = createCommentElement(reply);
+                replyElement.classList.add('reply');
+                repliesContainer.appendChild(replyElement);
+            });
+        }
+
+        return div;
+    }
+
+    // Setup reply form
+    function setupReplyForm(form, commentId) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const content = formData.get('content').trim();
+
+            if (!content) {
+                alert('답글 내용을 입력해주세요.');
+                return;
+            }
+
+            await handleReplySubmit(commentId, content);
+            this.reset();
+            hideReplyForm(commentId);
+        });
+    }
+
+    // Show reply form
+    window.showReplyForm = function(commentId) {
+        const replyForm = document.getElementById(`reply-form-${commentId}`);
+        const allReplyForms = document.querySelectorAll('.reply-form');
+        
+        allReplyForms.forEach(form => {
+            if (form.id !== `reply-form-${commentId}`) {
+                form.classList.remove('active');
+            }
+        });
+
+        replyForm.classList.add('active');
+        replyForm.querySelector('textarea').focus();
+    };
+
+    // Hide reply form
+    window.hideReplyForm = function(commentId) {
+        const replyForm = document.getElementById(`reply-form-${commentId}`);
+        replyForm.classList.remove('active');
+    };
+
+    // Handle reply submission
+    async function handleReplySubmit(commentId, content) {
+        try {
+            const response = await fetch(`/api/resources/${resourceId}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    content: content,
+                    parent_id: commentId
+                })
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                commentsContainer.innerHTML = '';
+                currentPage = 1;
+                hasMoreComments = true;
+                await loadComments(currentPage);
+                alert(result.message);
+            } else {
+                alert(result.message || '답글 작성 중 오류가 발생했습니다.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('답글 작성 중 오류가 발생했습니다.');
+        }
+    }
+
+    // Update comment count
+    function updateCommentCount() {
+        const count = document.querySelectorAll('.comment').length;
+        const countElement = document.querySelector('.comments-section h3');
+        countElement.innerHTML = `<i class="fas fa-comments"></i> 댓글 (${count})`;
+    }
+
+    // Infinite scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && hasMoreComments) {
+                loadComments(currentPage + 1);
+            }
+        });
+    });
+
+    observer.observe(loadingIndicator);
+
+    // Initial load
+    loadComments();
 }); 
