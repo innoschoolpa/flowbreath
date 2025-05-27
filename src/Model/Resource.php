@@ -18,7 +18,7 @@ class Resource
         $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.name as author_name,
                 GROUP_CONCAT(t.name) as tags
                 FROM resources r
-                LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
+                INNER JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
                 LEFT JOIN users u ON r.user_id = u.id
                 LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id
                 LEFT JOIN tags t ON rtag.tag_id = t.id
@@ -41,7 +41,7 @@ class Resource
         $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.name as author_name,
                 GROUP_CONCAT(t.name) as tags
                 FROM resources r
-                LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
+                INNER JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
                 LEFT JOIN users u ON r.user_id = u.id
                 LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id
                 LEFT JOIN tags t ON rtag.tag_id = t.id

@@ -7,7 +7,7 @@ if (!empty($resource['link'])) {
 
 // null 값 처리
 $title = $resource['title'] ?? '';
-$username = $resource['username'] ?? '익명';
+$authorName = $resource['author_name'] ?? '익명';
 $createdAt = $resource['created_at'] ?? '';
 $content = $resource['content'] ?? $resource['description'] ?? '';
 $type = $resource['type'] ?? '';
@@ -52,7 +52,7 @@ $id = $resource['id'] ?? '';
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <span class="badge bg-primary"><?= htmlspecialchars($type) ?></span>
                 <p class="resource-meta mb-0">
-                    <?= htmlspecialchars($username) ?> · 
+                    <?= htmlspecialchars($authorName) ?> · 
                     <?= $createdAt ? date('Y-m-d', strtotime($createdAt)) : '' ?>
                 </p>
             </div>
