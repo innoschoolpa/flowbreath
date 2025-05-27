@@ -234,7 +234,7 @@ return [
 
     // 네비게이션
     'nav' => [
-        'breathing' => '호흡 운동',
+        'breathing' => '호흡 수련',
         'resources' => '자료',
         'tags' => '태그',
         'api_docs' => 'API 안내',
@@ -246,7 +246,7 @@ return [
 
     // 호흡 운동
     'breathing' => [
-        'title' => '호흡 운동',
+        'title' => '호흡 수련',
         'patterns' => [
             'title' => '호흡 패턴',
             'danjeon' => '단전 호흡',

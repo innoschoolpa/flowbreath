@@ -47,7 +47,7 @@
     "home": {
         "hero": {
             "title": "호흡을 위한 최고의 자료, FlowBreath.io",
-            "subtitle": "호흡 건강, 운동, 명상, 치료 등 다양한 호흡 자료를 쉽고 빠르게 찾아보세요.",
+            "subtitle": "복식 호흡, 단전 호흡, 명상등 다양한 호흡 자료를 쉽고 빠르게 찾아보세요.",
             "search_placeholder": "자료, 태그, 키워드로 검색..."
         },
         "recent_resources": {
@@ -104,6 +104,6 @@
     },
     "footer": {
         "copyright": "© {year} FlowBreath.io. All rights reserved.",
-        "description": "호흡 건강을 위한 최고의 자료 플랫폼"
+        "description": "호흡을 위한 최고의 자료 플랫폼"
     }
 }
