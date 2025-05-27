@@ -1049,18 +1049,29 @@ class Resource extends Model {
                 rt.title,
                 rt.content,
                 rt.description,
-                u.name as username,
-                r.link as url
+                u.name as author_name,
+                r.link as url,
+                GROUP_CONCAT(t.name) as tags
                 FROM resources r
                 JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
                 LEFT JOIN users u ON r.user_id = u.id
+                LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id
+                LEFT JOIN tags t ON rtag.tag_id = t.id
                 WHERE r.visibility = 'public'
                 AND r.status = 'published'
                 AND r.deleted_at IS NULL
+                GROUP BY r.id
                 ORDER BY r.created_at DESC
                 LIMIT ?";
         
         $resources = $this->db->fetchAll($sql, [$lang, $limit]);
+        
+        // 태그 문자열을 배열로 변환
+        foreach ($resources as &$resource) {
+            $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
+            // 작성자 이름이 없는 경우 익명으로 설정
+            $resource['username'] = $resource['author_name'] ?? null;
+        }
         
         return $resources;
     }

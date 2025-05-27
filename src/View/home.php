@@ -117,25 +117,38 @@ body {
     color: var(--secondary-color);
 }
 
-.card-resource {
+.card {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.card-resource:hover {
+.card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
-.card-resource .card-title {
+.card .card-title {
     color: var(--text-color);
 }
 
-.card-resource .card-text {
+.card .card-title a {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.card .card-title a:hover {
+    color: var(--accent-color);
+}
+
+.card .card-text {
     color: var(--text-color);
     opacity: 0.9;
+}
+
+.card .text-muted {
+    color: var(--secondary-color) !important;
 }
 
 .resource-meta {
@@ -150,7 +163,7 @@ body {
     color: #e2e8f0;
     padding: 0.45rem 1.1rem;
     border-radius: 999px;
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 500;
     text-decoration: none;
     box-shadow: 0 2px 8px rgba(30, 64, 175, 0.12);
@@ -337,22 +350,28 @@ h1, h2, h3, h4, h5, h6 {
                         <?php endif; ?>
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">
-                                <a href="/resources/view/<?= $resource['id'] ?>" class="text-decoration-none">
+                                <a href="/resources/view/<?= $resource['id'] ?>">
                                     <?= htmlspecialchars($resource['title']) ?>
                                 </a>
                             </h5>
-                            <p class="card-text text-muted">
+                            <p class="card-text">
                                 <?= $content ?>
                             </p>
-                            <div class="mb-2">
-                                <?php foreach (($resource['tags'] ?? []) as $tag): ?>
-                                    <?php $tagName = is_array($tag) ? $tag['name'] : $tag; ?>
-                                    <a href="/resources/tag/<?= urlencode($tagName) ?>" class="tag-badge">#<?= htmlspecialchars($tagName) ?></a>
-                                <?php endforeach; ?>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mt-2">
+                            <?php if (!empty($resource['tags'])): ?>
+                                <div class="mb-2">
+                                    <?php foreach ($resource['tags'] as $tag): ?>
+                                        <?php $tagName = is_array($tag) ? $tag['name'] : $tag; ?>
+                                        <a href="/resources/tag/<?= urlencode($tagName) ?>" class="tag-badge">
+                                            <i class="fa fa-hashtag"></i>
+                                            <span><?= htmlspecialchars($tagName) ?></span>
+                                        </a>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
                                 <small class="text-muted">
-                                    <i class="fas fa-user me-1"></i><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?>
+                                    <i class="fas fa-user me-1"></i>
+                                    <?= $resource['author_name'] ? htmlspecialchars($resource['author_name']) : $language->get('common.anonymous') ?>
                                 </small>
                                 <small class="text-muted">
                                     <i class="fas fa-calendar me-1"></i><?= date('Y-m-d', strtotime($resource['created_at'])) ?>
@@ -380,4 +399,5 @@ h1, h2, h3, h4, h5, h6 {
     <?php endif; ?>
 </div>
 
+<?php require_once __DIR__ . '/layouts/footer.php'; ?> 
 <?php require_once __DIR__ . '/layouts/footer.php'; ?> 
