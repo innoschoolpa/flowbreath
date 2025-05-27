@@ -285,15 +285,17 @@ return [
             'status' => '상태',
             'status_draft' => '임시저장',
             'status_published' => '발행',
-            'visibility' => '공개 범위',
+            'visibility' => '공개 여부',
             'visibility_public' => '공개',
             'visibility_private' => '비공개',
             'language' => '언어',
             'language_ko' => '한국어',
-            'language_en' => 'English',
+            'language_en' => '영어',
             'category' => '카테고리',
             'tags' => '태그 (쉼표로 구분)',
-            'file' => '첨부 파일 (이미지, PDF)'
+            'file' => '첨부파일 (이미지, PDF)',
+            'file_choose' => '파일 선택',
+            'file_no_selection' => '선택된 파일 없음'
         ]
     ],
 ]; 
