@@ -309,7 +309,7 @@ select.form-control:focus {
     <?php
     $rid = $resource['resource_id'] ?? $resource['id'] ?? null;
     ?>
-    <h2><?php echo ($rid) ? '리소스 수정' : '리소스 등록'; ?></h2>
+    <h2><?php echo ($rid) ? $language->get('resources.edit') : $language->get('resources.create'); ?></h2>
     
     <form id="resource-form" action="<?php echo ($rid) ? '/resources/' . $rid : '/resources/store'; ?>" method="post" enctype="multipart/form-data">
         <?php if ($rid): ?>
@@ -318,22 +318,22 @@ select.form-control:focus {
         <?php endif; ?>
         
         <div class="mb-3">
-            <label for="title" class="form-label">제목 <span class="text-danger">*</span></label>
+            <label for="title" class="form-label"><?= $language->get('resources.form.title') ?> <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="title" name="title" required maxlength="150" value="<?php echo htmlspecialchars($resource['title'] ?? ''); ?>">
         </div>
         
         <div class="mb-3">
-            <label for="content" class="form-label">내용 <span class="text-danger">*</span></label>
+            <label for="content" class="form-label"><?= $language->get('resources.form.content') ?> <span class="text-danger">*</span></label>
             <textarea class="form-control" id="content" name="content" rows="6"><?php echo htmlspecialchars($resource['content'] ?? ''); ?></textarea>
         </div>
         
         <div class="mb-3">
-            <label for="description" class="form-label">설명 <span class="text-danger">*</span></label>
+            <label for="description" class="form-label"><?= $language->get('resources.form.description') ?> <span class="text-danger">*</span></label>
             <textarea class="form-control" id="description" name="description" rows="3"><?php echo htmlspecialchars($resource['description'] ?? ''); ?></textarea>
         </div>
         
         <div class="mb-3">
-            <label for="link" class="form-label">링크 (유튜브, 웹사이트 등)</label>
+            <label for="link" class="form-label"><?= $language->get('resources.form.link') ?></label>
             <input type="url" class="form-control" id="link" name="link" value="<?php echo htmlspecialchars($resource['link'] ?? ''); ?>">
             <div id="youtube-preview" class="mt-2" style="display: none;">
                 <div class="ratio ratio-16x9">
@@ -343,45 +343,45 @@ select.form-control:focus {
         </div>
         
         <div class="mb-3">
-            <label for="status" class="form-label">상태</label>
+            <label for="status" class="form-label"><?= $language->get('resources.form.status') ?></label>
             <select class="form-control" id="status" name="status">
-                <option value="draft" <?php if (($resource['status'] ?? 'draft') === 'draft') echo 'selected'; ?>>임시저장</option>
-                <option value="published" <?php if (($resource['status'] ?? '') === 'published') echo 'selected'; ?>>발행</option>
+                <option value="draft" <?php if (($resource['status'] ?? 'draft') === 'draft') echo 'selected'; ?>><?= $language->get('resources.form.status_draft') ?></option>
+                <option value="published" <?php if (($resource['status'] ?? '') === 'published') echo 'selected'; ?>><?= $language->get('resources.form.status_published') ?></option>
             </select>
         </div>
         
         <div class="mb-3">
-            <label for="visibility" class="form-label">공개 범위</label>
+            <label for="visibility" class="form-label"><?= $language->get('resources.form.visibility') ?></label>
             <select class="form-control" id="visibility" name="visibility">
-                <option value="public" <?php if (($resource['visibility'] ?? 'public') === 'public') echo 'selected'; ?>>공개</option>
-                <option value="private" <?php if (($resource['visibility'] ?? '') === 'private') echo 'selected'; ?>>비공개</option>
+                <option value="public" <?php if (($resource['visibility'] ?? 'public') === 'public') echo 'selected'; ?>><?= $language->get('resources.form.visibility_public') ?></option>
+                <option value="private" <?php if (($resource['visibility'] ?? '') === 'private') echo 'selected'; ?>><?= $language->get('resources.form.visibility_private') ?></option>
             </select>
         </div>
         
         <div class="mb-3">
-            <label for="language_code" class="form-label">언어</label>
+            <label for="language_code" class="form-label"><?= $language->get('resources.form.language') ?></label>
             <select class="form-control" id="language_code" name="language_code">
-                <option value="ko" <?php if (($resource['language_code'] ?? 'ko') === 'ko') echo 'selected'; ?>>한국어</option>
-                <option value="en" <?php if (($resource['language_code'] ?? 'ko') === 'en') echo 'selected'; ?>>English</option>
+                <option value="ko" <?php if (($resource['language_code'] ?? 'ko') === 'ko') echo 'selected'; ?>><?= $language->get('resources.form.language_ko') ?></option>
+                <option value="en" <?php if (($resource['language_code'] ?? 'ko') === 'en') echo 'selected'; ?>><?= $language->get('resources.form.language_en') ?></option>
             </select>
         </div>
         
         <div class="mb-3">
-            <label for="category" class="form-label">카테고리</label>
+            <label for="category" class="form-label"><?= $language->get('resources.form.category') ?></label>
             <input type="text" class="form-control" id="category" name="category" maxlength="50" value="<?php echo htmlspecialchars($resource['category'] ?? ''); ?>">
         </div>
         
         <div class="mb-3">
-            <label for="tags" class="form-label">태그 (쉼표로 구분)</label>
+            <label for="tags" class="form-label"><?= $language->get('resources.form.tags') ?></label>
             <input type="text" class="form-control" id="tags" name="tags" maxlength="100" value="<?php echo htmlspecialchars(implode(',', $resource['tags'] ?? [])); ?>">
         </div>
         
         <div class="mb-3">
-            <label for="file" class="form-label">첨부 파일 (이미지, PDF)</label>
+            <label for="file" class="form-label"><?= $language->get('resources.form.file') ?></label>
             <input type="file" class="form-control" id="file" name="file" accept="image/jpeg,image/png,application/pdf">
         </div>
         
-        <button type="submit" class="btn btn-primary"><?php echo ($rid) ? '수정' : '등록'; ?></button>
+        <button type="submit" class="btn btn-primary"><?php echo ($rid) ? $language->get('resources.save') : $language->get('resources.create'); ?></button>
     </form>
 </div>
 

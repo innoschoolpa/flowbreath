@@ -277,5 +277,23 @@ return [
         'edit_success' => '자료가 성공적으로 수정되었습니다.',
         'delete_success' => '자료가 성공적으로 삭제되었습니다.',
         'error' => '오류가 발생했습니다.',
+        'form' => [
+            'title' => '제목',
+            'content' => '내용',
+            'description' => '설명',
+            'link' => '링크 (유튜브, 웹사이트 등)',
+            'status' => '상태',
+            'status_draft' => '임시저장',
+            'status_published' => '발행',
+            'visibility' => '공개 범위',
+            'visibility_public' => '공개',
+            'visibility_private' => '비공개',
+            'language' => '언어',
+            'language_ko' => '한국어',
+            'language_en' => 'English',
+            'category' => '카테고리',
+            'tags' => '태그 (쉼표로 구분)',
+            'file' => '첨부 파일 (이미지, PDF)'
+        ]
     ],
 ]; 

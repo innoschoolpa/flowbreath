@@ -277,5 +277,23 @@ return [
         'edit_success' => 'Resource has been successfully updated.',
         'delete_success' => 'Resource has been successfully deleted.',
         'error' => 'An error occurred.',
+        'form' => [
+            'title' => 'Title',
+            'content' => 'Content',
+            'description' => 'Description',
+            'link' => 'Link (YouTube, website, etc.)',
+            'status' => 'Status',
+            'status_draft' => 'Draft',
+            'status_published' => 'Published',
+            'visibility' => 'Visibility',
+            'visibility_public' => 'Public',
+            'visibility_private' => 'Private',
+            'language' => 'Language',
+            'language_ko' => 'Korean',
+            'language_en' => 'English',
+            'category' => 'Category',
+            'tags' => 'Tags (comma separated)',
+            'file' => 'Attachment (Image, PDF)'
+        ]
     ],
 ]; 
