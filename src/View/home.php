@@ -266,11 +266,11 @@ h1, h2, h3, h4, h5, h6 {
 <!-- Hero Section -->
 <section class="hero-section">
     <div class="container">
-        <h1 class="display-5 fw-bold mb-3"><?= $language->get('search_title') ?></h1>
-        <p class="lead mb-4"><?= $language->get('search_subtitle') ?></p>
+        <h1 class="display-5 fw-bold mb-3"><?= $language->get('home.hero.title') ?></h1>
+        <p class="lead mb-4"><?= $language->get('home.hero.subtitle') ?></p>
         <form class="search-box" method="get" action="/">
             <div class="input-group input-group-lg">
-                <input type="text" class="form-control" name="q" placeholder="<?= $language->get('search_placeholder') ?>" value="<?= htmlspecialchars($searchQuery) ?>">
+                <input type="text" class="form-control" name="q" placeholder="<?= $language->get('home.hero.search_placeholder') ?>" value="<?= htmlspecialchars($searchQuery) ?>">
                 <button class="btn btn-warning" type="submit"><i class="fa fa-search"></i> <?= $language->get('common.search') ?></button>
             </div>
         </form>
@@ -291,7 +291,7 @@ h1, h2, h3, h4, h5, h6 {
         </div>
     <?php else: ?>
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="mb-0"><?= $language->get('recent_resources') ?></h4>
+            <h4 class="mb-0"><?= $language->get('home.recent_resources.title') ?></h4>
             <a href="/resources" class="btn btn-link"><?= $language->get('common.view_all') ?> <i class="fa fa-arrow-right"></i></a>
         </div>
         <div class="row">
@@ -300,7 +300,7 @@ h1, h2, h3, h4, h5, h6 {
             <?php endforeach; ?>
         </div>
         <div class="popular-tags">
-            <h5><i class="fa fa-fire"></i> <?= $language->get('popular_tags') ?></h5>
+            <h5><i class="fa fa-fire"></i> <?= $language->get('home.popular_tags.title') ?></h5>
             <div class="tags-container">
                 <?php foreach ($popularTags as $tag): ?>
                     <a href="/resources?tags[]=<?= urlencode($tag['name']) ?>" class="tag-badge">
