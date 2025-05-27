@@ -699,7 +699,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 파일 선택 시 파일명 표시
     document.getElementById('file').addEventListener('change', function(e) {
-        const fileName = e.target.files[0] ? e.target.files[0].name : '<?= $language->get('resources.form.file_no_selection') ?>';
+        const fileName = e.target.files[0] ? e.target.files[0].name : '선택된 파일 없음';
         this.nextElementSibling.querySelector('.file-name').textContent = fileName;
     });
 });
