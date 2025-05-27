@@ -31,7 +31,7 @@ class HomeController
         // 최근 리소스
         $resourceModel = new Resource();
         $lang = isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko';
-        $recentResources = $resourceModel->getRecentPublic(4,$lang);
+        $recentResources = $resourceModel->getRecentPublic(4, $lang);
 
         // 인기 태그
         $tagModel = new Tag();
@@ -53,7 +53,7 @@ class HomeController
         $searchResults = [];
         if ($searchQuery !== '') {
             try {
-                $searchResults = $resourceModel->searchResources($searchQuery, 10, 0);
+                $searchResults = $resourceModel->searchResources($searchQuery, 10, 0, $lang);
             } catch (\Exception $e) {
                 error_log("Search error: " . $e->getMessage());
                 $searchResults = [];
@@ -114,36 +114,36 @@ class HomeController
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - 페이지를 찾을 수 없습니다</title>
+    <title>404 - Page Not Found</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.6;
             margin: 0;
             padding: 20px;
-            background-color: #f8f9fa;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            background-color: #f8f9fa;
         }
-        .container {
-            max-width: 600px;
-            text-align: center;
-            background-color: white;
+        .error-container {
+            background: white;
             padding: 40px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
         }
         h1 {
             color: #e74c3c;
-            margin-bottom: 20px;
+            margin: 0 0 20px;
         }
         p {
             color: #34495e;
-            margin-bottom: 20px;
+            margin: 0 0 20px;
         }
-        .back-link {
+        .home-link {
             display: inline-block;
             padding: 10px 20px;
             background-color: #3498db;
@@ -152,16 +152,16 @@ class HomeController
             border-radius: 4px;
             transition: background-color 0.3s;
         }
-        .back-link:hover {
+        .home-link:hover {
             background-color: #2980b9;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>404 - 페이지를 찾을 수 없습니다</h1>
-        <p>요청하신 페이지를 찾을 수 없습니다.</p>
-        <a href="/" class="back-link">홈으로 돌아가기</a>
+    <div class="error-container">
+        <h1>404 - Page Not Found</h1>
+        <p>The page you are looking for does not exist.</p>
+        <a href="/" class="home-link">Return to Home</a>
     </div>
 </body>
 </html>
