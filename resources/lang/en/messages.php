@@ -263,4 +263,19 @@ return [
     'footer.unsaved_changes_save_and_stay' => 'Save changes and stay on this page.',
     'footer.unsaved_changes_save_and_leave' => 'Save changes and leave this page.',
     'footer.unsaved_changes_save_and_cancel' => 'Save changes and stay on this page.',
+
+    'resources' => [
+        'title' => 'Breathing Resources',
+        'create' => 'Add Resource',
+        'edit' => 'Edit Resource',
+        'delete' => 'Delete Resource',
+        'save' => 'Save',
+        'cancel' => 'Cancel',
+        'delete_confirm' => 'Are you sure you want to delete this resource?',
+        'no_results' => 'No results found.',
+        'create_success' => 'Resource has been successfully created.',
+        'edit_success' => 'Resource has been successfully updated.',
+        'delete_success' => 'Resource has been successfully deleted.',
+        'error' => 'An error occurred.',
+    ],
 ]; 

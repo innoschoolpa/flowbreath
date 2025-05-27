@@ -263,4 +263,19 @@ return [
     'footer.unsaved_changes_save_and_stay' => '변경사항을 저장하고 현재 페이지에 머무릅니다.',
     'footer.unsaved_changes_save_and_leave' => '변경사항을 저장하고 다른 페이지로 이동합니다.',
     'footer.unsaved_changes_save_and_cancel' => '변경사항을 저장하고 현재 페이지에 머무릅니다.',
+
+    'resources' => [
+        'title' => '호흡 자료',
+        'create' => '자료 등록',
+        'edit' => '자료 수정',
+        'delete' => '자료 삭제',
+        'save' => '저장',
+        'cancel' => '취소',
+        'delete_confirm' => '정말로 이 자료를 삭제하시겠습니까?',
+        'no_results' => '검색 결과가 없습니다.',
+        'create_success' => '자료가 성공적으로 등록되었습니다.',
+        'edit_success' => '자료가 성공적으로 수정되었습니다.',
+        'delete_success' => '자료가 성공적으로 삭제되었습니다.',
+        'error' => '오류가 발생했습니다.',
+    ],
 ]; 

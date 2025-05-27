@@ -234,7 +234,7 @@ input[type="text"]::placeholder {
 <?php if (isset($user) && $user): ?>
   <div class="d-flex justify-content-center mb-4">
     <a href="/resources/create" class="btn btn-primary">
-      <i class="fas fa-plus"></i> 자료 등록
+      <i class="fas fa-plus"></i> <?= $language->get('resources.create') ?>
     </a>
   </div>
 <?php endif; ?>
