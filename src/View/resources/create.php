@@ -348,22 +348,22 @@ select.form-control:focus {
         <?php endif; ?>
         
         <div class="mb-3">
-            <label for="title" class="form-label">제목 <span class="text-danger">*</span></label>
+            <label for="title" class="form-label"><?php echo $language->get('resources.form.title'); ?> <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="title" name="title" required maxlength="150" value="<?php echo htmlspecialchars($resource['title'] ?? ''); ?>">
         </div>
         
         <div class="mb-3">
-            <label for="content" class="form-label">내용 <span class="text-danger">*</span></label>
+            <label for="content" class="form-label"><?php echo $language->get('resources.form.content'); ?> <span class="text-danger">*</span></label>
             <textarea class="form-control" id="content" name="content" rows="6"><?php echo htmlspecialchars($resource['content'] ?? ''); ?></textarea>
         </div>
         
         <div class="mb-3">
-            <label for="description" class="form-label">설명 <span class="text-danger">*</span></label>
+            <label for="description" class="form-label"><?php echo $language->get('resources.form.description'); ?> <span class="text-danger">*</span></label>
             <textarea class="form-control" id="description" name="description" rows="3"><?php echo htmlspecialchars($resource['description'] ?? ''); ?></textarea>
         </div>
         
         <div class="mb-3">
-            <label for="link" class="form-label">링크 (유튜브, 웹사이트 등)</label>
+            <label for="link" class="form-label"><?php echo $language->get('resources.form.link'); ?></label>
             <input type="url" class="form-control" id="link" name="link" value="<?php echo htmlspecialchars($resource['link'] ?? ''); ?>">
             <div id="youtube-preview" class="mt-2" style="display: none;">
                 <div class="ratio ratio-16x9">
@@ -373,46 +373,46 @@ select.form-control:focus {
         </div>
         
         <div class="mb-3">
-            <label for="status" class="form-label">상태</label>
+            <label for="status" class="form-label"><?php echo $language->get('resources.form.status'); ?></label>
             <select class="form-control" id="status" name="status">
-                <option value="draft" <?php if (($resource['status'] ?? 'draft') === 'draft') echo 'selected'; ?>>임시저장</option>
-                <option value="published" <?php if (($resource['status'] ?? '') === 'published') echo 'selected'; ?>>발행</option>
+                <option value="draft" <?php if (($resource['status'] ?? 'draft') === 'draft') echo 'selected'; ?>><?php echo $language->get('resources.status.draft'); ?></option>
+                <option value="published" <?php if (($resource['status'] ?? '') === 'published') echo 'selected'; ?>><?php echo $language->get('resources.status.published'); ?></option>
             </select>
         </div>
         
         <div class="mb-3">
-            <label for="visibility" class="form-label">공개 여부</label>
+            <label for="visibility" class="form-label"><?php echo $language->get('resources.form.visibility'); ?></label>
             <select class="form-control" id="visibility" name="visibility">
-                <option value="public" <?php if (($resource['visibility'] ?? 'public') === 'public') echo 'selected'; ?>>공개</option>
-                <option value="private" <?php if (($resource['visibility'] ?? '') === 'private') echo 'selected'; ?>>비공개</option>
+                <option value="public" <?php if (($resource['visibility'] ?? 'public') === 'public') echo 'selected'; ?>><?php echo $language->get('resources.visibility.public'); ?></option>
+                <option value="private" <?php if (($resource['visibility'] ?? '') === 'private') echo 'selected'; ?>><?php echo $language->get('resources.visibility.private'); ?></option>
             </select>
         </div>
         
         <div class="mb-3">
-            <label for="language_code" class="form-label">언어</label>
+            <label for="language_code" class="form-label"><?php echo $language->get('resources.form.language'); ?></label>
             <select class="form-control" id="language_code" name="language_code">
-                <option value="ko" <?php if (($resource['language_code'] ?? 'ko') === 'ko') echo 'selected'; ?>>한국어</option>
-                <option value="en" <?php if (($resource['language_code'] ?? 'ko') === 'en') echo 'selected'; ?>>영어</option>
+                <option value="ko" <?php if (($resource['language_code'] ?? 'ko') === 'ko') echo 'selected'; ?>><?php echo $language->get('resources.form.language_ko'); ?></option>
+                <option value="en" <?php if (($resource['language_code'] ?? 'ko') === 'en') echo 'selected'; ?>><?php echo $language->get('resources.form.language_en'); ?></option>
             </select>
         </div>
         
         <div class="mb-3">
-            <label for="category" class="form-label">카테고리</label>
+            <label for="category" class="form-label"><?php echo $language->get('resources.form.category'); ?></label>
             <input type="text" class="form-control" id="category" name="category" maxlength="50" value="<?php echo htmlspecialchars($resource['category'] ?? ''); ?>">
         </div>
         
         <div class="mb-3">
-            <label for="tags" class="form-label">태그 (쉼표로 구분)</label>
+            <label for="tags" class="form-label"><?php echo $language->get('resources.form.tags'); ?></label>
             <input type="text" class="form-control" id="tags" name="tags" maxlength="100" value="<?php echo htmlspecialchars(implode(',', $resource['tags'] ?? [])); ?>">
         </div>
         
         <div class="mb-3">
-            <label for="file" class="form-label">첨부파일 (이미지, PDF)</label>
+            <label for="file" class="form-label"><?php echo $language->get('resources.form.file'); ?></label>
             <div class="custom-file-upload">
                 <input type="file" class="form-control" id="file" name="file" accept="image/jpeg,image/png,application/pdf">
                 <label for="file" class="file-label">
-                    <span class="file-button">파일 선택</span>
-                    <span class="file-name">선택된 파일 없음</span>
+                    <span class="file-button"><?php echo $language->get('common.select_file'); ?></span>
+                    <span class="file-name"><?php echo $language->get('common.no_file_selected'); ?></span>
                 </label>
             </div>
         </div>
@@ -702,5 +702,98 @@ document.addEventListener('DOMContentLoaded', function() {
         const fileName = e.target.files[0] ? e.target.files[0].name : '선택된 파일 없음';
         this.nextElementSibling.querySelector('.file-name').textContent = fileName;
     });
+});
+
+// Language translations
+const translations = {
+    ko: {
+        title: '제목',
+        content: '내용',
+        description: '설명',
+        link: '링크 (유튜브, 웹사이트 등)',
+        status: '상태',
+        status_draft: '임시저장',
+        status_published: '발행',
+        visibility: '공개 여부',
+        visibility_public: '공개',
+        visibility_private: '비공개',
+        language: '언어',
+        language_ko: '한국어',
+        language_en: '영어',
+        category: '카테고리',
+        tags: '태그 (쉼표로 구분)',
+        file: '첨부파일 (이미지, PDF)',
+        select_file: '파일 선택',
+        no_file_selected: '선택된 파일 없음',
+        create: '리소스 생성',
+        save: '저장'
+    },
+    en: {
+        title: 'Title',
+        content: 'Content',
+        description: 'Description',
+        link: 'Link (YouTube, website, etc.)',
+        status: 'Status',
+        status_draft: 'Draft',
+        status_published: 'Published',
+        visibility: 'Visibility',
+        visibility_public: 'Public',
+        visibility_private: 'Private',
+        language: 'Language',
+        language_ko: 'Korean',
+        language_en: 'English',
+        category: 'Category',
+        tags: 'Tags (comma separated)',
+        file: 'Attachment (Image, PDF)',
+        select_file: 'Select File',
+        no_file_selected: 'No file selected',
+        create: 'Create Resource',
+        save: 'Save'
+    }
+};
+
+// Function to update form labels based on selected language
+function updateFormLabels(language) {
+    const lang = translations[language];
+    if (!lang) return;
+
+    // Update all form labels
+    document.querySelector('label[for="title"]').innerHTML = `${lang.title} <span class="text-danger">*</span>`;
+    document.querySelector('label[for="content"]').innerHTML = `${lang.content} <span class="text-danger">*</span>`;
+    document.querySelector('label[for="description"]').innerHTML = `${lang.description} <span class="text-danger">*</span>`;
+    document.querySelector('label[for="link"]').textContent = lang.link;
+    document.querySelector('label[for="status"]').textContent = lang.status;
+    document.querySelector('label[for="visibility"]').textContent = lang.visibility;
+    document.querySelector('label[for="language_code"]').textContent = lang.language;
+    document.querySelector('label[for="category"]').textContent = lang.category;
+    document.querySelector('label[for="tags"]').textContent = lang.tags;
+    document.querySelector('label[for="file"]').textContent = lang.file;
+
+    // Update select options
+    document.querySelector('#status option[value="draft"]').textContent = lang.status_draft;
+    document.querySelector('#status option[value="published"]').textContent = lang.status_published;
+    document.querySelector('#visibility option[value="public"]').textContent = lang.visibility_public;
+    document.querySelector('#visibility option[value="private"]').textContent = lang.visibility_private;
+    document.querySelector('#language_code option[value="ko"]').textContent = lang.language_ko;
+    document.querySelector('#language_code option[value="en"]').textContent = lang.language_en;
+
+    // Update file upload button
+    document.querySelector('.file-button').textContent = lang.select_file;
+    document.querySelector('.file-name').textContent = lang.no_file_selected;
+
+    // Update submit button
+    const submitButton = document.querySelector('button[type="submit"]');
+    submitButton.textContent = document.querySelector('input[name="_method"]') ? lang.save : lang.create;
+}
+
+// Add event listener for language change
+document.getElementById('language_code').addEventListener('change', function(e) {
+    updateFormLabels(e.target.value);
+});
+
+// Initialize form labels based on current language
+document.addEventListener('DOMContentLoaded', function() {
+    const currentLanguage = document.getElementById('language_code').value;
+    updateFormLabels(currentLanguage);
 });
 </script>
