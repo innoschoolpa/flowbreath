@@ -3,6 +3,8 @@
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
+
+$language = \App\Core\Language::getInstance();
 ?>
 <?php if (isset($_SESSION['error_message'])): ?>
     <div class="alert alert-danger">
