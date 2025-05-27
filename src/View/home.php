@@ -9,14 +9,15 @@ try {
 
     // 최근 리소스
     $resourceModel = new \App\Models\Resource();
-    $recentResources = $resourceModel->getRecentPublic(6);
+    $lang = isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko';
+    $recentResources = $resourceModel->getRecentPublic(6, $lang);
 
     // 검색 처리
     $searchQuery = isset($_GET['q']) ? trim($_GET['q']) : '';
     $searchResults = [];
     if ($searchQuery !== '') {
         try {
-            $searchResults = $resourceModel->searchResources($searchQuery, 10, 0);
+            $searchResults = $resourceModel->searchResources($searchQuery, 10, 0, $lang);
         } catch (Exception $e) {
             error_log("Search error: " . $e->getMessage());
             $searchResults = [];
@@ -263,38 +264,56 @@ h1, h2, h3, h4, h5, h6 {
 </style>
 
 <!-- Hero Section -->
-<section class="hero-section mb-8">
-  <div class="container text-center py-5">
-    <h1 class="display-5 fw-bold mb-3" style="color:#fff;"><?= $language->get('search_title') ?></h1>
-    <p class="lead mb-4" style="color:#cbd5e1;"><?= $language->get('search_subtitle') ?></p>
-    <form action="/resources" method="GET" class="search-box mx-auto d-flex justify-content-center align-items-center" style="max-width:600px; white-space: nowrap;">
-      <input type="text" name="keyword" class="form-control form-control-lg rounded-start" placeholder="<?= $language->get('search_placeholder') ?>" value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>">
-      <button type="submit" class="btn btn-primary btn-lg rounded-end ms-2 px-5" style="min-width: 120px;"><i class="fas fa-search"></i> <?= $language->get('common.search') ?></button>
-    </form>
-  </div>
+<section class="hero-section">
+    <div class="container">
+        <h1 class="display-5 fw-bold mb-3"><?= $language->get('search_title') ?></h1>
+        <p class="lead mb-4"><?= $language->get('search_subtitle') ?></p>
+        <form class="search-box" method="get" action="/">
+            <div class="input-group input-group-lg">
+                <input type="text" class="form-control" name="q" placeholder="<?= $language->get('search_placeholder') ?>" value="<?= htmlspecialchars($searchQuery) ?>">
+                <button class="btn btn-warning" type="submit"><i class="fa fa-search"></i> <?= $language->get('common.search') ?></button>
+            </div>
+        </form>
+    </div>
 </section>
 
-<!-- Recent Resources Section -->
-<div class="container">
-  <h2 class="mb-4"><?= $language->get('recent_resources') ?></h2>
-  <div class="row g-4">
-    <?php foreach ($recentResources as $resource): ?>
-      <?php require __DIR__ . '/partials/resource-card.php'; ?>
-    <?php endforeach; ?>
-  </div>
-</div>
-
-<!-- Popular Tags Section -->
 <div class="container mt-5">
-  <h2 class="mb-4"><?= $language->get('popular_tags') ?></h2>
-  <div class="d-flex flex-wrap gap-2">
-    <?php foreach ($popularTags as $tag): ?>
-      <a href="/resources?tags[]=<?= urlencode($tag['name']) ?>" class="tag-badge">
-        <i class="fa fa-hashtag"></i>
-        <span><?= htmlspecialchars($tag['name']) ?></span>
-      </a>
-    <?php endforeach; ?>
-  </div>
+    <?php if ($searchQuery !== ''): ?>
+        <h4 class="mb-4">
+            '<?= htmlspecialchars($searchQuery) ?>' <?= $language->get('common.search') ?>
+        </h4>
+        <div class="row">
+            <?php if (empty($searchResults)): ?>
+                <div class="col-12"><div class="alert alert-warning"><?= $language->get('home.recent_resources.no_results') ?></div></div>
+            <?php else: foreach ($searchResults as $resource): ?>
+                <?php include __DIR__ . '/partials/resource-card.php'; ?>
+            <?php endforeach; endif; ?>
+        </div>
+    <?php else: ?>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0"><?= $language->get('recent_resources') ?></h4>
+            <a href="/resources" class="btn btn-link"><?= $language->get('common.view_all') ?> <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div class="row">
+            <?php foreach ($recentResources as $resource): ?>
+                <?php include __DIR__ . '/partials/resource-card.php'; ?>
+            <?php endforeach; ?>
+        </div>
+        <div class="popular-tags">
+            <h5><i class="fa fa-fire"></i> <?= $language->get('popular_tags') ?></h5>
+            <div class="tags-container">
+                <?php foreach ($popularTags as $tag): ?>
+                    <a href="/resources?tags[]=<?= urlencode($tag['name']) ?>" class="tag-badge">
+                        <i class="fa fa-hashtag"></i>
+                        <span><?= htmlspecialchars($tag['name']) ?></span>
+                        <?php if (isset($tag['count'])): ?>
+                            <span class="tag-count"><?= $tag['count'] ?></span>
+                        <?php endif; ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    <?php endif; ?>
 </div>
 
 <?php require_once __DIR__ . '/layouts/footer.php'; ?> 
