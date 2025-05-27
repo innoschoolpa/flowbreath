@@ -150,9 +150,6 @@ return [
     'home.popular_tags.count_other' => '{count}개의 자료',
 
     // 검색 관련
-    'search_title' => '호흡 자료 검색',
-    'search_subtitle' => '호흡, 명상, 건강을 위한 다양한 자료를 찾아보세요.',
-    'search_placeholder' => '키워드로 검색...',
     'search_no_results' => '검색 결과가 없습니다.',
     'search_results_count' => '{count}개의 검색 결과',
     'search_results_count_plural' => '{count}개의 검색 결과',

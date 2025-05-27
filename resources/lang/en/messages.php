@@ -150,9 +150,6 @@ return [
     'home.popular_tags.count_other' => '{count} resources',
 
     // Search related
-    'search_title' => 'Breathing Resources Search',
-    'search_subtitle' => 'Find various resources for breathing, meditation, and health.',
-    'search_placeholder' => 'Search by keyword...',
     'search_no_results' => 'No results found.',
     'search_results_count' => '{count} search results',
     'search_results_count_plural' => '{count} search results',
