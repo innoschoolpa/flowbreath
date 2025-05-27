@@ -127,39 +127,51 @@ body {
 }
 
 /* 파일 업로드 스타일 */
-input[type="file"] {
-    background-color: var(--input-bg);
-    border-color: var(--input-border);
-    color: var(--text-color);
+.custom-file-upload {
     position: relative;
+    display: block;
 }
 
-input[type="file"]::file-selector-button {
+.custom-file-upload input[type="file"] {
+    position: absolute;
+    left: -9999px;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.file-label {
+    display: flex;
+    align-items: center;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.file-label:hover {
+    background-color: var(--input-focus-bg);
+}
+
+.file-button {
     background-color: var(--accent-color);
     color: var(--text-color);
-    border: none;
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
-    cursor: pointer;
     margin-right: 1rem;
+    font-weight: 500;
 }
 
-input[type="file"]::file-selector-button:hover {
-    background-color: #0284c7;
-}
-
-input[type="file"]::before {
-    content: attr(data-placeholder);
-    position: absolute;
-    left: 120px;
-    top: 50%;
-    transform: translateY(-50%);
+.file-name {
     color: var(--text-color);
     opacity: 0.7;
 }
 
-input[type="file"]:has(:not(:placeholder-shown))::before {
-    content: attr(data-placeholder);
+/* 파일이 선택되었을 때의 스타일 */
+input[type="file"]:not(:placeholder-shown) + .file-label .file-name {
+    opacity: 1;
 }
 
 /* 선택 상자 스타일 */
@@ -396,9 +408,13 @@ select.form-control:focus {
         
         <div class="mb-3">
             <label for="file" class="form-label"><?= $language->get('resources.form.file') ?></label>
-            <input type="file" class="form-control" id="file" name="file" accept="image/jpeg,image/png,application/pdf" 
-                   data-browse="<?= $language->get('resources.form.file_choose') ?>"
-                   data-placeholder="<?= $language->get('resources.form.file_no_selection') ?>">
+            <div class="custom-file-upload">
+                <input type="file" class="form-control" id="file" name="file" accept="image/jpeg,image/png,application/pdf">
+                <label for="file" class="file-label">
+                    <span class="file-button"><?= $language->get('resources.form.file_choose') ?></span>
+                    <span class="file-name"><?= $language->get('resources.form.file_no_selection') ?></span>
+                </label>
+            </div>
         </div>
         
         <button type="submit" class="btn btn-primary"><?php echo ($rid) ? $language->get('resources.save') : $language->get('resources.create'); ?></button>
@@ -680,5 +696,11 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('이미지 업로드 중 오류가 발생했습니다.');
         });
     }
+
+    // 파일 선택 시 파일명 표시
+    document.getElementById('file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0] ? e.target.files[0].name : '<?= $language->get('resources.form.file_no_selection') ?>';
+        this.nextElementSibling.querySelector('.file-name').textContent = fileName;
+    });
 });
 </script>
