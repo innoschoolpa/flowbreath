@@ -704,86 +704,43 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Language translations
-const translations = {
-    ko: {
-        title: '제목',
-        content: '내용',
-        description: '설명',
-        link: '링크 (유튜브, 웹사이트 등)',
-        status: '상태',
-        status_draft: '임시저장',
-        status_published: '발행',
-        visibility: '공개 여부',
-        visibility_public: '공개',
-        visibility_private: '비공개',
-        language: '언어',
-        language_ko: '한국어',
-        language_en: '영어',
-        category: '카테고리',
-        tags: '태그 (쉼표로 구분)',
-        file: '첨부파일 (이미지, PDF)',
-        select_file: '파일 선택',
-        no_file_selected: '선택된 파일 없음',
-        create: '리소스 생성',
-        save: '저장'
-    },
-    en: {
-        title: 'Title',
-        content: 'Content',
-        description: 'Description',
-        link: 'Link (YouTube, website, etc.)',
-        status: 'Status',
-        status_draft: 'Draft',
-        status_published: 'Published',
-        visibility: 'Visibility',
-        visibility_public: 'Public',
-        visibility_private: 'Private',
-        language: 'Language',
-        language_ko: 'Korean',
-        language_en: 'English',
-        category: 'Category',
-        tags: 'Tags (comma separated)',
-        file: 'Attachment (Image, PDF)',
-        select_file: 'Select File',
-        no_file_selected: 'No file selected',
-        create: 'Create Resource',
-        save: 'Save'
-    }
-};
-
 // Function to update form labels based on selected language
 function updateFormLabels(language) {
-    const lang = translations[language];
-    if (!lang) return;
+    // Make an AJAX call to get translations
+    fetch(`/api/translations/${language}`)
+        .then(response => response.json())
+        .then(translations => {
+            // Update form labels
+            document.querySelector('label[for="title"]').innerHTML = `${translations.resources.form.title} <span class="text-danger">*</span>`;
+            document.querySelector('label[for="content"]').innerHTML = `${translations.resources.form.content} <span class="text-danger">*</span>`;
+            document.querySelector('label[for="description"]').innerHTML = `${translations.resources.form.description} <span class="text-danger">*</span>`;
+            document.querySelector('label[for="link"]').textContent = translations.resources.form.link;
+            document.querySelector('label[for="status"]').textContent = translations.resources.form.status;
+            document.querySelector('label[for="visibility"]').textContent = translations.resources.form.visibility;
+            document.querySelector('label[for="language_code"]').textContent = translations.resources.form.language;
+            document.querySelector('label[for="category"]').textContent = translations.resources.form.category;
+            document.querySelector('label[for="tags"]').textContent = translations.resources.form.tags;
+            document.querySelector('label[for="file"]').textContent = translations.resources.form.file;
 
-    // Update all form labels
-    document.querySelector('label[for="title"]').innerHTML = `${lang.title} <span class="text-danger">*</span>`;
-    document.querySelector('label[for="content"]').innerHTML = `${lang.content} <span class="text-danger">*</span>`;
-    document.querySelector('label[for="description"]').innerHTML = `${lang.description} <span class="text-danger">*</span>`;
-    document.querySelector('label[for="link"]').textContent = lang.link;
-    document.querySelector('label[for="status"]').textContent = lang.status;
-    document.querySelector('label[for="visibility"]').textContent = lang.visibility;
-    document.querySelector('label[for="language_code"]').textContent = lang.language;
-    document.querySelector('label[for="category"]').textContent = lang.category;
-    document.querySelector('label[for="tags"]').textContent = lang.tags;
-    document.querySelector('label[for="file"]').textContent = lang.file;
+            // Update select options
+            document.querySelector('#status option[value="draft"]').textContent = translations.resources.status.draft;
+            document.querySelector('#status option[value="published"]').textContent = translations.resources.status.published;
+            document.querySelector('#visibility option[value="public"]').textContent = translations.resources.visibility.public;
+            document.querySelector('#visibility option[value="private"]').textContent = translations.resources.visibility.private;
+            document.querySelector('#language_code option[value="ko"]').textContent = translations.resources.form.language_ko;
+            document.querySelector('#language_code option[value="en"]').textContent = translations.resources.form.language_en;
 
-    // Update select options
-    document.querySelector('#status option[value="draft"]').textContent = lang.status_draft;
-    document.querySelector('#status option[value="published"]').textContent = lang.status_published;
-    document.querySelector('#visibility option[value="public"]').textContent = lang.visibility_public;
-    document.querySelector('#visibility option[value="private"]').textContent = lang.visibility_private;
-    document.querySelector('#language_code option[value="ko"]').textContent = lang.language_ko;
-    document.querySelector('#language_code option[value="en"]').textContent = lang.language_en;
+            // Update file upload button
+            document.querySelector('.file-button').textContent = translations.common.select_file;
+            document.querySelector('.file-name').textContent = translations.common.no_file_selected;
 
-    // Update file upload button
-    document.querySelector('.file-button').textContent = lang.select_file;
-    document.querySelector('.file-name').textContent = lang.no_file_selected;
-
-    // Update submit button
-    const submitButton = document.querySelector('button[type="submit"]');
-    submitButton.textContent = document.querySelector('input[name="_method"]') ? lang.save : lang.create;
+            // Update submit button
+            const submitButton = document.querySelector('button[type="submit"]');
+            submitButton.textContent = document.querySelector('input[name="_method"]') ? translations.resources.save : translations.resources.create;
+        })
+        .catch(error => {
+            console.error('Error loading translations:', error);
+        });
 }
 
 // Add event listener for language change

@@ -11,7 +11,9 @@
         "anonymous": "Anonymous",
         "add_resource": "Add Resource",
         "prev": "Previous",
-        "next": "Next"
+        "next": "Next",
+        "select_file": "Select File",
+        "no_file_selected": "No file selected"
     },
     "breathing": {
         "inhale": "Inhale",
@@ -90,17 +92,27 @@
             "published": "Published",
             "private": "Private"
         },
+        "visibility": {
+            "public": "Public",
+            "private": "Private"
+        },
         "form": {
             "title": "Title",
             "content": "Content",
             "description": "Description",
-            "language": "Language",
-            "visibility": "Visibility",
+            "link": "Link (YouTube, website, etc.)",
             "status": "Status",
-            "submit": "Save",
-            "cancel": "Cancel"
+            "visibility": "Visibility",
+            "language": "Language",
+            "category": "Category",
+            "tags": "Tags (comma separated)",
+            "file": "Attachment (Image, PDF)",
+            "language_ko": "Korean",
+            "language_en": "English"
         },
-        "create": "Create Resource"
+        "create": "Create Resource",
+        "edit": "Edit Resource",
+        "save": "Save"
     },
     "footer": {
         "copyright": "© {year} FlowBreath.io. All rights reserved.",
