@@ -9,7 +9,7 @@ if (!empty($resource['link'])) {
 $title = $resource['title'] ?? '';
 $username = $resource['username'] ?? '익명';
 $createdAt = $resource['created_at'] ?? '';
-$description = $resource['description'] ?? '';
+$content = $resource['content'] ?? $resource['description'] ?? '';
 $type = $resource['type'] ?? '';
 $id = $resource['id'] ?? '';
 ?>
@@ -31,12 +31,9 @@ $id = $resource['id'] ?? '';
         
         <div class="card-body">
             <h5 class="card-title"><?= htmlspecialchars($title) ?></h5>
-            <p class="resource-meta">
-                <?= htmlspecialchars($username) ?> · 
-                <?= $createdAt ? date('Y-m-d', strtotime($createdAt)) : '' ?>
-            </p>
+
             <p class="card-text">
-                <?= formatContent($description, !empty($youtubeId)) ?>
+                <?= formatContent($content, !empty($youtubeId)) ?>
             </p>
             
             <?php if (!empty($resource['tags'])): ?>
@@ -55,6 +52,10 @@ $id = $resource['id'] ?? '';
                 <a href="/resources/view/<?= $id ?>" class="btn btn-outline-primary btn-sm">
                     더보기
                 </a>
+            <p class="resource-meta">
+                <?= htmlspecialchars($username) ?> · 
+                <?= $createdAt ? date('Y-m-d', strtotime($createdAt)) : '' ?>
+            </p>
             </div>
         </div>
     </div>
