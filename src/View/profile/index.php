@@ -42,6 +42,7 @@ $stats = [
 // 개선된 쿼리로 내 리소스 불러오기
 $lang = $_SESSION['lang'] ?? 'ko';
 $resources = $resourceModel->findByUserIdWithDetails($user['id'], $lang);
+error_log("Resources data: " . json_encode($resources));
 
 $stats['total_resources'] = $resourceModel->countByUserId($user['id']);
 $stats['public_resources'] = $resourceModel->countPublicByUserId($user['id']);
