@@ -30,7 +30,9 @@ $id = $resource['id'] ?? '';
         <?php endif; ?>
         
         <div class="card-body">
-            <h5 class="card-title"><?= htmlspecialchars($title) ?></h5>
+            <h5 class="card-title">
+                <a href="/resources/view/<?= $id ?>" class="text-decoration-none"><?= htmlspecialchars($title) ?></a>
+            </h5>
 
             <p class="card-text">
                 <?= formatContent($content, !empty($youtubeId)) ?>
@@ -49,13 +51,10 @@ $id = $resource['id'] ?? '';
             
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <span class="badge bg-primary"><?= htmlspecialchars($type) ?></span>
-                <a href="/resources/view/<?= $id ?>" class="btn btn-outline-primary btn-sm">
-                    더보기
-                </a>
-            <p class="resource-meta">
-                <?= htmlspecialchars($username) ?> · 
-                <?= $createdAt ? date('Y-m-d', strtotime($createdAt)) : '' ?>
-            </p>
+                <p class="resource-meta mb-0">
+                    <?= htmlspecialchars($username) ?> · 
+                    <?= $createdAt ? date('Y-m-d', strtotime($createdAt)) : '' ?>
+                </p>
             </div>
         </div>
     </div>
