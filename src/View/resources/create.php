@@ -131,6 +131,7 @@ input[type="file"] {
     background-color: var(--input-bg);
     border-color: var(--input-border);
     color: var(--text-color);
+    position: relative;
 }
 
 input[type="file"]::file-selector-button {
@@ -140,10 +141,25 @@ input[type="file"]::file-selector-button {
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
     cursor: pointer;
+    margin-right: 1rem;
 }
 
 input[type="file"]::file-selector-button:hover {
     background-color: #0284c7;
+}
+
+input[type="file"]::before {
+    content: attr(data-placeholder);
+    position: absolute;
+    left: 120px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+input[type="file"]:has(:not(:placeholder-shown))::before {
+    content: attr(data-placeholder);
 }
 
 /* 선택 상자 스타일 */
@@ -380,7 +396,9 @@ select.form-control:focus {
         
         <div class="mb-3">
             <label for="file" class="form-label"><?= $language->get('resources.form.file') ?></label>
-            <input type="file" class="form-control" id="file" name="file" accept="image/jpeg,image/png,application/pdf">
+            <input type="file" class="form-control" id="file" name="file" accept="image/jpeg,image/png,application/pdf" 
+                   data-browse="<?= $language->get('resources.form.file_choose') ?>"
+                   data-placeholder="<?= $language->get('resources.form.file_no_selection') ?>">
         </div>
         
         <button type="submit" class="btn btn-primary"><?php echo ($rid) ? $language->get('resources.save') : $language->get('resources.create'); ?></button>
