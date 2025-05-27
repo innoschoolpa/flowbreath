@@ -6,7 +6,7 @@ use App\Core\Response;
 use App\Core\Request;
 use App\Core\Language;
 use App\Core\Database;
-use App\Models\Resource;
+use App\Model\Resource;
 use App\Models\Tag;
 
 class HomeController
