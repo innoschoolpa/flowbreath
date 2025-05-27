@@ -41,9 +41,9 @@ $id = $resource['id'] ?? '';
             <?php if (!empty($resource['tags'])): ?>
                 <div class="mb-2">
                     <?php foreach ($resource['tags'] as $tag): ?>
-                        <a href="/resources?tags[]=<?= is_array($tag) ? ($tag['id'] ?? '') : '' ?>" class="tag-badge">
+                        <a href="/resources?tags[]=<?= htmlspecialchars($tag) ?>" class="tag-badge">
                             <i class="fa fa-hashtag"></i>
-                            <span><?= htmlspecialchars(is_array($tag) ? ($tag['name'] ?? '') : $tag) ?></span>
+                            <span><?= htmlspecialchars($tag) ?></span>
                         </a>
                     <?php endforeach; ?>
                 </div>
