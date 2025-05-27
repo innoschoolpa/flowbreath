@@ -491,16 +491,16 @@ a:hover {
                                         <tr>
                                             <td>
                                                 <a href="/resources/view/<?= $resource['id'] ?>">
-                                                    <?= htmlspecialchars($resource['title']) ?>
+                                                    <?= htmlspecialchars($resource['title'] ?? '') ?>
                                                 </a>
                                             </td>
                                             <td>
                                                 <span class="badge">
-                                                    <?= $resource['visibility'] === 'public' ? '공개' : '비공개' ?>
+                                                    <?= ($resource['visibility'] ?? 'public') === 'public' ? '공개' : '비공개' ?>
                                                 </span>
                                             </td>
-                                            <td><?= number_format($resource['view_count']) ?></td>
-                                            <td><?= date('Y-m-d', strtotime($resource['created_at'])) ?></td>
+                                            <td><?= number_format($resource['view_count'] ?? 0) ?></td>
+                                            <td><?= date('Y-m-d', strtotime($resource['created_at'] ?? 'now')) ?></td>
                                             <td>
                                                 <div class="btn-group">
                                                     <a href="/resources/<?= $resource['id'] ?>/edit" class="btn btn-sm btn-outline-primary">
