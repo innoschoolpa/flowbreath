@@ -19,6 +19,11 @@ return [
     'main_subtitle' => 'Find breathing resources for health, exercise, meditation, and therapy easily and quickly.',
     'recent_resources' => 'Recently Added Breathing Resources',
     
+    // Search
+    'search_title' => 'Search Breathing Resources',
+    'search_subtitle' => 'Find various resources for breathing, meditation, and health.',
+    'search_placeholder' => 'Search by keyword...',
+    
     // Footer
     'footer_copyright' => '© 2025 FlowBreath.io. All rights reserved.',
     'footer_description' => 'The Best Resource Platform for Breathing Health',

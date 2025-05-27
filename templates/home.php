@@ -167,12 +167,12 @@
 
     <main class="container mt-4">
         <div class="text-center mb-5">
-            <h1 class="display-4"><?= __('main_title') ?></h1>
-            <p class="lead"><?= __('main_subtitle') ?></p>
+            <h1 class="display-4"><?= __('search_title') ?></h1>
+            <p class="lead"><?= __('search_subtitle') ?></p>
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="<?= __('search') ?>">
+                        <input type="text" class="form-control" placeholder="<?= __('search_placeholder') ?>">
                         <button class="btn btn-primary" type="button"><?= __('search') ?></button>
                     </div>
                 </div>

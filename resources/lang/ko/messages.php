@@ -19,6 +19,11 @@ return [
     'main_subtitle' => '호흡 건강, 운동, 명상, 치료 등 다양한 호흡 자료를 쉽고 빠르게 찾아보세요.',
     'recent_resources' => '최근 등록된 호흡 자료',
     
+    // 검색
+    'search_title' => '호흡 자료 검색',
+    'search_subtitle' => '호흡, 명상, 건강을 위한 다양한 자료를 찾아보세요.',
+    'search_placeholder' => '키워드로 검색...',
+    
     // 푸터
     'footer_copyright' => '© 2025 FlowBreath.io. All rights reserved.',
     'footer_description' => '호흡 건강을 위한 최고의 자료 플랫폼',
