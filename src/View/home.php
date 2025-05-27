@@ -296,7 +296,71 @@ h1, h2, h3, h4, h5, h6 {
         </div>
         <div class="row">
             <?php foreach ($recentResources as $resource): ?>
-                <?php include __DIR__ . '/partials/resource-card.php'; ?>
+                <?php
+                $videoId = null;
+                $hasYoutubeLink = false;
+                
+                // Check for YouTube link in link field
+                if (!empty($resource['link'])) {
+                    $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
+                    if (preg_match($youtube_pattern, $resource['link'], $matches)) {
+                        $videoId = $matches[1];
+                        $hasYoutubeLink = true;
+                    }
+                }
+                
+                // Check for YouTube link in content if not found in link field
+                if (!$hasYoutubeLink && !empty($resource['content'])) {
+                    if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
+                        if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
+                            $videoId = $matches[1];
+                            $hasYoutubeLink = true;
+                        }
+                    }
+                }
+                
+                // Determine content length based on YouTube link presence
+                $contentLength = $hasYoutubeLink ? 130 : 500;
+                
+                // Prepare content with only line breaks preserved
+                $content = strip_tags($resource['content'] ?? '');
+                $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $content = mb_strimwidth($content, 0, $contentLength, '...');
+                $content = nl2br(htmlspecialchars($content));
+                ?>
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <?php if ($videoId): ?>
+                            <div class="ratio ratio-16x9">
+                                <iframe src="https://www.youtube.com/embed/<?= $videoId ?>?autoplay=0" class="rounded-top" allowfullscreen></iframe>
+                            </div>
+                        <?php endif; ?>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">
+                                <a href="/resources/view/<?= $resource['id'] ?>" class="text-decoration-none">
+                                    <?= htmlspecialchars($resource['title']) ?>
+                                </a>
+                            </h5>
+                            <p class="card-text text-muted">
+                                <?= $content ?>
+                            </p>
+                            <div class="mb-2">
+                                <?php foreach (($resource['tags'] ?? []) as $tag): ?>
+                                    <?php $tagName = is_array($tag) ? $tag['name'] : $tag; ?>
+                                    <a href="/resources/tag/<?= urlencode($tagName) ?>" class="tag-badge">#<?= htmlspecialchars($tagName) ?></a>
+                                <?php endforeach; ?>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?>
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i><?= date('Y-m-d', strtotime($resource['created_at'])) ?>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             <?php endforeach; ?>
         </div>
         <div class="popular-tags">
