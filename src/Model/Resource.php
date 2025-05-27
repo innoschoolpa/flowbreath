@@ -15,7 +15,7 @@ class Resource
 
     public function getRecentPublic($limit = 10, $language = 'ko')
     {
-        $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.username as author_name,
+        $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.name as author_name,
                 GROUP_CONCAT(t.name) as tags
                 FROM resources r
                 LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
@@ -38,7 +38,7 @@ class Resource
 
     public function searchResources($query, $limit = 10, $offset = 0, $language = 'ko')
     {
-        $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.username as author_name,
+        $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.name as author_name,
                 GROUP_CONCAT(t.name) as tags
                 FROM resources r
                 LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?
