@@ -398,13 +398,7 @@ h1, h2, h3, h4, h5, h6 {
             <h5><i class="fa fa-fire"></i> <?= $language->get('home.popular_tags.title') ?></h5>
             <div class="tags-container">
                 <?php foreach ($popularTags as $tag): ?>
-                    <a href="/resources/tag/<?= urlencode($tag['name']) ?>" class="tag-badge" data-tag="<?= htmlspecialchars($tag['name']) ?>">
-                        <i class="fa fa-hashtag"></i>
-                        <span><?= htmlspecialchars($tag['name']) ?></span>
-                        <?php if (isset($tag['count'])): ?>
-                            <span class="tag-count"><?= $tag['count'] ?></span>
-                        <?php endif; ?>
-                    </a>
+                    <a href="/resources/tag/<?= urlencode($tag['name']) ?>" class="tag-badge">#<?= htmlspecialchars($tag['name']) ?></a>
                 <?php endforeach; ?>
             </div>
         </div>
