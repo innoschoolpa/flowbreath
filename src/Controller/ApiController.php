@@ -8,9 +8,21 @@ class ApiController
 {
     public function getResourcesByTag($tag) {
         try {
+            if (empty($tag)) {
+                throw new \Exception("태그가 지정되지 않았습니다.");
+            }
+
             $resourceModel = new \App\Models\Resource();
             $lang = isset($_SESSION['lang']) ? $_SESSION['lang'] : 'ko';
+            
+            // URL 디코딩
+            $tag = urldecode($tag);
+            
             $resources = $resourceModel->getResourcesByTag($tag, $lang);
+            
+            if ($resources === false) {
+                throw new \Exception("리소스를 불러오는 중 데이터베이스 오류가 발생했습니다.");
+            }
             
             // Format resources for display
             $formattedResources = array_map(function($resource) {

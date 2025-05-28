@@ -170,6 +170,9 @@ return function (Router $router) {
         exit;
     });
 
+    // API Routes
+    $router->get('/api/resources/tag/{tag}', 'App\\Controller\\ApiController', 'getResourcesByTag');
+
     // 404 처리 라우트 (모든 경로에 대해)
     $router->add('GET', '*', [HomeController::class, 'notFound']);
 }; 

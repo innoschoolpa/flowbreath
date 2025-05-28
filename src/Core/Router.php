@@ -247,4 +247,10 @@ HTML;
         $this->add('PATCH', $path, [$controller, $action]);
         return $this;
     }
+
+    // API Routes
+    public function addRoute($method, $path, $handler)
+    {
+        $this->add($method, $path, $handler);
+    }
 } 
