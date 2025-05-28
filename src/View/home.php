@@ -428,15 +428,17 @@ h1, h2, h3, h4, h5, h6 {
             tagBadges.forEach(badge => {
                 badge.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const tag = this.dataset.tag;
-                    modalTitle.textContent = `#${tag} 관련 리소스`;
+                    // 태그 이름을 href에서 추출
+                    const href = this.getAttribute('href');
+                    const tag = href.split('/').pop();
+                    modalTitle.textContent = `#${decodeURIComponent(tag)} 관련 리소스`;
                     
                     // 로딩 표시
                     tagResourcesList.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-primary" role="status"></div></div>';
                     tagResourcesModal.show();
 
                     // 태그별 리소스 가져오기
-                    fetch(`/api/resources/tag/${encodeURIComponent(tag)}`)
+                    fetch(`/api/resources/tag/${tag}`)
                         .then(response => response.json())
                         .then(data => {
                             if (data.resources && data.resources.length > 0) {
