@@ -57,26 +57,32 @@ class ApiController
                     }
                 }
 
+                // 태그 처리
+                if (!empty($resource['tags'])) {
+                    $resource['tags'] = array_map(function($tag) {
+                        return ['name' => trim($tag)];
+                    }, explode(',', $resource['tags']));
+                } else {
+                    $resource['tags'] = [];
+                }
+
                 // 콘텐츠 미리보기 생성
                 if (!empty($resource['content'])) {
-                    $content = strip_tags($resource['content']);
-                    $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                    $resource['content_preview'] = mb_strimwidth($content, 0, 200, '...');
-                } else {
-                    $resource['content_preview'] = '';
+                    $resource['preview'] = mb_substr(strip_tags($resource['content']), 0, 200) . '...';
                 }
             }
 
             return $this->jsonResponse([
                 'success' => true,
-                'message' => count($resources) . '개의 리소스를 찾았습니다.',
+                'message' => '리소스를 성공적으로 조회했습니다.',
                 'data' => $resources
             ]);
+
         } catch (\Exception $e) {
             error_log("Error in getResourcesByTag: " . $e->getMessage());
             return $this->jsonResponse([
                 'success' => false,
-                'message' => '리소스를 검색하는 중 오류가 발생했습니다.',
+                'message' => '리소스를 검색하는 중 오류가 발생했습니다: ' . $e->getMessage(),
                 'data' => []
             ], 500);
         }
