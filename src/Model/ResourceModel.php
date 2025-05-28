@@ -187,4 +187,30 @@ class ResourceModel
             throw $e;
         }
     }
+
+    public function getResourcesByTag($tag, $lang = 'ko') {
+        try {
+            $sql = "SELECT r.*, u.name as author_name 
+                    FROM resources r 
+                    LEFT JOIN users u ON r.user_id = u.id 
+                    INNER JOIN resource_tags rt ON r.id = rt.resource_id 
+                    INNER JOIN tags t ON rt.tag_id = t.id 
+                    WHERE t.name = :tag 
+                    AND r.status = 'published' 
+                    AND r.visibility = 'public' 
+                    AND r.language_code = :lang 
+                    ORDER BY r.created_at DESC";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':tag' => $tag,
+                ':lang' => $lang
+            ]);
+            
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log("Error fetching resources by tag: " . $e->getMessage());
+            return [];
+        }
+    }
 } 

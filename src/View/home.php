@@ -408,7 +408,7 @@ h1, h2, h3, h4, h5, h6 {
             <h5><i class="fa fa-fire"></i> <?= $language->get('home.popular_tags.title') ?></h5>
             <div class="tags-container">
                 <?php foreach ($popularTags as $tag): ?>
-                    <a href="/resources?tags[]=<?= urlencode($tag['name']) ?>" class="tag-badge">
+                    <a href="/resources/tag/<?= urlencode($tag['name']) ?>" class="tag-badge" data-tag="<?= htmlspecialchars($tag['name']) ?>">
                         <i class="fa fa-hashtag"></i>
                         <span><?= htmlspecialchars($tag['name']) ?></span>
                         <?php if (isset($tag['count'])): ?>
@@ -418,8 +418,97 @@ h1, h2, h3, h4, h5, h6 {
                 <?php endforeach; ?>
             </div>
         </div>
+
+        <!-- 태그별 리소스 모달 -->
+        <div class="modal fade" id="tagResourcesModal" tabindex="-1" aria-labelledby="tagResourcesModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content bg-dark text-light">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title" id="tagResourcesModalLabel"></h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="tagResourcesList" class="row"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tagBadges = document.querySelectorAll('.tag-badge');
+            const tagResourcesModal = new bootstrap.Modal(document.getElementById('tagResourcesModal'));
+            const tagResourcesList = document.getElementById('tagResourcesList');
+            const modalTitle = document.getElementById('tagResourcesModalLabel');
+
+            tagBadges.forEach(badge => {
+                badge.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const tag = this.dataset.tag;
+                    modalTitle.textContent = `#${tag} 관련 리소스`;
+                    
+                    // 로딩 표시
+                    tagResourcesList.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-primary" role="status"></div></div>';
+                    tagResourcesModal.show();
+
+                    // 태그별 리소스 가져오기
+                    fetch(`/api/resources/tag/${encodeURIComponent(tag)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.resources && data.resources.length > 0) {
+                                tagResourcesList.innerHTML = data.resources.map(resource => `
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100">
+                                            ${resource.video_id ? `
+                                                <div class="ratio ratio-16x9">
+                                                    <iframe src="https://www.youtube.com/embed/${resource.video_id}?autoplay=0" class="rounded-top" allowfullscreen></iframe>
+                                                </div>
+                                            ` : ''}
+                                            <div class="card-body">
+                                                <h5 class="card-title">
+                                                    <a href="/resources/view/${resource.id}" class="text-decoration-none">
+                                                        ${resource.title}
+                                                    </a>
+                                                </h5>
+                                                <p class="card-text">${resource.content_preview}</p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-user me-1"></i>
+                                                        ${resource.author_name || '<?= $language->get('common.anonymous') ?>'}
+                                                    </small>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-calendar me-1"></i>${resource.created_at}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('');
+                            } else {
+                                tagResourcesList.innerHTML = `
+                                    <div class="col-12">
+                                        <div class="alert alert-info">
+                                            <?= $language->get('home.recent_resources.no_results') ?>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            tagResourcesList.innerHTML = `
+                                <div class="col-12">
+                                    <div class="alert alert-danger">
+                                        리소스를 불러오는 중 오류가 발생했습니다.
+                                    </div>
+                                </div>
+                            `;
+                        });
+                });
+            });
+        });
+        </script>
     <?php endif; ?>
 </div>
 
-<?php require_once __DIR__ . '/layouts/footer.php'; ?> 
 <?php require_once __DIR__ . '/layouts/footer.php'; ?> 
