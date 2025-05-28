@@ -715,27 +715,47 @@ class Resource extends Model {
     public function updateResourceTags(int $resourceId, array $tagNames): bool
     {
         try {
-            $this->db->beginTransaction();
+            error_log("[DEBUG] Starting updateResourceTags for resource ID: " . $resourceId);
+            error_log("[DEBUG] Tag names to process: " . json_encode($tagNames));
+            
+            // 트랜잭션이 이미 시작되어 있는지 확인
+            $pdo = $this->db->getConnection();
+            $inTransaction = method_exists($pdo, 'inTransaction') && $pdo->inTransaction();
+            
+            if (!$inTransaction) {
+                $this->db->beginTransaction();
+            }
 
             // 1. 기존 태그 관계 삭제
             $stmt = $this->db->prepare("DELETE FROM resource_tags WHERE resource_id = ?");
-            $stmt->execute([$resourceId]);
+            $result = $stmt->execute([$resourceId]);
+            error_log("[DEBUG] Deleted existing tags. Result: " . ($result ? 'success' : 'failed'));
 
             // 2. 각 태그 처리
             foreach ($tagNames as $tagName) {
                 $tagName = trim($tagName);
-                if (empty($tagName)) continue;
+                if (empty($tagName)) {
+                    error_log("[DEBUG] Skipping empty tag name");
+                    continue;
+                }
 
                 try {
                     // 2.1 태그 존재 여부 확인
                     $stmt = $this->db->prepare("SELECT id FROM tags WHERE name = ?");
                     $stmt->execute([$tagName]);
                     $tag = $stmt->fetch();
+                    error_log("[DEBUG] Checking existing tag: " . $tagName . " - " . ($tag ? "found" : "not found"));
 
                     if (!$tag) {
                         // 2.2 태그가 없으면 생성
                         $stmt = $this->db->prepare("INSERT INTO tags (name, created_at) VALUES (?, NOW())");
-                        $stmt->execute([$tagName]);
+                        $result = $stmt->execute([$tagName]);
+                        error_log("[DEBUG] Creating new tag: " . $tagName . " - " . ($result ? "success" : "failed"));
+                        
+                        if (!$result) {
+                            error_log("[ERROR] Failed to create tag: " . $tagName);
+                            throw new \Exception("Failed to create tag: " . $tagName);
+                        }
                         
                         // 생성된 태그 ID 조회
                         $stmt = $this->db->prepare("SELECT id FROM tags WHERE name = ? ORDER BY id DESC LIMIT 1");
@@ -743,7 +763,7 @@ class Resource extends Model {
                         $tag = $stmt->fetch();
                         
                         if (!$tag) {
-                            error_log("Failed to retrieve tag ID after creation: " . $tagName);
+                            error_log("[ERROR] Failed to retrieve tag ID after creation: " . $tagName);
                             throw new \Exception("Failed to retrieve tag ID after creation: " . $tagName);
                         }
                     }
@@ -751,13 +771,14 @@ class Resource extends Model {
                     // 2.3 리소스-태그 관계 생성
                     $stmt = $this->db->prepare("INSERT INTO resource_tags (resource_id, tag_id, created_at) VALUES (?, ?, NOW())");
                     $result = $stmt->execute([$resourceId, $tag['id']]);
+                    error_log("[DEBUG] Creating resource-tag relationship - Resource: " . $resourceId . ", Tag: " . $tag['id'] . " - " . ($result ? "success" : "failed"));
                     
                     if (!$result) {
-                        error_log("Failed to create resource-tag relationship for tag: " . $tagName);
+                        error_log("[ERROR] Failed to create resource-tag relationship for tag: " . $tagName);
                         throw new \Exception("Failed to create resource-tag relationship for tag: " . $tagName);
                     }
                 } catch (\Exception $e) {
-                    error_log("Error processing tag '{$tagName}': " . $e->getMessage());
+                    error_log("[ERROR] Error processing tag '{$tagName}': " . $e->getMessage());
                     throw $e;
                 }
             }
@@ -771,14 +792,21 @@ class Resource extends Model {
                     WHERE rt.tag_id = t.id
                 )
             ");
-            $stmt->execute();
+            $result = $stmt->execute();
+            error_log("[DEBUG] Updated tag counts - " . ($result ? "success" : "failed"));
 
-            $this->db->commit();
+            if (!$inTransaction) {
+                $this->db->commit();
+            }
+            error_log("[DEBUG] Successfully completed updateResourceTags");
             return true;
 
         } catch (\Exception $e) {
-            $this->db->rollBack();
-            error_log("Error in updateResourceTags: " . $e->getMessage());
+            if (!$inTransaction) {
+                $this->db->rollBack();
+            }
+            error_log("[ERROR] Error in updateResourceTags: " . $e->getMessage());
+            error_log("[ERROR] Stack trace: " . $e->getTraceAsString());
             return false;
         }
     }
