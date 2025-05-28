@@ -190,15 +190,17 @@ class ResourceModel
 
     public function getResourcesByTag($tag, $lang = 'ko') {
         try {
-            $sql = "SELECT r.*, u.name as author_name 
-                    FROM resources r 
-                    LEFT JOIN users u ON r.user_id = u.id 
-                    INNER JOIN resource_tags rt ON r.id = rt.resource_id 
-                    INNER JOIN tags t ON rt.tag_id = t.id 
+            $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.name as author_name,
+                    GROUP_CONCAT(t.name) as tags
+                    FROM resources r
+                    LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = :lang
+                    LEFT JOIN users u ON r.user_id = u.id
+                    INNER JOIN resource_tags rtag ON r.id = rtag.resource_id
+                    INNER JOIN tags t ON rtag.tag_id = t.id
                     WHERE t.name = :tag 
                     AND r.status = 'published' 
-                    AND r.visibility = 'public' 
-                    AND r.language_code = :lang 
+                    AND r.visibility = 'public'
+                    GROUP BY r.id
                     ORDER BY r.created_at DESC";
             
             $stmt = $this->db->prepare($sql);
@@ -207,10 +209,17 @@ class ResourceModel
                 ':lang' => $lang
             ]);
             
-            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $resources = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            // Process tags for each resource
+            foreach ($resources as &$resource) {
+                $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
+            }
+            
+            return $resources;
         } catch (\PDOException $e) {
             error_log("Error fetching resources by tag: " . $e->getMessage());
-            return [];
+            throw new \Exception("리소스를 불러오는 중 오류가 발생했습니다.");
         }
     }
 } 

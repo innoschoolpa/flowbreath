@@ -24,30 +24,39 @@ class ApiController
                 }
                 
                 // Format content preview
-                $content = strip_tags($resource['content'] ?? '');
+                $content = $resource['content'] ?? '';
                 $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                $content = mb_substr($content, 0, 150, 'UTF-8') . '...';
+                $content = strip_tags($content);
+                $content = mb_substr($content, 0, 150, 'UTF-8');
+                if (mb_strlen($content, 'UTF-8') > 150) {
+                    $content .= '...';
+                }
                 
                 return [
                     'id' => $resource['id'],
-                    'title' => $resource['title'],
+                    'title' => $resource['title'] ?? '',
                     'content_preview' => $content,
                     'video_id' => $videoId,
-                    'author_name' => $resource['author_name'],
-                    'created_at' => date('Y-m-d', strtotime($resource['created_at']))
+                    'author_name' => $resource['author_name'] ?? '',
+                    'created_at' => date('Y-m-d', strtotime($resource['created_at'])),
+                    'tags' => $resource['tags'] ?? []
                 ];
             }, $resources);
             
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode([
                 'success' => true,
                 'resources' => $formattedResources
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
+            
         } catch (\Exception $e) {
+            error_log("Error in getResourcesByTag: " . $e->getMessage());
             http_response_code(500);
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode([
                 'success' => false,
-                'error' => '리소스를 불러오는 중 오류가 발생했습니다.'
-            ]);
+                'error' => $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE);
         }
     }
 } 
