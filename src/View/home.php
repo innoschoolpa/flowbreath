@@ -387,25 +387,7 @@ h1, h2, h3, h4, h5, h6 {
                             </div>
                             <div class="mt-auto d-flex justify-content-between align-items-center" style="color:#94a3b8; font-size:0.95em;">
                                 <span><i class="fas fa-user me-1"></i><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></span>
-                            <?php if (!empty($resource['tags'])): ?>
-                                <div class="mb-2">
-                                    <?php foreach ($resource['tags'] as $tag): ?>
-                                        <?php $tagName = is_array($tag) ? $tag['name'] : $tag; ?>
-                                        <a href="/resources/tag/<?= urlencode($tagName) ?>" class="tag-badge">
-                                            <i class="fa fa-hashtag"></i>
-                                            <span><?= htmlspecialchars($tagName) ?></span>
-                                        </a>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
-                            <div class="d-flex justify-content-between align-items-center mt-auto">
-                                <small class="text-muted">
-                                    <i class="fas fa-user me-1"></i>
-                                    <?= $resource['author_name'] ? htmlspecialchars($resource['author_name']) : $language->get('common.anonymous') ?>
-                                </small>
-                                <small class="text-muted">
-                                    <i class="fas fa-calendar me-1"></i><?= date('Y-m-d', strtotime($resource['created_at'])) ?>
-                                </small>
+                                <span><i class="fas fa-calendar me-1"></i><?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?></span>
                             </div>
                         </div>
                     </div>
