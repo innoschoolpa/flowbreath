@@ -56,6 +56,9 @@ function formatContent($content, $hasYoutubeLink) {
     // First decode HTML entities
     $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     
+    // Remove data-sourcepos and other TinyMCE attributes
+    $content = preg_replace('/\s+data-[^=]+="[^"]*"/', '', $content);
+    
     // Remove HTML tags while preserving line breaks
     $content = strip_tags($content, '<br><p>');
     
