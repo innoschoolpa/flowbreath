@@ -73,7 +73,16 @@ $metaKeywords = $currentLang === 'ko'
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-30RDJ93Z7Z');
+        gtag('config', 'G-30RDJ93Z7Z', {
+            'send_page_view': true,
+            'cookie_flags': 'SameSite=None;Secure',
+            'anonymize_ip': true,
+            'allow_google_signals': false,
+            'allow_ad_personalization_signals': false,
+            'page_location': '<?= htmlspecialchars($currentUrl) ?>',
+            'page_title': '<?= htmlspecialchars($title ?? 'FlowBreath - 호흡 운동') ?>',
+            'page_referrer': document.referrer
+        });
     </script>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
