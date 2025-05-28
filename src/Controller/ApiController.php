@@ -32,6 +32,7 @@ class ApiController
             $resources = $resourceModel->getResourcesByTag($tag);
 
             if ($resources === false) {
+                error_log("Error fetching resources for tag: " . $tag);
                 return $this->jsonResponse([
                     'success' => false,
                     'message' => '리소스를 검색하는 중 오류가 발생했습니다.',
@@ -80,6 +81,7 @@ class ApiController
 
         } catch (\Exception $e) {
             error_log("Error in getResourcesByTag: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             return $this->jsonResponse([
                 'success' => false,
                 'message' => '리소스를 검색하는 중 오류가 발생했습니다: ' . $e->getMessage(),
@@ -89,9 +91,25 @@ class ApiController
     }
 
     private function jsonResponse($data, $statusCode = 200) {
+        // 오류 출력 버퍼링 비활성화
+        if (ob_get_level()) ob_end_clean();
+        
+        // 이전 출력 버퍼 제거
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+        
+        // 헤더 설정
         header('Content-Type: application/json; charset=utf-8');
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type');
+        
+        // 상태 코드 설정
         http_response_code($statusCode);
-        echo json_encode($data, JSON_UNESCAPED_UNICODE);
+        
+        // JSON 인코딩 및 출력
+        echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
 
