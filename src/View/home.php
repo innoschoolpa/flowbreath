@@ -46,14 +46,36 @@ $user = $isLoggedIn ? [
 require_once __DIR__ . '/layouts/header.php';
 
 function formatContent($content, $hasYoutubeLink) {
+    if (empty($content)) {
+        return '';
+    }
+
     // Determine content length based on YouTube link presence
-    $contentLength = $hasYoutubeLink ? 100 : 200;
+    $contentLength = $hasYoutubeLink ? 150 : 200;
     
-    // Prepare content with only line breaks preserved
-    $content = strip_tags($content ?? '');
+    // First decode HTML entities
     $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    $content = mb_strimwidth($content, 0, $contentLength, '...');
-    return nl2br(htmlspecialchars($content));
+    
+    // Remove HTML tags while preserving line breaks
+    $content = strip_tags($content, '<br><p>');
+    
+    // Convert <br> and <p> tags to newlines
+    $content = str_replace(['<br>', '<br/>', '<br />', '</p><p>'], "\n", $content);
+    $content = str_replace(['<p>', '</p>'], '', $content);
+    
+    // Trim content to specified length
+    if (mb_strlen($content, 'UTF-8') > $contentLength) {
+        $content = mb_substr($content, 0, $contentLength, 'UTF-8');
+        // Find the last space before the cutoff
+        $lastSpace = mb_strrpos($content, ' ', 0, 'UTF-8');
+        if ($lastSpace !== false) {
+            $content = mb_substr($content, 0, $lastSpace, 'UTF-8');
+        }
+        $content .= '...';
+    }
+    
+    // Convert newlines to <br> tags
+    return nl2br(htmlspecialchars($content, ENT_QUOTES, 'UTF-8'));
 }
 
 // YouTube 동영상 ID 추출 함수
