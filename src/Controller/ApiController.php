@@ -60,9 +60,15 @@ class ApiController
 
                 // 태그 처리
                 if (!empty($resource['tags'])) {
-                    $resource['tags'] = array_map(function($tag) {
-                        return ['name' => trim($tag)];
-                    }, explode(',', $resource['tags']));
+                    if (is_array($resource['tags'])) {
+                        $resource['tags'] = array_map(function($tag) {
+                            return ['name' => is_array($tag) ? $tag['name'] : $tag];
+                        }, $resource['tags']);
+                    } else {
+                        $resource['tags'] = array_map(function($tag) {
+                            return ['name' => trim($tag)];
+                        }, explode(',', $resource['tags']));
+                    }
                 } else {
                     $resource['tags'] = [];
                 }
