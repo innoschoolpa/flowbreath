@@ -1,5 +1,21 @@
 <?php
 // src/View/resources/create.php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// DB 연결 및 트랜잭션 시작
+try {
+    $db = \App\Core\Database::getInstance();
+    $pdo = $db->getConnection();
+    $pdo->beginTransaction();
+} catch (\Exception $e) {
+    error_log("Database connection error: " . $e->getMessage());
+    $_SESSION['error_message'] = "데이터베이스 연결 오류가 발생했습니다.";
+    header('Location: /');
+    exit;
+}
+
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }

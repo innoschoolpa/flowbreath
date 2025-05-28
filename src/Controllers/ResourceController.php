@@ -208,6 +208,11 @@ class ResourceController extends BaseController {
             }
             $userId = is_array($user) ? $user['id'] : $user->id;
 
+            // DB 트랜잭션 시작
+            $db = \App\Core\Database::getInstance();
+            $pdo = $db->getConnection();
+            $pdo->beginTransaction();
+
             // 입력값 검증
             $validator = new \App\Core\Validator();
             $validator->validate([
@@ -231,6 +236,7 @@ class ResourceController extends BaseController {
             ]);
 
             if ($validator->hasErrors()) {
+                $pdo->rollBack();
                 if ($request->wantsJson() || $request->isAjax()) {
                     return $this->response->json(['error' => $validator->getErrors()], 422);
                 }
@@ -316,8 +322,12 @@ class ResourceController extends BaseController {
             $resourceId = $this->resource->create($resourceData);
 
             if (!$resourceId) {
+                $pdo->rollBack();
                 throw new \Exception('리소스 생성에 실패했습니다.');
             }
+
+            // 트랜잭션 커밋
+            $pdo->commit();
 
             if ($request->wantsJson() || $request->isAjax()) {
                 return $this->response->json([
@@ -332,6 +342,10 @@ class ResourceController extends BaseController {
                 return $this->response->redirect('/resources');
             }
         } catch (\Exception $e) {
+            if (isset($pdo)) {
+                $pdo->rollBack();
+            }
+            error_log("Error in ResourceController::store: " . $e->getMessage());
             if ($request->wantsJson() || $request->isAjax()) {
                 return $this->response->json(['error' => $e->getMessage()], 500);
             }
