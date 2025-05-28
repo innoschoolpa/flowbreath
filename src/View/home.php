@@ -185,27 +185,21 @@ body {
 }
 
 .tag-badge {
-    display: inline-flex;
-    align-items: center;
+    display: inline-block;
     background: linear-gradient(90deg, #1e40af 60%, #3b82f6 100%);
     color: #e2e8f0;
-    padding: 0.45rem 1.1rem;
+    padding: 0.35em 1em;
     border-radius: 999px;
-    font-size: 0.9rem;
+    font-size: 0.95em;
     font-weight: 500;
-    text-decoration: none;
-    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.12);
+    margin: 0.1em 0.2em 0.1em 0;
     border: 1px solid #3b82f6;
-    transition: all 0.3s ease;
-    margin-bottom: 0.3rem;
+    transition: background 0.2s, color 0.2s;
 }
 
 .tag-badge:hover {
     background: linear-gradient(90deg, #2563eb 60%, #1d4ed8 100%);
     color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
-    text-decoration: none;
 }
 
 .tag-badge i {
@@ -335,7 +329,7 @@ h1, h2, h3, h4, h5, h6 {
             <h4 class="mb-0"><?= $language->get('home.recent_resources.title') ?></h4>
             <a href="/resources" class="btn btn-link"><?= $language->get('common.view_all') ?> <i class="fa fa-arrow-right"></i></a>
         </div>
-        <div class="row">
+        <div class="row g-4">
             <?php foreach ($recentResources as $resource): ?>
                 <?php
                 $videoId = null;
@@ -360,25 +354,39 @@ h1, h2, h3, h4, h5, h6 {
                     }
                 }
                 
-                // Use formatContent function to handle content formatting
-                $content = formatContent($resource['content'] ?? '', $hasYoutubeLink);
+                // Determine content length based on YouTube link presence
+                $contentLength = $hasYoutubeLink ? 130 : 550; // Longer content for non-video resources
+                
+                // Prepare content with only line breaks preserved
+                $content = strip_tags($resource['content'] ?? '');
+                $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $content = mb_strimwidth($content, 0, $contentLength, '...');
+                $content = nl2br(htmlspecialchars($content));
                 ?>
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-lg border-0">
                         <?php if ($videoId): ?>
                             <div class="ratio ratio-16x9">
                                 <iframe src="https://www.youtube.com/embed/<?= $videoId ?>?autoplay=0" class="rounded-top" allowfullscreen></iframe>
                             </div>
                         <?php endif; ?>
                         <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">
-                                <a href="/resources/view/<?= $resource['id'] ?>">
-                                    <?= htmlspecialchars($resource['title']) ?>
+                            <h5 class="card-title mb-2">
+                                <a href="/resources/view/<?= htmlspecialchars($resource['id']) ?>">
+                                    <?= htmlspecialchars($resource['title'] ?? '') ?>
                                 </a>
                             </h5>
-                            <p class="card-text">
+                            <p class="card-text mb-2">
                                 <?= $content ?>
                             </p>
+                            <div class="mb-2">
+                                <?php foreach (($resource['tags'] ?? []) as $tag): ?>
+                                    <?php $tagName = is_array($tag) ? $tag['name'] : $tag; ?>
+                                    <a href="/resources/tag/<?= urlencode($tagName) ?>" class="tag-badge">#<?= htmlspecialchars($tagName) ?></a>
+                                <?php endforeach; ?>
+                            </div>
+                            <div class="mt-auto d-flex justify-content-between align-items-center" style="color:#94a3b8; font-size:0.95em;">
+                                <span><i class="fas fa-user me-1"></i><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></span>
                             <?php if (!empty($resource['tags'])): ?>
                                 <div class="mb-2">
                                     <?php foreach ($resource['tags'] as $tag): ?>
