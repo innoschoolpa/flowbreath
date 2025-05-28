@@ -1608,48 +1608,49 @@ class Resource extends Model {
             // URL 디코딩
             $tag = urldecode($tag);
             
-            // 태그 검색 로깅
-            error_log("Searching for tag: " . $tag);
-            
-            $sql = "SELECT DISTINCT r.*, rt.*, u.name as author_name, 
+            // 태그 검색 로그
+            error_log("Searching for tag in Resource model: " . $tag);
+
+            $sql = "SELECT DISTINCT r.*, rt.title, rt.content, rt.language, 
+                    u.name as author_name, u.profile_image as author_image,
                     GROUP_CONCAT(DISTINCT t.name) as tags
                     FROM resources r
                     LEFT JOIN resource_translations rt ON r.id = rt.resource_id
                     LEFT JOIN users u ON r.user_id = u.id
                     LEFT JOIN resource_tags rt2 ON r.id = rt2.resource_id
                     LEFT JOIN tags t ON rt2.tag_id = t.id
-                    WHERE (t.name LIKE ? OR t.name LIKE ? OR t.name LIKE ?)
+                    WHERE t.name LIKE :tag
                     AND r.status = 'published'
                     AND r.visibility = 'public'
-                    AND rt.language_code = ?
-                    GROUP BY r.id, rt.id";
-            
+                    AND rt.language = :language
+                    GROUP BY r.id, rt.id
+                    ORDER BY r.created_at DESC";
+
             $stmt = $this->db->prepare($sql);
-            $searchTerm = '%' . $tag . '%';
-            $stmt->execute([$searchTerm, $tag, '%' . $tag, $language]);
-            
+            $stmt->execute([
+                ':tag' => '%' . $tag . '%',
+                ':language' => $language
+            ]);
+
             $resources = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            // 검색 결과 로깅
-            error_log("Found " . count($resources) . " resources for tag: " . $tag);
-            
-            if (empty($resources)) {
-                error_log("No resources found for tag: " . $tag);
-                return [];
-            }
-            
-            // 태그 배열로 변환
+
+            // 태그 처리
             foreach ($resources as &$resource) {
                 if (!empty($resource['tags'])) {
-                    $resource['tags'] = explode(',', $resource['tags']);
+                    $resource['tags'] = array_map(function($tag) {
+                        return ['name' => trim($tag)];
+                    }, explode(',', $resource['tags']));
                 } else {
                     $resource['tags'] = [];
                 }
             }
-            
+
+            // 검색 결과 로그
+            error_log("Found " . count($resources) . " resources for tag: " . $tag);
+
             return $resources;
         } catch (\Exception $e) {
-            error_log("Error in getResourcesByTag: " . $e->getMessage());
+            error_log("Error in Resource::getResourcesByTag: " . $e->getMessage());
             return false;
         }
     }

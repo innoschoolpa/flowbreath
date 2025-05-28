@@ -22,8 +22,15 @@ class ApiController
                 ], 400);
             }
 
-            $resources = $this->resourceModel->getResourcesByTag($tag);
+            // URL 디코딩
+            $tag = urldecode($tag);
             
+            // 태그 검색 로그
+            error_log("Searching for tag: " . $tag);
+
+            $resourceModel = new \App\Models\Resource();
+            $resources = $resourceModel->getResourcesByTag($tag);
+
             if ($resources === false) {
                 return $this->jsonResponse([
                     'success' => false,
@@ -40,13 +47,23 @@ class ApiController
                 ]);
             }
 
-            // YouTube ID 추출 및 콘텐츠 미리보기 생성
+            // 각 리소스에 대해 YouTube ID와 콘텐츠 미리보기 추가
             foreach ($resources as &$resource) {
+                // YouTube ID 추출
                 if (!empty($resource['link'])) {
-                    $resource['youtube_id'] = $this->extractYoutubeId($resource['link']);
+                    $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
+                    if (preg_match($youtube_pattern, $resource['link'], $matches)) {
+                        $resource['video_id'] = $matches[1];
+                    }
                 }
+
+                // 콘텐츠 미리보기 생성
                 if (!empty($resource['content'])) {
-                    $resource['content_preview'] = $this->getContentPreview($resource['content']);
+                    $content = strip_tags($resource['content']);
+                    $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                    $resource['content_preview'] = mb_strimwidth($content, 0, 200, '...');
+                } else {
+                    $resource['content_preview'] = '';
                 }
             }
 
@@ -59,7 +76,7 @@ class ApiController
             error_log("Error in getResourcesByTag: " . $e->getMessage());
             return $this->jsonResponse([
                 'success' => false,
-                'message' => '서버 오류가 발생했습니다.',
+                'message' => '리소스를 검색하는 중 오류가 발생했습니다.',
                 'data' => []
             ], 500);
         }
