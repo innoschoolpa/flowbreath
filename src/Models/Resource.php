@@ -1603,32 +1603,48 @@ class Resource extends Model {
     /**
      * 태그로 리소스 조회
      */
-    public function getResourcesByTag($tag, $lang = 'ko') {
+    public function getResourcesByTag($tag, $language = 'ko') {
         try {
-            $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.name as author_name,
-                    GROUP_CONCAT(t.name) as tags
+            // URL 디코딩
+            $tag = urldecode($tag);
+            
+            // 태그 검색 로깅
+            error_log("Searching for tag: " . $tag);
+            
+            $sql = "SELECT DISTINCT r.*, rt.*, u.name as author_name, 
+                    GROUP_CONCAT(DISTINCT t.name) as tags
                     FROM resources r
-                    LEFT JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = :lang
+                    LEFT JOIN resource_translations rt ON r.id = rt.resource_id
                     LEFT JOIN users u ON r.user_id = u.id
-                    INNER JOIN resource_tags rtag ON r.id = rtag.resource_id
-                    INNER JOIN tags t ON rtag.tag_id = t.id
-                    WHERE t.name = :tag 
-                    AND r.status = 'published' 
+                    LEFT JOIN resource_tags rt2 ON r.id = rt2.resource_id
+                    LEFT JOIN tags t ON rt2.tag_id = t.id
+                    WHERE (t.name LIKE ? OR t.name LIKE ? OR t.name LIKE ?)
+                    AND r.status = 'published'
                     AND r.visibility = 'public'
-                    GROUP BY r.id
-                    ORDER BY r.created_at DESC";
+                    AND rt.language_code = ?
+                    GROUP BY r.id, rt.id";
             
             $stmt = $this->db->prepare($sql);
-            $stmt->execute([
-                ':tag' => $tag,
-                ':lang' => $lang
-            ]);
+            $searchTerm = '%' . $tag . '%';
+            $stmt->execute([$searchTerm, $tag, '%' . $tag, $language]);
             
-            $resources = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $resources = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            // Process tags for each resource
+            // 검색 결과 로깅
+            error_log("Found " . count($resources) . " resources for tag: " . $tag);
+            
+            if (empty($resources)) {
+                error_log("No resources found for tag: " . $tag);
+                return [];
+            }
+            
+            // 태그 배열로 변환
             foreach ($resources as &$resource) {
-                $resource['tags'] = $resource['tags'] ? explode(',', $resource['tags']) : [];
+                if (!empty($resource['tags'])) {
+                    $resource['tags'] = explode(',', $resource['tags']);
+                } else {
+                    $resource['tags'] = [];
+                }
             }
             
             return $resources;
