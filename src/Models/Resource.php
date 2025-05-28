@@ -518,7 +518,11 @@ class Resource extends Model {
 
             // 태그 처리
             if (!empty($data['tags'])) {
-                $this->updateResourceTags($resourceId, $data['tags']);
+                // 태그 문자열을 배열로 변환
+                $tagNames = is_array($data['tags']) ? $data['tags'] : array_filter(array_map('trim', explode(',', $data['tags'])));
+                if (!empty($tagNames)) {
+                    $this->updateResourceTags($resourceId, $tagNames);
+                }
             }
 
             $this->db->commit();
