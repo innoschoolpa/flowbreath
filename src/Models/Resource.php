@@ -517,11 +517,25 @@ class Resource extends Model {
             }
 
             // 태그 처리
-            if (!empty($data['tags'])) {
-                // 태그 문자열을 배열로 변환
-                $tagNames = is_array($data['tags']) ? $data['tags'] : array_filter(array_map('trim', explode(',', $data['tags'])));
+            if (isset($data['tags'])) {
+                error_log('[DEBUG] Tags data received: ' . json_encode($data['tags']));
+                
+                // 태그 데이터 정규화
+                $tagNames = [];
+                if (is_array($data['tags'])) {
+                    $tagNames = array_filter(array_map('trim', $data['tags']));
+                } else if (is_string($data['tags'])) {
+                    $tagNames = array_filter(array_map('trim', explode(',', $data['tags'])));
+                }
+                
+                error_log('[DEBUG] Normalized tag names: ' . json_encode($tagNames));
+                
                 if (!empty($tagNames)) {
-                    $this->updateResourceTags($resourceId, $tagNames);
+                    $result = $this->updateResourceTags($resourceId, $tagNames);
+                    if (!$result) {
+                        error_log('[ERROR] Failed to update resource tags');
+                        throw new \Exception('태그 업데이트에 실패했습니다.');
+                    }
                 }
             }
 
