@@ -439,8 +439,14 @@ h1, h2, h3, h4, h5, h6 {
 
                     // 태그별 리소스 가져오기
                     fetch(`/api/resources/tag/${tag}`)
-                        .then(response => response.json())
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
                         .then(data => {
+                            console.log('API Response:', data); // 디버깅을 위한 로그 추가
                             if (data.resources && data.resources.length > 0) {
                                 tagResourcesList.innerHTML = data.resources.map(resource => `
                                     <div class="col-md-6 mb-3">
@@ -474,7 +480,8 @@ h1, h2, h3, h4, h5, h6 {
                                 tagResourcesList.innerHTML = `
                                     <div class="col-12">
                                         <div class="alert alert-info">
-                                            <?= $language->get('home.recent_resources.no_results') ?>
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            '${decodeURIComponent(tag)}' 태그와 관련된 리소스가 없습니다.
                                         </div>
                                     </div>
                                 `;
@@ -485,7 +492,8 @@ h1, h2, h3, h4, h5, h6 {
                             tagResourcesList.innerHTML = `
                                 <div class="col-12">
                                     <div class="alert alert-danger">
-                                        리소스를 불러오는 중 오류가 발생했습니다.
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        리소스를 불러오는 중 오류가 발생했습니다. (${error.message})
                                     </div>
                                 </div>
                             `;
