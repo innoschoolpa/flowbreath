@@ -1600,6 +1600,9 @@ class Resource extends Model {
         return html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 
+    /**
+     * 태그로 리소스 조회
+     */
     public function getResourcesByTag($tag, $lang = 'ko') {
         try {
             $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.name as author_name,
@@ -1629,9 +1632,9 @@ class Resource extends Model {
             }
             
             return $resources;
-        } catch (\PDOException $e) {
-            error_log("Error fetching resources by tag: " . $e->getMessage());
-            throw new \Exception("리소스를 불러오는 중 오류가 발생했습니다.");
+        } catch (\Exception $e) {
+            error_log("Error in getResourcesByTag: " . $e->getMessage());
+            return false;
         }
     }
 }
