@@ -1619,7 +1619,7 @@ class Resource extends Model {
                     LEFT JOIN users u ON r.user_id = u.id
                     LEFT JOIN resource_tags rt2 ON r.id = rt2.resource_id
                     LEFT JOIN tags t ON rt2.tag_id = t.id
-                    WHERE t.name LIKE :tag
+                    WHERE t.name = :tag
                     AND r.status = 'published'
                     AND r.visibility = 'public'
                     AND rt.language_code = :language
@@ -1628,7 +1628,7 @@ class Resource extends Model {
 
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
-                ':tag' => '%' . $tag . '%',
+                ':tag' => $tag,
                 ':language' => $language
             ]);
 
