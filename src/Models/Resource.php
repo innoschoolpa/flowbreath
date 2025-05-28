@@ -1611,7 +1611,7 @@ class Resource extends Model {
             // 태그 검색 로그
             error_log("Searching for tag in Resource model: " . $tag);
 
-            $sql = "SELECT DISTINCT r.*, rt.title, rt.content, rt.language, 
+            $sql = "SELECT DISTINCT r.*, rt.title, rt.content, rt.language_code, 
                     u.name as author_name, u.profile_image as author_image,
                     GROUP_CONCAT(DISTINCT t.name) as tags
                     FROM resources r
@@ -1622,7 +1622,7 @@ class Resource extends Model {
                     WHERE t.name LIKE :tag
                     AND r.status = 'published'
                     AND r.visibility = 'public'
-                    AND rt.language = :language
+                    AND rt.language_code = :language
                     GROUP BY r.id, rt.id
                     ORDER BY r.created_at DESC";
 
