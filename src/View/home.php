@@ -51,7 +51,7 @@ function formatContent($content, $hasYoutubeLink) {
     }
 
     // Determine content length based on YouTube link presence
-    $contentLength = $hasYoutubeLink ? 150 : 200;
+    $contentLength = $hasYoutubeLink ? 100 : 200;
     
     // First decode HTML entities
     $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
@@ -62,6 +62,9 @@ function formatContent($content, $hasYoutubeLink) {
     // Convert <br> and <p> tags to newlines
     $content = str_replace(['<br>', '<br/>', '<br />', '</p><p>'], "\n", $content);
     $content = str_replace(['<p>', '</p>'], '', $content);
+    
+    // Remove multiple consecutive newlines
+    $content = preg_replace('/\n\s*\n/', "\n", $content);
     
     // Trim content to specified length
     if (mb_strlen($content, 'UTF-8') > $contentLength) {
@@ -74,8 +77,8 @@ function formatContent($content, $hasYoutubeLink) {
         $content .= '...';
     }
     
-    // Convert newlines to <br> tags
-    return nl2br(htmlspecialchars($content, ENT_QUOTES, 'UTF-8'));
+    // Convert newlines to <br> tags and escape HTML
+    return nl2br(htmlspecialchars(trim($content), ENT_QUOTES, 'UTF-8'));
 }
 
 // YouTube 동영상 ID 추출 함수
@@ -354,14 +357,8 @@ h1, h2, h3, h4, h5, h6 {
                     }
                 }
                 
-                // Determine content length based on YouTube link presence
-                $contentLength = $hasYoutubeLink ? 130 : 500;
-                
-                // Prepare content with only line breaks preserved
-                $content = strip_tags($resource['content'] ?? '');
-                $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                $content = mb_strimwidth($content, 0, $contentLength, '...');
-                $content = nl2br(htmlspecialchars($content));
+                // Use formatContent function to handle content formatting
+                $content = formatContent($resource['content'] ?? '', $hasYoutubeLink);
                 ?>
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card h-100">
