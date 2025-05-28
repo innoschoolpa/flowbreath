@@ -257,10 +257,10 @@ input[type="text"]::placeholder {
       <?php
       $videoId = null;
       $hasYoutubeLink = false;
+      $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
       
       // Check for YouTube link in link field
       if (!empty($resource['link'])) {
-          $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
           if (preg_match($youtube_pattern, $resource['link'], $matches)) {
               $videoId = $matches[1];
               $hasYoutubeLink = true;
