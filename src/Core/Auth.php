@@ -315,4 +315,14 @@ class Auth
 
         return false;
     }
+
+    /**
+     * Check if user is logged in
+     * 
+     * @return bool
+     */
+    public function isLoggedIn(): bool
+    {
+        return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+    }
 } 
