@@ -21,12 +21,12 @@ class DiaryController extends Controller {
         $page = $_GET['page'] ?? 1;
         $limit = 20;
         
-        $diaries = $this->diaryModel->getList($page, $limit, $userId);
+        $result = $this->diaryModel->getList($page, $limit, $userId);
         
         return $this->view('diary/index', [
-            'diaries' => $diaries,
+            'diaries' => $result['items'],
             'currentPage' => $page,
-            'totalPages' => ceil($diaries['total'] / $limit)
+            'totalPages' => ceil($result['total'] / $limit)
         ]);
     }
 
