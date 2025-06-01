@@ -250,17 +250,30 @@ class Diary {
     }
 
     public function addComment($data) {
-        $sql = "INSERT INTO diary_comments (diary_id, user_id, content, created_at)
-                VALUES (?, ?, ?, NOW())";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            $data['diary_id'],
-            $data['user_id'],
-            $data['content']
-        ]);
+        try {
+            $sql = "INSERT INTO diary_comments (diary_id, user_id, content, created_at)
+                    VALUES (?, ?, ?, ?)";
+            
+            $stmt = $this->db->prepare($sql);
+            $result = $stmt->execute([
+                $data['diary_id'],
+                $data['user_id'],
+                $data['content'],
+                $data['created_at']
+            ]);
 
-        return $this->db->lastInsertId();
+            if (!$result) {
+                error_log("Failed to add comment: " . implode(", ", $stmt->errorInfo()));
+                return false;
+            }
+
+            return $this->db->lastInsertId();
+        } catch (\PDOException $e) {
+            error_log("Database error in addComment: " . $e->getMessage());
+            error_log("SQL: " . $sql);
+            error_log("Data: " . print_r($data, true));
+            return false;
+        }
     }
 
     public function findComment($id) {
