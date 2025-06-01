@@ -67,8 +67,8 @@ class Diary {
 
     public function create($data) {
         try {
-            $sql = "INSERT INTO diaries (user_id, title, content, tags, is_public, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
+            $sql = "INSERT INTO diaries (user_id, title, content, tags, is_public, created_at, updated_at, view_count, like_count, comment_count)
+                    VALUES (?, ?, ?, ?, ?, NOW(), NOW(), 0, 0, 0)";
             
             $stmt = $this->db->prepare($sql);
             $result = $stmt->execute([
