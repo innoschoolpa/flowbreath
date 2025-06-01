@@ -297,6 +297,8 @@ function submitComment(event) {
         submitButton.disabled = false;
         submitButton.innerHTML = originalButtonText;
     });
+    
+    return false;
 }
 
 function deleteComment(commentId) {
