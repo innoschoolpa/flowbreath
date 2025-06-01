@@ -185,20 +185,35 @@ class DiaryController extends Controller {
 
     public function storeComment() {
         try {
+            // 디버깅을 위한 세션 정보 로깅
+            error_log("Session data: " . print_r($_SESSION, true));
+            error_log("POST data: " . print_r($_POST, true));
+            
             if (!$this->auth->isLoggedIn()) {
+                error_log("User not logged in. Session user_id: " . ($_SESSION['user_id'] ?? 'not set'));
                 return json_response(['error' => '로그인이 필요합니다.'], 401);
             }
 
             // CSRF 토큰 검증
-            if (!isset($_POST['csrf_token']) || !isset($_SESSION['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-                error_log("CSRF token mismatch - POST: " . ($_POST['csrf_token'] ?? 'not set') . ", SESSION: " . ($_SESSION['csrf_token'] ?? 'not set'));
+            if (!isset($_POST['csrf_token']) || !isset($_SESSION['csrf_token'])) {
+                error_log("CSRF token missing - POST: " . ($_POST['csrf_token'] ?? 'not set') . ", SESSION: " . ($_SESSION['csrf_token'] ?? 'not set'));
+                return json_response(['error' => '보안 토큰이 없습니다. 페이지를 새로고침 후 다시 시도해주세요.'], 403);
+            }
+
+            if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+                error_log("CSRF token mismatch - POST: " . $_POST['csrf_token'] . ", SESSION: " . $_SESSION['csrf_token']);
                 return json_response(['error' => '보안 토큰이 유효하지 않습니다. 페이지를 새로고침 후 다시 시도해주세요.'], 403);
             }
 
             $diaryId = $_POST['diary_id'] ?? 0;
+            if (!$diaryId) {
+                error_log("Diary ID is missing or invalid: " . $diaryId);
+                return json_response(['error' => '일기 ID가 유효하지 않습니다.'], 400);
+            }
+
             $diary = $this->diaryModel->find($diaryId);
-            
             if (!$diary) {
+                error_log("Diary not found with ID: " . $diaryId);
                 return json_response(['error' => '일기를 찾을 수 없습니다.'], 404);
             }
 
@@ -211,12 +226,13 @@ class DiaryController extends Controller {
             // 공개 일기는 모든 로그인한 사용자가 댓글 가능
             // 비공개 일기는 작성자만 댓글 가능
             if (!$diary['is_public'] && $diary['user_id'] != $this->auth->id()) {
-                error_log("Access denied: User is not the diary owner and diary is private");
+                error_log("Access denied: User " . $this->auth->id() . " is not the diary owner and diary is private");
                 return json_response(['error' => '비공개 일기에는 작성자만 댓글을 달 수 있습니다.'], 403);
             }
 
             $content = trim($_POST['content'] ?? '');
             if (empty($content)) {
+                error_log("Empty comment content");
                 return json_response(['error' => '댓글 내용을 입력해주세요.'], 400);
             }
 
@@ -230,11 +246,14 @@ class DiaryController extends Controller {
                 'created_at' => date('Y-m-d H:i:s')
             ];
 
+            error_log("Attempting to add comment with data: " . print_r($data, true));
+
             $result = $this->diaryModel->addComment($data);
             if ($result) {
                 // 댓글 작성자 정보 가져오기
                 $comment = $this->diaryModel->findComment($result);
                 if ($comment) {
+                    error_log("Comment added successfully: " . print_r($comment, true));
                     return json_response([
                         'success' => true, 
                         'id' => $result,
@@ -249,9 +268,11 @@ class DiaryController extends Controller {
                     ]);
                 }
             }
+            
+            error_log("Failed to add comment");
             return json_response(['error' => '댓글 등록에 실패했습니다.'], 500);
         } catch (\Exception $e) {
-            error_log("Error in storeComment: " . $e->getMessage());
+            error_log("Error in storeComment: " . $e->getMessage() . "\n" . $e->getTraceAsString());
             return json_response(['error' => '댓글 등록 중 오류가 발생했습니다.'], 500);
         }
     }

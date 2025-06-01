@@ -72,7 +72,14 @@
                                 <h5 class="card-title"><?= __('diary.comment') ?></h5>
                                 <form id="commentForm" onsubmit="return submitComment(event)" class="needs-validation" novalidate>
                                     <input type="hidden" name="diary_id" value="<?= $diary['id'] ?>">
-                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                    <?php if (isset($_SESSION['csrf_token'])): ?>
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                                    <?php else: ?>
+                                        <?php
+                                            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                                        ?>
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                                    <?php endif; ?>
                                     <div class="mb-3">
                                         <textarea class="form-control" name="content" rows="3" required 
                                                   minlength="1" maxlength="1000" 
