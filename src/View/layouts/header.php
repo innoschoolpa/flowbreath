@@ -222,6 +222,110 @@ $metaKeywords = $currentLang === 'ko'
             padding: 2rem 0;
         }
     </style>
+    <style>
+        :root {
+            --background-color: #0f172a;
+            --text-color: #f1f5f9;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --primary-color: #3b82f6;
+            --secondary-color: #64748b;
+            --accent-color: #3b82f6;
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --input-border: var(--border-color);
+            --input-focus-bg: rgba(255, 255, 255, 0.15);
+            --input-focus-border: var(--accent-color);
+        }
+        body {
+            background-color: var(--background-color) !important;
+            color: var(--text-color) !important;
+        }
+        .card, .card-body, .card-title, .card-header, .card-footer {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+            border-color: var(--border-color) !important;
+        }
+        .form-control {
+            background-color: var(--input-bg) !important;
+            border-color: var(--input-border) !important;
+            color: var(--text-color) !important;
+        }
+        .form-control:focus {
+            background-color: var(--input-focus-bg) !important;
+            border-color: var(--input-focus-border) !important;
+            color: var(--text-color) !important;
+            box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25) !important;
+        }
+        .form-control::placeholder {
+            color: var(--text-color) !important;
+            opacity: 0.5 !important;
+        }
+        .form-label {
+            color: var(--text-color) !important;
+        }
+        .btn-primary {
+            background-color: var(--accent-color) !important;
+            border-color: var(--accent-color) !important;
+            color: var(--text-color) !important;
+        }
+        .btn-primary:hover {
+            background-color: #0284c7 !important;
+            border-color: #0284c7 !important;
+            color: var(--text-color) !important;
+        }
+        .btn-outline-secondary {
+            color: var(--text-color) !important;
+            border-color: var(--secondary-color) !important;
+        }
+        .btn-outline-secondary:hover {
+            background-color: var(--secondary-color) !important;
+            color: var(--background-color) !important;
+        }
+        .navbar, .footer {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+        }
+        .dropdown-menu {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+        }
+        .dropdown-item {
+            color: var(--text-color) !important;
+        }
+        .dropdown-item:hover, .dropdown-item:focus {
+            background-color: var(--input-focus-bg) !important;
+            color: var(--accent-color) !important;
+        }
+        .badge.bg-light {
+            background-color: var(--secondary-color) !important;
+            color: var(--text-color) !important;
+        }
+        .text-muted {
+            color: #94a3b8 !important;
+        }
+        .alert {
+            background-color: #1e293b !important;
+            color: var(--text-color) !important;
+            border-color: var(--border-color) !important;
+        }
+        .rounded-circle {
+            background-color: var(--card-bg) !important;
+        }
+        .input-group-text {
+            background-color: var(--input-bg) !important;
+            color: var(--text-color) !important;
+            border-color: var(--input-border) !important;
+        }
+        .table {
+            color: var(--text-color) !important;
+        }
+        .table th, .table td {
+            background-color: var(--card-bg) !important;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
