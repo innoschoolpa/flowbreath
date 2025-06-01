@@ -27,7 +27,7 @@
                         <!-- 프로필 이미지 -->
                         <div class="mb-4 text-center">
                             <div class="position-relative d-inline-block">
-                                <img src="<?= htmlspecialchars($user['profile_image'] ?? '/assets/images/default-avatar.png') ?>" 
+                                <img src="<?= htmlspecialchars($user['profile_image'] ?? '/assets/images/default-avatar.svg') ?>" 
                                      alt="<?= __('profile.profile_image') ?>" 
                                      class="rounded-circle mb-3" 
                                      style="width: 150px; height: 150px; object-fit: cover;">
