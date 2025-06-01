@@ -30,14 +30,13 @@
                                 error_log("Diary data: " . print_r($diary, true));
                                 
                                 if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id']) && isset($diary['user_id']) && $diary['user_id'] == $_SESSION['user_id']): ?>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton<?= $diary['id'] ?>" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v"></i>
+                                    <div class="btn-group">
+                                        <a href="/diary/<?= $diary['id'] ?>/edit" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> <?= __('diary.edit') ?>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteDiary(<?= $diary['id'] ?>)">
+                                            <i class="fas fa-trash"></i> <?= __('diary.delete') ?>
                                         </button>
-                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton<?= $diary['id'] ?>">
-                                            <li><a class="dropdown-item" href="/diary/<?= $diary['id'] ?>/edit"><?= __('diary.edit') ?></a></li>
-                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteDiary(<?= $diary['id'] ?>)"><?= __('diary.delete') ?></a></li>
-                                        </ul>
                                     </div>
                                 <?php endif; ?>
                             </div>
