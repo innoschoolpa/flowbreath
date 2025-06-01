@@ -105,45 +105,10 @@
                         </div>
                     <?php endif; ?>
 
-                    <div id="comments">
-                        <?php if (empty($diary['comments'])): ?>
-                            <div class="text-center text-muted">
-                                <?= __('diary.no_comments') ?>
-                            </div>
-                        <?php else: ?>
-                            <?php foreach ($diary['comments'] as $comment): ?>
-                                <div class="card mb-3">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <div class="d-flex align-items-center">
-                                                <img src="<?= $comment['profile_image'] ?? '/assets/images/default-avatar.png' ?>" 
-                                                     class="rounded-circle me-2" width="32" height="32" 
-                                                     alt="<?= htmlspecialchars($comment['author_name']) ?>">
-                                                <div>
-                                                    <div class="fw-bold">
-                                                        <?= htmlspecialchars($comment['author_name']) ?>
-                                                    </div>
-                                                    <div class="text-muted small">
-                                                        <?= date('Y-m-d H:i', strtotime($comment['created_at'])) ?>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <?php if ($comment['user_id'] == ($_SESSION['user_id'] ?? null)): ?>
-                                                <button class="btn btn-link text-danger btn-sm" 
-                                                        onclick="deleteComment(<?= $comment['id'] ?>)">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            <?php endif; ?>
-                                        </div>
-                                        
-                                        <div class="comment-content">
-                                            <?= nl2br(htmlspecialchars($comment['content'])) ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+                    <div id="comments" class="comments-list">
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-spinner fa-spin"></i> 댓글을 불러오는 중...
+                        </div>
                     </div>
                 </div>
             </div>
@@ -228,18 +193,32 @@ async function submitComment(event) {
             form.parentNode.insertBefore(successAlert, form);
             
             // 댓글 목록에 새 댓글 추가
-            const commentsList = document.querySelector('.comments-list');
+            const commentsList = document.getElementById('comments');
             if (commentsList && data.comment) {
                 const commentHtml = `
-                    <div class="comment" id="comment-${data.comment.id}">
-                        <div class="d-flex align-items-start mb-2">
-                            <img src="${data.comment.profile_image}" alt="${data.comment.author_name}" class="rounded-circle me-2" style="width: 40px; height: 40px;">
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0">${data.comment.author_name}</h6>
-                                    <small class="text-muted">${new Date(data.comment.created_at).toLocaleString()}</small>
+                    <div class="card mb-3" id="comment-${data.comment.id}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <img src="${data.comment.profile_image}" 
+                                         class="rounded-circle me-2" width="32" height="32" 
+                                         alt="${data.comment.author_name}">
+                                    <div>
+                                        <div class="fw-bold">
+                                            ${data.comment.author_name}
+                                        </div>
+                                        <div class="text-muted small">
+                                            ${new Date(data.comment.created_at).toLocaleString()}
+                                        </div>
+                                    </div>
                                 </div>
-                                <p class="mb-1">${data.comment.content}</p>
+                                <button class="btn btn-link text-danger btn-sm" 
+                                        onclick="deleteComment(${data.comment.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="comment-content">
+                                ${data.comment.content}
                             </div>
                         </div>
                     </div>
@@ -286,9 +265,69 @@ function deleteComment(commentId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                window.location.reload();
+                const commentElement = document.getElementById(`comment-${commentId}`);
+                if (commentElement) {
+                    commentElement.remove();
+                }
             }
         });
+    }
+}
+
+// 페이지 로드 시 댓글 불러오기
+document.addEventListener('DOMContentLoaded', function() {
+    loadComments();
+});
+
+async function loadComments() {
+    const commentsContainer = document.getElementById('comments');
+    const diaryId = <?= $diary['id'] ?>;
+    
+    try {
+        const response = await fetch(`/diary/${diaryId}/comments`);
+        const data = await response.json();
+        
+        if (data.success) {
+            if (data.comments.length === 0) {
+                commentsContainer.innerHTML = '<div class="text-center text-muted">아직 댓글이 없습니다.</div>';
+            } else {
+                commentsContainer.innerHTML = data.comments.map(comment => `
+                    <div class="card mb-3" id="comment-${comment.id}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <img src="${comment.profile_image}" 
+                                         class="rounded-circle me-2" width="32" height="32" 
+                                         alt="${comment.author_name}">
+                                    <div>
+                                        <div class="fw-bold">
+                                            ${comment.author_name}
+                                        </div>
+                                        <div class="text-muted small">
+                                            ${new Date(comment.created_at).toLocaleString()}
+                                        </div>
+                                    </div>
+                                </div>
+                                ${comment.can_delete ? `
+                                    <button class="btn btn-link text-danger btn-sm" 
+                                            onclick="deleteComment(${comment.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                            <div class="comment-content">
+                                ${comment.content}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } else {
+            commentsContainer.innerHTML = '<div class="text-center text-danger">댓글을 불러오는데 실패했습니다.</div>';
+        }
+    } catch (error) {
+        console.error('Error loading comments:', error);
+        commentsContainer.innerHTML = '<div class="text-center text-danger">댓글을 불러오는데 실패했습니다.</div>';
     }
 }
 </script>

@@ -309,4 +309,34 @@ class DiaryController extends Controller {
 
         return json_response(['error' => 'Failed to delete comment'], 500);
     }
+
+    public function getComments($id) {
+        try {
+            $diary = $this->diaryModel->find($id);
+            if (!$diary) {
+                return json_response(['success' => false, 'error' => '일기를 찾을 수 없습니다.'], 404);
+            }
+
+            if (!$diary['is_public'] && $this->auth->id() !== $diary['user_id']) {
+                return json_response(['success' => false, 'error' => '비공개 일기입니다.'], 403);
+            }
+
+            $comments = $this->diaryModel->getComments($id);
+            $userId = $this->auth->id();
+
+            // 각 댓글에 삭제 권한 추가
+            $comments = array_map(function($comment) use ($userId) {
+                $comment['can_delete'] = $userId && ($comment['user_id'] == $userId);
+                return $comment;
+            }, $comments);
+
+            return json_response([
+                'success' => true,
+                'comments' => $comments
+            ]);
+        } catch (\Exception $e) {
+            error_log("Error in getComments: " . $e->getMessage());
+            return json_response(['success' => false, 'error' => '댓글을 불러오는데 실패했습니다.'], 500);
+        }
+    }
 } 

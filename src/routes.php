@@ -186,6 +186,7 @@ return function (Router $router) {
     $router->delete('/diary/{id}', 'App\\Controllers\\DiaryController', 'delete');
     $router->post('/diary/{id}/like', 'App\\Controllers\\DiaryController', 'toggleLike');
     $router->delete('/diary/comment/{id}', 'App\\Controllers\\DiaryController', 'deleteComment');
+    $router->get('/diary/{id}/comments', 'App\\Controllers\\DiaryController', 'getComments');
 
     // 404 처리 라우트 (모든 경로에 대해)
     $router->add('GET', '*', [HomeController::class, 'notFound']);

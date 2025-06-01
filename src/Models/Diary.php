@@ -318,4 +318,16 @@ class Diary {
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$id]);
     }
+
+    public function getComments($diaryId) {
+        $sql = "SELECT c.*, u.name as author_name, u.profile_image 
+                FROM diary_comments c
+                LEFT JOIN users u ON c.user_id = u.id
+                WHERE c.diary_id = ? AND c.deleted_at IS NULL
+                ORDER BY c.created_at DESC";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$diaryId]);
+        return $stmt->fetchAll();
+    }
 } 
