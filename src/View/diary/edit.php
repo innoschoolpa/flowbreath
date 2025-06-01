@@ -333,6 +333,9 @@ function submitDiary(event) {
     const form = event.target;
     const formData = new FormData(form);
     
+    // TinyMCE 에디터의 내용을 폼 데이터에 추가
+    formData.set('content', tinymce.get('content').getContent());
+    
     fetch('/diary/<?= $diary['id'] ?>', {
         method: 'POST',
         body: formData
@@ -346,6 +349,7 @@ function submitDiary(event) {
         }
     })
     .catch(error => {
+        console.error('Error:', error);
         alert('<?= __('diary.save_error') ?>');
     });
     
