@@ -252,18 +252,33 @@ class DiaryController extends Controller {
             if ($result) {
                 // 댓글 작성자 정보 가져오기
                 $comment = $this->diaryModel->findComment($result);
+                error_log("Comment data after creation: " . print_r($comment, true));
+                
                 if ($comment) {
                     error_log("Comment added successfully: " . print_r($comment, true));
                     return json_response([
                         'success' => true, 
-                        'id' => $result,
                         'message' => '댓글이 등록되었습니다.',
                         'comment' => [
                             'id' => $comment['id'],
                             'content' => $comment['content'],
-                            'author_name' => $comment['author_name'],
-                            'profile_image' => $comment['profile_image'] ?? '/assets/images/default-avatar.png',
+                            'author_name' => $comment['author_name'] ?? $_SESSION['user_name'],
+                            'profile_image' => $comment['profile_image'] ?? $_SESSION['user_avatar'] ?? '/assets/images/default-avatar.png',
                             'created_at' => $comment['created_at']
+                        ]
+                    ]);
+                } else {
+                    error_log("Failed to retrieve comment after creation. Comment ID: " . $result);
+                    // 댓글은 저장되었지만 정보를 가져오지 못한 경우
+                    return json_response([
+                        'success' => true,
+                        'message' => '댓글이 등록되었습니다.',
+                        'comment' => [
+                            'id' => $result,
+                            'content' => $data['content'],
+                            'author_name' => $_SESSION['user_name'],
+                            'profile_image' => $_SESSION['user_avatar'] ?? '/assets/images/default-avatar.png',
+                            'created_at' => $data['created_at']
                         ]
                     ]);
                 }
