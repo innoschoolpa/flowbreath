@@ -302,5 +302,41 @@ return [
         'weeks_ago' => '%d weeks ago',
         'months_ago' => '%d months ago',
         'years_ago' => '%d years ago'
-    ]
+    ],
+
+    'diary' => [
+        'title' => 'Practice Diary',
+        'create' => 'Write Diary',
+        'edit' => 'Edit Diary',
+        'delete' => 'Delete Diary',
+        'update' => 'Update',
+        'save' => 'Save',
+        'content' => 'Content',
+        'tags' => 'Tags',
+        'tags_placeholder' => 'Separate with commas',
+        'tags_help' => 'Example: practice, meditation, breathing',
+        'public' => 'Public',
+        'private' => 'Private',
+        'no_diaries' => 'No diaries have been written yet.',
+        'delete_confirm' => 'Are you sure you want to delete this diary?',
+        'save_error' => 'An error occurred while saving the diary.',
+        'update_error' => 'An error occurred while updating the diary.',
+        'search' => 'Search',
+        'search_placeholder' => 'Search by title or content',
+        'date_range' => 'Date Range',
+        'comment' => 'Comment',
+        'comment_submit' => 'Write Comment',
+        'no_comments' => 'No comments yet.',
+        'comment_error' => 'An error occurred while writing the comment.',
+        'comment_delete_confirm' => 'Are you sure you want to delete this comment?',
+    ],
+
+    'common' => [
+        'cancel' => 'Cancel',
+    ],
+
+    'pagination' => [
+        'next' => 'Next',
+        'previous' => 'Previous',
+    ],
 ]; 

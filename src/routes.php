@@ -13,6 +13,7 @@ use App\Controllers\SettingsController;
 use App\Controllers\ProfileController;
 use App\Controllers\BreathingController;
 use App\Controllers\UploadController;
+use App\Controllers\DiaryController;
 
 return function (Router $router) {
     // 홈 라우트
@@ -172,6 +173,19 @@ return function (Router $router) {
 
     // API Routes
     $router->get('/api/resources/tag/{tag}', 'App\\Controller\\ApiController', 'getResourcesByTag');
+
+    // Diary routes
+    $router->get('/diary', 'App\\Controllers\\DiaryController', 'index');
+    $router->get('/diary/create', 'App\\Controllers\\DiaryController', 'create');
+    $router->post('/diary', 'App\\Controllers\\DiaryController', 'store');
+    $router->get('/diary/search', 'App\\Controllers\\DiaryController', 'search');
+    $router->get('/diary/{id}', 'App\\Controllers\\DiaryController', 'show');
+    $router->get('/diary/{id}/edit', 'App\\Controllers\\DiaryController', 'edit');
+    $router->post('/diary/{id}', 'App\\Controllers\\DiaryController', 'update');
+    $router->delete('/diary/{id}', 'App\\Controllers\\DiaryController', 'delete');
+    $router->post('/diary/{id}/like', 'App\\Controllers\\DiaryController', 'toggleLike');
+    $router->post('/diary/comment', 'App\\Controllers\\DiaryController', 'storeComment');
+    $router->delete('/diary/comment/{id}', 'App\\Controllers\\DiaryController', 'deleteComment');
 
     // 404 처리 라우트 (모든 경로에 대해)
     $router->add('GET', '*', [HomeController::class, 'notFound']);

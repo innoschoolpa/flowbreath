@@ -269,5 +269,41 @@ return [
             'start' => '시작',
             'stop' => '정지'
         ]
-    ]
+    ],
+
+    'diary' => [
+        'title' => '수련 일기',
+        'create' => '일기 작성',
+        'edit' => '일기 수정',
+        'delete' => '일기 삭제',
+        'update' => '수정하기',
+        'save' => '저장하기',
+        'content' => '내용',
+        'tags' => '태그',
+        'tags_placeholder' => '쉼표로 구분하여 입력하세요',
+        'tags_help' => '예: 수련, 명상, 호흡',
+        'public' => '공개',
+        'private' => '비공개',
+        'no_diaries' => '아직 작성된 일기가 없습니다.',
+        'delete_confirm' => '정말로 이 일기를 삭제하시겠습니까?',
+        'save_error' => '일기 저장 중 오류가 발생했습니다.',
+        'update_error' => '일기 수정 중 오류가 발생했습니다.',
+        'search' => '검색',
+        'search_placeholder' => '제목 또는 내용으로 검색',
+        'date_range' => '날짜 범위',
+        'comment' => '댓글',
+        'comment_submit' => '댓글 작성',
+        'no_comments' => '아직 댓글이 없습니다.',
+        'comment_error' => '댓글 작성 중 오류가 발생했습니다.',
+        'comment_delete_confirm' => '정말로 이 댓글을 삭제하시겠습니까?',
+    ],
+
+    'common' => [
+        'cancel' => '취소',
+    ],
+
+    'pagination' => [
+        'next' => '다음',
+        'previous' => '이전',
+    ],
 ]; 
