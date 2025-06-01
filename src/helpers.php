@@ -440,6 +440,20 @@ if (!function_exists('asset')) {
     }
 }
 
+/**
+ * Send JSON response
+ * 
+ * @param mixed $data Response data
+ * @param int $status HTTP status code
+ * @return void
+ */
+function json_response($data, $status = 200) {
+    http_response_code($status);
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit;
+}
+
 // view() 함수는 더 이상 직접 사용하지 않고, 컨트롤러에서는 반드시 $this->response->view() 또는 $this->view()를 사용하세요.
 // load_view()는 내부적으로만 사용하세요.
 

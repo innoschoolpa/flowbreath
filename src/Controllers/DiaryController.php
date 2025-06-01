@@ -2,36 +2,40 @@
 
 namespace App\Controllers;
 
-use App\Models\Diary;
 use App\Core\Auth;
+use App\Core\Controller;
+use App\Models\Diary;
 
-class DiaryController {
+class DiaryController extends Controller {
     private $diaryModel;
     private $auth;
 
     public function __construct() {
+        parent::__construct();
         $this->diaryModel = new Diary();
-        $this->auth = new Auth();
+        $this->auth = Auth::getInstance();
     }
 
     public function index() {
+        $userId = $this->auth->id();
         $page = $_GET['page'] ?? 1;
-        $userId = $this->auth->isLoggedIn() ? $this->auth->getUserId() : null;
+        $limit = 20;
         
-        $diaries = $this->diaryModel->getList($page, 20, $userId);
+        $diaries = $this->diaryModel->getList($page, $limit, $userId);
         
-        return view('diary/index', [
+        return $this->view('diary/index', [
             'diaries' => $diaries,
-            'page' => $page
+            'currentPage' => $page,
+            'totalPages' => ceil($diaries['total'] / $limit)
         ]);
     }
 
     public function create() {
         if (!$this->auth->isLoggedIn()) {
-            redirect('/login');
+            return redirect('/login');
         }
 
-        return view('diary/create');
+        return $this->view('diary/create');
     }
 
     public function store() {
@@ -39,63 +43,49 @@ class DiaryController {
             return json_response(['error' => 'Unauthorized'], 401);
         }
 
-        $title = $_POST['title'] ?? '';
-        $content = $_POST['content'] ?? '';
-        $isPublic = isset($_POST['is_public']) ? (bool)$_POST['is_public'] : true;
-        $tags = $_POST['tags'] ?? [];
+        $data = [
+            'title' => $_POST['title'] ?? '',
+            'content' => $_POST['content'] ?? '',
+            'tags' => $_POST['tags'] ?? '',
+            'is_public' => isset($_POST['is_public']) ? 1 : 0,
+            'user_id' => $this->auth->id()
+        ];
 
-        if (empty($title) || empty($content)) {
-            return json_response(['error' => 'Title and content are required'], 400);
+        $result = $this->diaryModel->create($data);
+
+        if ($result) {
+            return json_response(['success' => true, 'id' => $result]);
         }
 
-        try {
-            $diaryId = $this->diaryModel->create(
-                $this->auth->getUserId(),
-                $title,
-                $content,
-                $isPublic,
-                $tags
-            );
-
-            return json_response([
-                'success' => true,
-                'diary_id' => $diaryId
-            ]);
-        } catch (\Exception $e) {
-            return json_response(['error' => $e->getMessage()], 500);
-        }
+        return json_response(['error' => 'Failed to create diary'], 500);
     }
 
     public function show($id) {
-        $diary = $this->diaryModel->getById($id);
+        $diary = $this->diaryModel->find($id);
         
         if (!$diary) {
-            return view('errors/404');
+            return $this->view('errors/404');
         }
 
-        if (!$diary['is_public'] && (!$this->auth->isLoggedIn() || $this->auth->getUserId() != $diary['user_id'])) {
-            return view('errors/403');
+        if (!$diary['is_public'] && $this->auth->id() !== $diary['user_id']) {
+            return $this->view('errors/403');
         }
 
-        return view('diary/show', [
-            'diary' => $diary
-        ]);
+        return $this->view('diary/show', ['diary' => $diary]);
     }
 
     public function edit($id) {
         if (!$this->auth->isLoggedIn()) {
-            redirect('/login');
+            return redirect('/login');
         }
 
-        $diary = $this->diaryModel->getById($id);
+        $diary = $this->diaryModel->find($id);
         
-        if (!$diary || $diary['user_id'] != $this->auth->getUserId()) {
-            return view('errors/403');
+        if (!$diary || $diary['user_id'] !== $this->auth->id()) {
+            return $this->view('errors/403');
         }
 
-        return view('diary/edit', [
-            'diary' => $diary
-        ]);
+        return $this->view('diary/edit', ['diary' => $diary]);
     }
 
     public function update($id) {
@@ -103,35 +93,26 @@ class DiaryController {
             return json_response(['error' => 'Unauthorized'], 401);
         }
 
-        $diary = $this->diaryModel->getById($id);
+        $diary = $this->diaryModel->find($id);
         
-        if (!$diary || $diary['user_id'] != $this->auth->getUserId()) {
+        if (!$diary || $diary['user_id'] !== $this->auth->id()) {
             return json_response(['error' => 'Forbidden'], 403);
         }
 
-        $title = $_POST['title'] ?? '';
-        $content = $_POST['content'] ?? '';
-        $isPublic = isset($_POST['is_public']) ? (bool)$_POST['is_public'] : true;
-        $tags = $_POST['tags'] ?? [];
+        $data = [
+            'title' => $_POST['title'] ?? '',
+            'content' => $_POST['content'] ?? '',
+            'tags' => $_POST['tags'] ?? '',
+            'is_public' => isset($_POST['is_public']) ? 1 : 0
+        ];
 
-        if (empty($title) || empty($content)) {
-            return json_response(['error' => 'Title and content are required'], 400);
-        }
+        $result = $this->diaryModel->update($id, $data);
 
-        try {
-            $this->diaryModel->update(
-                $id,
-                $this->auth->getUserId(),
-                $title,
-                $content,
-                $isPublic,
-                $tags
-            );
-
+        if ($result) {
             return json_response(['success' => true]);
-        } catch (\Exception $e) {
-            return json_response(['error' => $e->getMessage()], 500);
         }
+
+        return json_response(['error' => 'Failed to update diary'], 500);
     }
 
     public function delete($id) {
@@ -139,18 +120,40 @@ class DiaryController {
             return json_response(['error' => 'Unauthorized'], 401);
         }
 
-        $diary = $this->diaryModel->getById($id);
+        $diary = $this->diaryModel->find($id);
         
-        if (!$diary || $diary['user_id'] != $this->auth->getUserId()) {
+        if (!$diary || $diary['user_id'] !== $this->auth->id()) {
             return json_response(['error' => 'Forbidden'], 403);
         }
 
-        try {
-            $this->diaryModel->delete($id, $this->auth->getUserId());
+        $result = $this->diaryModel->delete($id);
+
+        if ($result) {
             return json_response(['success' => true]);
-        } catch (\Exception $e) {
-            return json_response(['error' => $e->getMessage()], 500);
         }
+
+        return json_response(['error' => 'Failed to delete diary'], 500);
+    }
+
+    public function search() {
+        $query = $_GET['query'] ?? '';
+        $tag = $_GET['tag'] ?? '';
+        $startDate = $_GET['start_date'] ?? '';
+        $endDate = $_GET['end_date'] ?? '';
+        $page = $_GET['page'] ?? 1;
+        $limit = 20;
+
+        $diaries = $this->diaryModel->search($query, $tag, $startDate, $endDate, $page, $limit);
+
+        return $this->view('diary/index', [
+            'diaries' => $diaries,
+            'currentPage' => $page,
+            'totalPages' => ceil($diaries['total'] / $limit),
+            'query' => $query,
+            'tag' => $tag,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ]);
     }
 
     public function toggleLike($id) {
@@ -158,30 +161,52 @@ class DiaryController {
             return json_response(['error' => 'Unauthorized'], 401);
         }
 
-        try {
-            $this->diaryModel->toggleLike($id, $this->auth->getUserId());
-            return json_response(['success' => true]);
-        } catch (\Exception $e) {
-            return json_response(['error' => $e->getMessage()], 500);
+        $result = $this->diaryModel->toggleLike($id, $this->auth->id());
+
+        if ($result !== null) {
+            return json_response(['success' => true, 'liked' => $result]);
         }
+
+        return json_response(['error' => 'Failed to toggle like'], 500);
     }
 
-    public function search() {
-        $query = $_GET['q'] ?? '';
-        $tags = $_GET['tags'] ?? [];
-        $startDate = $_GET['start_date'] ?? null;
-        $endDate = $_GET['end_date'] ?? null;
-        $page = $_GET['page'] ?? 1;
+    public function storeComment() {
+        if (!$this->auth->isLoggedIn()) {
+            return json_response(['error' => 'Unauthorized'], 401);
+        }
 
-        $diaries = $this->diaryModel->search($query, $tags, $startDate, $endDate, $page);
+        $data = [
+            'diary_id' => $_POST['diary_id'] ?? 0,
+            'content' => $_POST['content'] ?? '',
+            'user_id' => $this->auth->id()
+        ];
 
-        return view('diary/search', [
-            'diaries' => $diaries,
-            'query' => $query,
-            'tags' => $tags,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
-            'page' => $page
-        ]);
+        $result = $this->diaryModel->addComment($data);
+
+        if ($result) {
+            return json_response(['success' => true, 'id' => $result]);
+        }
+
+        return json_response(['error' => 'Failed to add comment'], 500);
+    }
+
+    public function deleteComment($id) {
+        if (!$this->auth->isLoggedIn()) {
+            return json_response(['error' => 'Unauthorized'], 401);
+        }
+
+        $comment = $this->diaryModel->findComment($id);
+        
+        if (!$comment || $comment['user_id'] !== $this->auth->id()) {
+            return json_response(['error' => 'Forbidden'], 403);
+        }
+
+        $result = $this->diaryModel->deleteComment($id);
+
+        if ($result) {
+            return json_response(['success' => true]);
+        }
+
+        return json_response(['error' => 'Failed to delete comment'], 500);
     }
 } 
