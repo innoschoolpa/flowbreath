@@ -334,13 +334,25 @@ function submitDiary(event) {
     const formData = new FormData(form);
     
     // TinyMCE 에디터의 내용을 폼 데이터에 추가
-    formData.set('content', tinymce.get('content').getContent());
+    const content = tinymce.get('content').getContent();
+    formData.set('content', content);
+    
+    // 디버깅을 위한 로그
+    console.log('Content being sent:', content);
     
     fetch('/diary/<?= $diary['id'] ?>', {
         method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             window.location.href = '/diary/<?= $diary['id'] ?>';
