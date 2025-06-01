@@ -248,10 +248,10 @@ class DiaryController extends Controller {
 
             error_log("Attempting to add comment with data: " . print_r($data, true));
 
-            $result = $this->diaryModel->addComment($data);
-            if ($result) {
+            $commentId = $this->diaryModel->addComment($data);
+            if ($commentId) {
                 // 댓글 작성자 정보 가져오기
-                $comment = $this->diaryModel->findComment($result);
+                $comment = $this->diaryModel->findComment($commentId);
                 error_log("Comment data after creation: " . print_r($comment, true));
                 
                 if ($comment) {
@@ -268,13 +268,13 @@ class DiaryController extends Controller {
                         ]
                     ]);
                 } else {
-                    error_log("Failed to retrieve comment after creation. Comment ID: " . $result);
+                    error_log("Failed to retrieve comment after creation. Comment ID: " . $commentId);
                     // 댓글은 저장되었지만 정보를 가져오지 못한 경우
                     return json_response([
                         'success' => true,
                         'message' => '댓글이 등록되었습니다.',
                         'comment' => [
-                            'id' => $result,
+                            'id' => $commentId,
                             'content' => $data['content'],
                             'author_name' => $_SESSION['user_name'],
                             'profile_image' => $_SESSION['user_avatar'] ?? '/assets/images/default-avatar.png',

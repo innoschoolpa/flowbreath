@@ -261,12 +261,22 @@ function submitComment(event) {
                 
                 commentsContainer.insertAdjacentHTML('afterbegin', commentHtml);
             }
+            
+            // 3초 후 성공 메시지 제거
+            setTimeout(() => {
+                successAlert.remove();
+            }, 3000);
         } else {
             // 에러 메시지 표시
             const errorAlert = document.createElement('div');
             errorAlert.className = 'alert alert-danger mt-3';
             errorAlert.innerHTML = data.error || '댓글 등록에 실패했습니다.';
             form.parentNode.insertBefore(errorAlert, form.nextSibling);
+            
+            // 3초 후 에러 메시지 제거
+            setTimeout(() => {
+                errorAlert.remove();
+            }, 3000);
         }
     })
     .catch(error => {
@@ -276,6 +286,11 @@ function submitComment(event) {
         errorAlert.className = 'alert alert-danger mt-3';
         errorAlert.innerHTML = '댓글 등록 중 오류가 발생했습니다.';
         form.parentNode.insertBefore(errorAlert, form.nextSibling);
+        
+        // 3초 후 에러 메시지 제거
+        setTimeout(() => {
+            errorAlert.remove();
+        }, 3000);
     })
     .finally(() => {
         // 버튼 상태 복원
