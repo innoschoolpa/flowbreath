@@ -33,9 +33,10 @@ class Diary {
                 $where
                 ORDER BY d.created_at DESC
                 LIMIT ? OFFSET ?";
-        
+
+        // Add parameters in the correct order
         if ($userId) {
-            $params[] = $userId;
+            $params[] = $userId; // Add userId parameter for is_liked subquery
         }
         $params[] = (int)$limit;
         $params[] = (int)$offset;
