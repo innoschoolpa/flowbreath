@@ -58,7 +58,7 @@ class DiaryController extends Controller {
         
         if ($diaryId) {
             error_log("Diary created successfully with ID: " . $diaryId);
-            return json_response(['success' => true, 'diary_id' => $diaryId]);
+            return json_response(['success' => true, 'id' => $diaryId]);
         } else {
             error_log("Failed to create diary. Data: " . json_encode($diaryData, JSON_UNESCAPED_UNICODE));
             return json_response(['success' => false, 'error' => 'Failed to create diary'], 500);
