@@ -47,7 +47,7 @@
 
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
-                                    <img src="<?= $diary['profile_image'] ?? '/assets/images/default-avatar.png' ?>" 
+                                    <img src="<?= $diary['profile_image'] ?? '/assets/images/default-avatar.svg' ?>" 
                                          class="rounded-circle me-2" width="32" height="32" 
                                          alt="<?= htmlspecialchars($diary['author_name'] ?? '') ?>">
                                     <div>
