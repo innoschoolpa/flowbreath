@@ -214,23 +214,44 @@ return [
 
     // Comments
     'comment' => [
-        'content_required' => 'Please enter your comment.',
-        'create_success' => 'Comment has been created successfully.',
-        'update_success' => 'Comment has been updated successfully.',
-        'delete_success' => 'Comment has been deleted successfully.',
-        'delete_confirm' => 'Are you sure you want to delete this comment?',
-        'delete_warning' => 'This action cannot be undone.',
-        'write_comment' => 'Write a comment',
-        'edit_comment' => 'Edit comment',
-        'delete_comment' => 'Delete comment',
-        'is_public' => 'Public',
-        'is_private' => 'Private',
-        'no_comments' => 'No comments yet.',
-        'load_more' => 'Load more',
-        'reply' => 'Reply',
-        'cancel' => 'Cancel',
+        'write_comment' => 'Write a comment...',
         'submit' => 'Submit',
-        'update' => 'Update'
+        'edit' => 'Edit',
+        'delete' => 'Delete',
+        'reply' => 'Reply',
+        'report' => 'Report',
+        'like' => 'Like',
+        'dislike' => 'Dislike',
+        'edit_comment' => 'Edit Comment',
+        'delete_comment' => 'Delete Comment',
+        'delete_confirm' => 'Are you sure you want to delete this comment?',
+        'load_more' => 'Load More Comments',
+        'character_limit' => 'Maximum {count} characters',
+        'report_reason' => 'Report Reason',
+        'report_submit' => 'Submit Report',
+        'report_success' => 'Comment reported successfully',
+        'block_success' => 'Comment blocked successfully',
+        'edit_success' => 'Comment updated successfully',
+        'delete_success' => 'Comment deleted successfully',
+        'reply_success' => 'Reply posted successfully',
+        'login_required' => 'Please login to comment',
+        'content_required' => 'Comment content is required',
+        'too_long' => 'Comment is too long',
+        'too_short' => 'Comment is too short',
+        'invalid_parent' => 'Invalid parent comment',
+        'max_depth' => 'Maximum reply depth reached',
+        'not_found' => 'Comment not found',
+        'no_permission' => 'You do not have permission to perform this action',
+        'stats' => [
+            'total' => 'Total Comments',
+            'replies' => 'Total Replies',
+            'likes' => 'Total Likes',
+            'dislikes' => 'Total Dislikes',
+            'reports' => 'Total Reports',
+            'average_length' => 'Average Comment Length',
+            'most_active' => 'Most Active Commenters',
+            'recent_activity' => 'Recent Activity'
+        ]
     ],
 
     // Navigation
@@ -238,7 +259,7 @@ return [
         'breathing' => 'Breathing Exercise',
         'resources' => 'Resources',
         'tags' => 'Tags',
-        'api_docs' => 'API Guide',
+        'community' => 'Practice Diary',
         'my_info' => 'My Profile',
         'login' => 'Login',
         'register' => 'Register',
@@ -270,5 +291,16 @@ return [
             'start' => 'Start',
             'stop' => 'Stop'
         ]
+    ],
+
+    // Time
+    'time' => [
+        'just_now' => 'just now',
+        'minutes_ago' => '%d minutes ago',
+        'hours_ago' => '%d hours ago',
+        'days_ago' => '%d days ago',
+        'weeks_ago' => '%d weeks ago',
+        'months_ago' => '%d months ago',
+        'years_ago' => '%d years ago'
     ]
 ]; 

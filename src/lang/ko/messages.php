@@ -237,7 +237,7 @@ return [
         'breathing' => '호흡 수련',
         'resources' => '자료',
         'tags' => '태그',
-        'api_docs' => 'API 안내',
+        'community' => '수련 일기',
         'my_info' => '내 정보',
         'login' => '로그인',
         'register' => '회원가입',

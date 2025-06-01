@@ -242,7 +242,7 @@ $metaKeywords = $currentLang === 'ko'
                         <a class="nav-link" href="/tags"><?= __('nav.tags') ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/api/docs"><?= __('nav.api_docs') ?></a>
+                        <a class="nav-link" href="/community"><?= __('nav.community') ?></a>
                     </li>
                 </ul>
                 <ul class="navbar-nav language-switch">
