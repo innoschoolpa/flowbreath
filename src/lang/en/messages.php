@@ -320,6 +320,7 @@ return [
         'private' => 'Private',
         'no_diaries' => 'No diaries have been written yet.',
         'delete_confirm' => 'Are you sure you want to delete this diary?',
+        'delete_error' => 'An error occurred while deleting the diary.',
         'save_error' => 'An error occurred while saving the diary.',
         'update_error' => 'An error occurred while updating the diary.',
         'search' => 'Search',

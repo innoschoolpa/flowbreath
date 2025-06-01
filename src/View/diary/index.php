@@ -17,7 +17,7 @@
                     <?php if (!is_array($diary)) continue; ?>
                     <div class="card mb-4">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex justify-content-between align-items-start">
                                 <h5 class="card-title">
                                     <a href="/diary/<?= htmlspecialchars($diary['id'] ?? '') ?>" class="text-decoration-none">
                                         <?= htmlspecialchars($diary['title'] ?? '') ?>
@@ -161,8 +161,6 @@ function toggleLike(diaryId) {
 }
 
 function deleteDiary(diaryId) {
-    if (!diaryId) return;
-    
     if (confirm('<?= __('diary.delete_confirm') ?>')) {
         fetch(`/diary/${diaryId}`, {
             method: 'DELETE',
@@ -174,7 +172,13 @@ function deleteDiary(diaryId) {
         .then(data => {
             if (data.success) {
                 window.location.reload();
+            } else {
+                alert(data.error || '<?= __('diary.delete_error') ?>');
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('<?= __('diary.delete_error') ?>');
         });
     }
 }
