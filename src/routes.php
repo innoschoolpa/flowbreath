@@ -171,6 +171,55 @@ return function (Router $router) {
         exit;
     });
 
+    // 프로필 이미지를 위한 라우트
+    $router->add('GET', '/uploads/profiles/{filename}', function($params) {
+        // URL에서 직접 파일명 추출
+        $requestUri = $_SERVER['REQUEST_URI'];
+        $filename = basename($requestUri);
+        
+        if (empty($filename)) {
+            error_log("Empty filename requested from URI: " . $requestUri);
+            http_response_code(404);
+            exit;
+        }
+        
+        $filePath = dirname(__DIR__) . '/public/uploads/profiles/' . $filename;
+        error_log("Attempting to serve profile image: " . $filePath);
+        
+        if (!file_exists($filePath)) {
+            error_log("Profile image not found: " . $filePath);
+            http_response_code(404);
+            exit;
+        }
+
+        // 파일 확장자에 따른 MIME 타입 설정
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $mimeTypes = [
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp'
+        ];
+        
+        $mimeType = $mimeTypes[$extension] ?? mime_content_type($filePath);
+        if (!$mimeType) {
+            error_log("Unknown MIME type for profile image: " . $filePath);
+            http_response_code(500);
+            exit;
+        }
+
+        // 캐시 헤더 설정
+        header('Cache-Control: public, max-age=31536000');
+        header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + 31536000));
+        header('Content-Type: ' . $mimeType);
+        header('Content-Length: ' . filesize($filePath));
+        
+        // 파일 출력
+        readfile($filePath);
+        exit;
+    });
+
     // API Routes
     $router->get('/api/resources/tag/{tag}', 'App\\Controller\\ApiController', 'getResourcesByTag');
 
