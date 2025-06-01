@@ -395,7 +395,7 @@ document.getElementById('diaryForm').addEventListener('submit', function(e) {
         if (data.success) {
             window.location.href = '/diary/' + data.id;
         } else {
-            alert(data.message || '<?= __('diary.save_error') ?>');
+            alert(data.error || '<?= __('diary.save_error') ?>');
         }
     })
     .catch(error => {
