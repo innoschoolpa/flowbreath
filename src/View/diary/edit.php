@@ -161,38 +161,26 @@ body {
     <div class="row">
         <div class="col-md-12">
             <h2><?= __('diary.edit') ?></h2>
-            <form id="diaryForm" method="POST" action="/diary/<?= $diary['id'] ?? '' ?>">
+            <form id="diaryForm" onsubmit="return submitDiary(event)">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <div class="mb-3">
                     <label for="title" class="form-label"><?= __('diary.title') ?></label>
-                    <input type="text" class="form-control" id="title" name="title" 
-                           value="<?= htmlspecialchars($diary['title'] ?? '') ?>" required>
+                    <input type="text" class="form-control" id="title" name="title" value="<?= htmlspecialchars($diary['title']) ?>" required>
                 </div>
-                
                 <div class="mb-3">
                     <label for="content" class="form-label"><?= __('diary.content') ?></label>
-                    <textarea id="content" name="content"><?= htmlspecialchars($diary['content'] ?? '') ?></textarea>
+                    <textarea class="form-control" id="content" name="content" rows="10" required><?= htmlspecialchars($diary['content']) ?></textarea>
                 </div>
-                
                 <div class="mb-3">
                     <label for="tags" class="form-label"><?= __('diary.tags') ?></label>
-                    <input type="text" class="form-control" id="tags" name="tags" 
-                           value="<?= htmlspecialchars($diary['tags'] ?? '') ?>" 
-                           placeholder="<?= __('diary.tags_placeholder') ?>">
+                    <input type="text" class="form-control" id="tags" name="tags" value="<?= htmlspecialchars($diary['tags']) ?>">
                     <div class="form-text"><?= __('diary.tags_help') ?></div>
                 </div>
-                
-                <div class="mb-3">
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="is_public" name="is_public" value="1"
-                               <?= isset($diary['is_public']) && $diary['is_public'] ? 'checked' : '' ?>>
-                        <label class="form-check-label" for="is_public"><?= __('diary.public') ?></label>
-                    </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="is_public" name="is_public" value="1" <?= $diary['is_public'] ? 'checked' : '' ?>>
+                    <label class="form-check-label" for="is_public"><?= __('diary.is_public') ?></label>
                 </div>
-                
-                <div class="mb-3">
-                    <button type="submit" class="btn btn-primary"><?= __('diary.save') ?></button>
-                    <a href="/diary" class="btn btn-secondary"><?= __('common.cancel') ?></a>
-                </div>
+                <button type="submit" class="btn btn-primary"><?= __('diary.save') ?></button>
             </form>
         </div>
     </div>
@@ -339,28 +327,30 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-document.getElementById('diaryForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    formData.append('content', tinymce.get('content').getContent());
-    formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?? '' ?>');
-    fetch(this.action, {
+function submitDiary(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    fetch('/diary/<?= $diary['id'] ?>', {
         method: 'POST',
         body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            window.location.href = '/diary/' + data.id;
+            window.location.href = '/diary/<?= $diary['id'] ?>';
         } else {
-            alert(data.message || '<?= __('diary.update_error') ?>');
+            alert(data.error || '<?= __('diary.save_error') ?>');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('<?= __('diary.update_error') ?>');
+        alert('<?= __('diary.save_error') ?>');
     });
-});
+    
+    return false;
+}
 
 // 태그 입력 처리
 const tagsInput = document.getElementById('tags');
