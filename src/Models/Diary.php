@@ -36,7 +36,7 @@ class Diary {
 
         // Add parameters in the correct order
         if ($userId) {
-            $params[':like_user_id'] = $userId; // Add userId parameter for is_liked subquery
+            $params[':like_user_id'] = $userId;
         }
         $params[':limit'] = (int)$limit;
         $params[':offset'] = (int)$offset;
@@ -46,7 +46,14 @@ class Diary {
             error_log("Parameters: " . print_r($params, true));
             
             $stmt = $this->db->prepare($sql);
-            $stmt->execute($params);
+            
+            // Bind parameters with their types
+            foreach ($params as $key => $value) {
+                $type = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
+                $stmt->bindValue($key, $value, $type);
+            }
+            
+            $stmt->execute();
             $diaries = $stmt->fetchAll();
 
             // Convert is_liked to boolean for each diary
@@ -57,7 +64,13 @@ class Diary {
             // Get total count
             $countSql = "SELECT COUNT(*) FROM diaries d $where";
             $stmt = $this->db->prepare($countSql);
-            $stmt->execute(array_slice($params, 0, -2));
+            
+            // Bind parameters for count query
+            if ($userId) {
+                $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+            }
+            
+            $stmt->execute();
             $total = $stmt->fetchColumn();
 
             return [
