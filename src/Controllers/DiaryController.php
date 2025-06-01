@@ -183,11 +183,27 @@ class DiaryController extends Controller {
             return json_response(['error' => 'Unauthorized'], 401);
         }
 
+        $diaryId = $_POST['diary_id'] ?? 0;
+        $diary = $this->diaryModel->find($diaryId);
+        
+        if (!$diary) {
+            return json_response(['error' => 'Diary not found'], 404);
+        }
+
+        // Check if the diary is public or the user is the author
+        if (!$diary['is_public'] && $diary['user_id'] !== $this->auth->id()) {
+            return json_response(['error' => 'Forbidden'], 403);
+        }
+
         $data = [
-            'diary_id' => $_POST['diary_id'] ?? 0,
+            'diary_id' => $diaryId,
             'content' => $_POST['content'] ?? '',
             'user_id' => $this->auth->id()
         ];
+
+        if (empty($data['content'])) {
+            return json_response(['error' => 'Comment content is required'], 400);
+        }
 
         $result = $this->diaryModel->addComment($data);
 
