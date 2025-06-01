@@ -8,7 +8,13 @@
                     <div class="d-flex justify-content-between align-items-start mb-4">
                         <h2 class="card-title"><?= htmlspecialchars($diary['title']) ?></h2>
                         
-                        <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $diary['user_id']): ?>
+                        <?php 
+                        // Debug information
+                        error_log("Session user_id: " . ($_SESSION['user_id'] ?? 'not set'));
+                        error_log("Diary user_id: " . ($diary['user_id'] ?? 'not set'));
+                        error_log("Diary data: " . print_r($diary, true));
+                        
+                        if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id']) && isset($diary['user_id']) && $diary['user_id'] == $_SESSION['user_id']): ?>
                             <div class="btn-group">
                                 <a href="/diary/<?= $diary['id'] ?>/edit" class="btn btn-outline-primary">
                                     <i class="fas fa-edit"></i> <?= __('diary.edit') ?>

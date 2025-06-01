@@ -79,6 +79,11 @@ class DiaryController extends Controller {
             return $this->view('errors/403');
         }
 
+        // Debug information
+        error_log("DiaryController::show - auth->id(): " . ($this->auth->id() ?? 'null'));
+        error_log("DiaryController::show - SESSION user_id: " . ($_SESSION['user_id'] ?? 'not set'));
+        error_log("DiaryController::show - Diary data: " . print_r($diary, true));
+
         return $this->view('diary/show', ['diary' => $diary]);
     }
 

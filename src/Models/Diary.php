@@ -97,7 +97,7 @@ class Diary {
 
     public function find($id) {
         $userId = $_SESSION['user_id'] ?? null;
-        $sql = "SELECT d.*, u.name as author_name,
+        $sql = "SELECT d.*, u.name as author_name, u.profile_image,
                 (SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id) as like_count,
                 (SELECT COUNT(*) FROM diary_comments WHERE diary_id = d.id) as comment_count,
                 " . ($userId ? "(SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id AND user_id = ?) as is_liked" : "0 as is_liked") . "
@@ -112,6 +112,8 @@ class Diary {
         
         if ($diary) {
             $diary['is_liked'] = (bool)$diary['is_liked'];
+            // Debug information
+            error_log("Diary::find - Diary data: " . print_r($diary, true));
         }
         
         return $diary;
