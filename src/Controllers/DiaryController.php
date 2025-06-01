@@ -252,7 +252,10 @@ class DiaryController extends Controller {
                 $commentId = $this->diaryModel->addComment($data);
                 if (!$commentId) {
                     error_log("Failed to add comment to database - No error message available");
-                    return json_response(['success' => false, 'error' => '댓글 등록에 실패했습니다.'], 500);
+                    return json_response([
+                        'success' => false, 
+                        'error' => '댓글 등록에 실패했습니다. 잠시 후 다시 시도해주세요.'
+                    ], 500);
                 }
 
                 // 댓글 작성자 정보 가져오기
@@ -264,7 +267,7 @@ class DiaryController extends Controller {
                     return json_response([
                         'success' => false,
                         'error' => '댓글이 저장되었지만 표시에 실패했습니다. 페이지를 새로고침해주세요.'
-                    ]);
+                    ], 500);
                 }
 
                 error_log("Comment added successfully: " . print_r($comment, true));
@@ -281,12 +284,18 @@ class DiaryController extends Controller {
                 ]);
             } catch (\PDOException $e) {
                 error_log("Database error while adding comment: " . $e->getMessage());
-                return json_response(['success' => false, 'error' => '데이터베이스 오류가 발생했습니다.'], 500);
+                return json_response([
+                    'success' => false, 
+                    'error' => '데이터베이스 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+                ], 500);
             }
             
         } catch (\Exception $e) {
             error_log("Error in storeComment: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-            return json_response(['success' => false, 'error' => '댓글 등록 중 오류가 발생했습니다.'], 500);
+            return json_response([
+                'success' => false, 
+                'error' => '댓글 등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+            ], 500);
         }
     }
 

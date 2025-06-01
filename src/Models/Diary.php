@@ -272,11 +272,20 @@ class Diary {
                 return false;
             }
 
+            // lastInsertId가 실패할 경우를 대비한 대체 방법
             $commentId = $this->db->lastInsertId();
             if (!$commentId) {
-                error_log("Failed to get last insert ID");
-                $this->db->rollBack();
-                return false;
+                error_log("lastInsertId failed, trying alternative method");
+                $query = $this->db->prepare("SELECT MAX(id) as max_id FROM diary_comments WHERE diary_id = ? AND user_id = ? AND created_at = ?");
+                $query->execute([$data['diary_id'], $data['user_id'], $data['created_at']]);
+                $row = $query->fetch();
+                $commentId = $row ? $row['max_id'] : null;
+                
+                if (!$commentId) {
+                    error_log("Failed to get comment ID using alternative method");
+                    $this->db->rollBack();
+                    return false;
+                }
             }
 
             // 댓글 수 업데이트
