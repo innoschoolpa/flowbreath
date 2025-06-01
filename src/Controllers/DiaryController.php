@@ -348,4 +348,64 @@ class DiaryController extends Controller {
             return json_response(['success' => false, 'error' => '댓글을 불러오는데 실패했습니다.'], 500);
         }
     }
+
+    public function updateComment($id) {
+        try {
+            if (!$this->auth->isLoggedIn()) {
+                return json_response(['success' => false, 'error' => '로그인이 필요합니다.'], 401);
+            }
+
+            // CSRF 토큰 검증
+            $headers = getallheaders();
+            if (!isset($headers['X-CSRF-TOKEN']) || !isset($_SESSION['csrf_token'])) {
+                return json_response(['success' => false, 'error' => '보안 토큰이 없습니다.'], 403);
+            }
+
+            if ($headers['X-CSRF-TOKEN'] !== $_SESSION['csrf_token']) {
+                return json_response(['success' => false, 'error' => '보안 토큰이 유효하지 않습니다.'], 403);
+            }
+
+            // JSON 데이터 파싱
+            $json = file_get_contents('php://input');
+            $data = json_decode($json, true);
+
+            if (!isset($data['content'])) {
+                return json_response(['success' => false, 'error' => '댓글 내용이 필요합니다.'], 400);
+            }
+
+            $content = trim($data['content']);
+            if (empty($content)) {
+                return json_response(['success' => false, 'error' => '댓글 내용을 입력해주세요.'], 400);
+            }
+
+            // 댓글 존재 여부 및 권한 확인
+            $comment = $this->diaryModel->findComment($id);
+            if (!$comment) {
+                return json_response(['success' => false, 'error' => '댓글을 찾을 수 없습니다.'], 404);
+            }
+
+            if ($comment['user_id'] !== $this->auth->id()) {
+                return json_response(['success' => false, 'error' => '댓글을 수정할 권한이 없습니다.'], 403);
+            }
+
+            // XSS 방지를 위한 HTML 이스케이프
+            $content = htmlspecialchars($content, ENT_QUOTES, 'UTF-8');
+
+            // 댓글 업데이트
+            $result = $this->diaryModel->updateComment($id, $content);
+            if (!$result) {
+                return json_response(['success' => false, 'error' => '댓글 수정에 실패했습니다.'], 500);
+            }
+
+            return json_response([
+                'success' => true,
+                'message' => '댓글이 수정되었습니다.',
+                'content' => $content
+            ]);
+
+        } catch (\Exception $e) {
+            error_log("Error in updateComment: " . $e->getMessage());
+            return json_response(['success' => false, 'error' => '댓글 수정 중 오류가 발생했습니다.'], 500);
+        }
+    }
 } 

@@ -212,10 +212,18 @@ async function submitComment(event) {
                                         </div>
                                     </div>
                                 </div>
-                                <button class="btn btn-link text-danger btn-sm" 
-                                        onclick="deleteComment(${data.comment.id})">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                ${data.comment.can_delete ? `
+                                    <div class="btn-group">
+                                        <button class="btn btn-link text-primary btn-sm" 
+                                                onclick="editComment(${data.comment.id}, '${data.comment.content.replace(/'/g, "\\'")}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-link text-danger btn-sm" 
+                                                onclick="deleteComment(${data.comment.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                ` : ''}
                             </div>
                             <div class="comment-content">
                                 ${data.comment.content}
@@ -274,6 +282,76 @@ function deleteComment(commentId) {
     }
 }
 
+function editComment(commentId, content) {
+    const commentElement = document.getElementById(`comment-${commentId}`);
+    const currentContent = commentElement.querySelector('.comment-content');
+    const originalContent = currentContent.innerHTML;
+    
+    // 수정 폼 생성
+    const editForm = document.createElement('form');
+    editForm.className = 'edit-comment-form';
+    editForm.innerHTML = `
+        <div class="mb-2">
+            <textarea class="form-control" rows="3" required minlength="1" maxlength="1000">${content}</textarea>
+        </div>
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fas fa-save"></i> 저장
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="cancelEdit(${commentId}, '${originalContent.replace(/'/g, "\\'")}')">
+                <i class="fas fa-times"></i> 취소
+            </button>
+        </div>
+    `;
+    
+    // 폼 제출 이벤트 처리
+    editForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const newContent = editForm.querySelector('textarea').value.trim();
+        
+        if (!newContent) {
+            alert('댓글 내용을 입력해주세요.');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/diary/comment/${commentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="csrf_token"]').value
+                },
+                body: JSON.stringify({ content: newContent })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                currentContent.innerHTML = newContent;
+                commentElement.querySelector('.btn-group').style.display = 'block';
+                editForm.remove();
+            } else {
+                alert(data.error || '댓글 수정에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('댓글 수정 중 오류가 발생했습니다.');
+        }
+    };
+    
+    // 기존 내용을 수정 폼으로 교체
+    currentContent.innerHTML = '';
+    currentContent.appendChild(editForm);
+    commentElement.querySelector('.btn-group').style.display = 'none';
+}
+
+function cancelEdit(commentId, originalContent) {
+    const commentElement = document.getElementById(`comment-${commentId}`);
+    const currentContent = commentElement.querySelector('.comment-content');
+    currentContent.innerHTML = originalContent;
+    commentElement.querySelector('.btn-group').style.display = 'block';
+}
+
 // 페이지 로드 시 댓글 불러오기
 document.addEventListener('DOMContentLoaded', function() {
     loadComments();
@@ -309,10 +387,16 @@ async function loadComments() {
                                     </div>
                                 </div>
                                 ${comment.can_delete ? `
-                                    <button class="btn btn-link text-danger btn-sm" 
-                                            onclick="deleteComment(${comment.id})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    <div class="btn-group">
+                                        <button class="btn btn-link text-primary btn-sm" 
+                                                onclick="editComment(${comment.id}, '${comment.content.replace(/'/g, "\\'")}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-link text-danger btn-sm" 
+                                                onclick="deleteComment(${comment.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 ` : ''}
                             </div>
                             <div class="comment-content">

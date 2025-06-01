@@ -339,4 +339,18 @@ class Diary {
         $stmt->execute([$diaryId]);
         return $stmt->fetchAll();
     }
+
+    public function updateComment($id, $content) {
+        try {
+            $sql = "UPDATE diary_comments 
+                    SET content = ?, updated_at = NOW() 
+                    WHERE id = ? AND deleted_at IS NULL";
+            
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$content, $id]);
+        } catch (\PDOException $e) {
+            error_log("Database error in updateComment: " . $e->getMessage());
+            return false;
+        }
+    }
 } 
