@@ -236,12 +236,13 @@ return [
     'nav' => [
         'breathing' => '호흡 수련',
         'resources' => '자료',
+        'diary' => '수련 일기',
         'tags' => '태그',
-        'community' => '수련 일기',
-        'my_info' => '내 정보',
         'login' => '로그인',
         'register' => '회원가입',
-        'logout' => '로그아웃'
+        'logout' => '로그아웃',
+        'my_info' => '내 정보',
+        'settings' => '설정'
     ],
 
     // 호흡 운동

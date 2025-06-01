@@ -256,14 +256,15 @@ return [
 
     // Navigation
     'nav' => [
-        'breathing' => 'Breathing Exercise',
+        'breathing' => 'Breathing Practice',
         'resources' => 'Resources',
+        'diary' => 'Practice Diary',
         'tags' => 'Tags',
-        'community' => 'Practice Diary',
-        'my_info' => 'My Profile',
         'login' => 'Login',
         'register' => 'Register',
-        'logout' => 'Logout'
+        'logout' => 'Logout',
+        'my_info' => 'My Info',
+        'settings' => 'Settings'
     ],
 
     // Breathing Exercise
