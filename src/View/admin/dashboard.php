@@ -108,7 +108,7 @@
                                         <?php foreach ($recent_users as $user): ?>
                                             <tr>
                                                 <td>
-                                                    <img src="<?= htmlspecialchars($user['profile_image'] ?? '/images/default-profile.png') ?>" 
+                                                    <img src="<?= htmlspecialchars($user['profile_image'] ?? '/assets/images/default-avatar.png') ?>" 
                                                          alt="" class="rounded-circle me-2" style="width: 32px; height: 32px;">
                                                     <?= htmlspecialchars($user['name']) ?>
                                                 </td>
