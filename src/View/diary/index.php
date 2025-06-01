@@ -30,13 +30,13 @@
                                         </button>
                                         <ul class="dropdown-menu">
                                             <li>
-                                                <a class="dropdown-item" href="/diary/<?= $diary['id'] ?>/edit">
+                                                <a class="dropdown-item" href="/diary/<?= $diary['id'] ?? '' ?>/edit">
                                                     <i class="fas fa-edit"></i> <?= __('diary.edit') ?>
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="dropdown-item text-danger" href="#" 
-                                                   onclick="deleteDiary(<?= $diary['id'] ?>)">
+                                                   onclick="deleteDiary(<?= $diary['id'] ?? 0 ?>)">
                                                     <i class="fas fa-trash"></i> <?= __('diary.delete') ?>
                                                 </a>
                                             </li>
@@ -67,7 +67,7 @@
                                 <div class="d-flex align-items-center">
                                     <?php if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])): ?>
                                         <button class="btn btn-link text-muted me-3" 
-                                                onclick="toggleLike(<?= $diary['id'] ?>)">
+                                                onclick="toggleLike(<?= $diary['id'] ?? 0 ?>)">
                                             <i class="far fa-heart"></i>
                                             <span class="like-count"><?= (int)($diary['like_count'] ?? 0) ?></span>
                                         </button>
@@ -77,7 +77,7 @@
                                             <span class="like-count"><?= (int)($diary['like_count'] ?? 0) ?></span>
                                         </a>
                                     <?php endif; ?>
-                                    <a href="/diary/<?= $diary['id'] ?>" class="text-muted">
+                                    <a href="/diary/<?= $diary['id'] ?? '' ?>" class="text-muted">
                                         <i class="far fa-comment"></i>
                                         <span><?= (int)($diary['comment_count'] ?? 0) ?></span>
                                     </a>
@@ -134,6 +134,8 @@
 
 <script>
 function toggleLike(diaryId) {
+    if (!diaryId) return;
+    
     fetch(`/diary/${diaryId}/like`, {
         method: 'POST',
         headers: {
@@ -159,6 +161,8 @@ function toggleLike(diaryId) {
 }
 
 function deleteDiary(diaryId) {
+    if (!diaryId) return;
+    
     if (confirm('<?= __('diary.delete_confirm') ?>')) {
         fetch(`/diary/${diaryId}`, {
             method: 'DELETE',
