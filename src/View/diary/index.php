@@ -3,7 +3,7 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><?= __('diary.title') ?></h2>
-        <?php if (isset($_SESSION['user_id'])): ?>
+        <?php if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])): ?>
             <a href="/diary/create" class="btn btn-primary">
                 <i class="fas fa-plus"></i> <?= __('diary.create') ?>
             </a>
@@ -23,7 +23,7 @@
                                         <?= htmlspecialchars($diary['title'] ?? '') ?>
                                     </a>
                                 </h5>
-                                <?php if ($diary['user_id'] == ($_SESSION['user_id'] ?? null)): ?>
+                                <?php if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id']) && isset($diary['user_id']) && $diary['user_id'] == $_SESSION['user_id']): ?>
                                     <div class="dropdown">
                                         <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown">
                                             <i class="fas fa-ellipsis-v"></i>
@@ -65,11 +65,18 @@
                                 </div>
                                 
                                 <div class="d-flex align-items-center">
-                                    <button class="btn btn-link text-muted me-3" 
-                                            onclick="toggleLike(<?= $diary['id'] ?>)">
-                                        <i class="far fa-heart"></i>
-                                        <span class="like-count"><?= (int)($diary['like_count'] ?? 0) ?></span>
-                                    </button>
+                                    <?php if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])): ?>
+                                        <button class="btn btn-link text-muted me-3" 
+                                                onclick="toggleLike(<?= $diary['id'] ?>)">
+                                            <i class="far fa-heart"></i>
+                                            <span class="like-count"><?= (int)($diary['like_count'] ?? 0) ?></span>
+                                        </button>
+                                    <?php else: ?>
+                                        <a href="/login" class="btn btn-link text-muted me-3">
+                                            <i class="far fa-heart"></i>
+                                            <span class="like-count"><?= (int)($diary['like_count'] ?? 0) ?></span>
+                                        </a>
+                                    <?php endif; ?>
                                     <a href="/diary/<?= $diary['id'] ?>" class="text-muted">
                                         <i class="far fa-comment"></i>
                                         <span><?= (int)($diary['comment_count'] ?? 0) ?></span>
