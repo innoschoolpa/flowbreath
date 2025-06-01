@@ -23,7 +23,13 @@
                                         <?= htmlspecialchars($diary['title'] ?? '') ?>
                                     </a>
                                 </h5>
-                                <?php if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id']) && isset($diary['user_id']) && $diary['user_id'] == $_SESSION['user_id']): ?>
+                                <?php 
+                                // Debug information
+                                error_log("Session user_id: " . ($_SESSION['user_id'] ?? 'not set'));
+                                error_log("Diary user_id: " . ($diary['user_id'] ?? 'not set'));
+                                error_log("Diary data: " . print_r($diary, true));
+                                
+                                if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id']) && isset($diary['user_id']) && $diary['user_id'] == $_SESSION['user_id']): ?>
                                     <div class="dropdown">
                                         <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown">
                                             <i class="fas fa-ellipsis-v"></i>

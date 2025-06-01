@@ -18,6 +18,9 @@ class DiaryController extends Controller {
 
     public function index() {
         $userId = $this->auth->id();
+        error_log("DiaryController::index - auth->id(): " . ($userId ?? 'null'));
+        error_log("DiaryController::index - SESSION user_id: " . ($_SESSION['user_id'] ?? 'not set'));
+        
         $page = $_GET['page'] ?? 1;
         $limit = 20;
         

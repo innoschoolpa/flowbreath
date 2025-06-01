@@ -17,6 +17,8 @@ class Diary {
         $params = [];
         $where = "WHERE d.deleted_at IS NULL";
         
+        error_log("getList - userId parameter: " . ($userId ?? 'null'));
+        
         if ($userId) {
             $where .= " AND (d.is_public = 1 OR d.user_id = :user_id)";
             $params[':user_id'] = $userId;
@@ -55,6 +57,11 @@ class Diary {
             
             $stmt->execute();
             $diaries = $stmt->fetchAll();
+
+            // Debug the first diary entry
+            if (!empty($diaries)) {
+                error_log("First diary entry: " . print_r($diaries[0], true));
+            }
 
             // Convert is_liked to boolean for each diary
             foreach ($diaries as &$diary) {
