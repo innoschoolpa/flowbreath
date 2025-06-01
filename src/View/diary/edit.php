@@ -198,7 +198,7 @@ body {
     </div>
 </div>
 
-<script src="https://cdn.tiny.cloud/1/<?= $tinymceApiKey ?>/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.tiny.cloud/1/3p683d001w10l44tgvyk034uz5nsntitn1eiyjs24ufhx67a/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     tinymce.init({
