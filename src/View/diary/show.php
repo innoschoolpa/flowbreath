@@ -326,9 +326,13 @@ function editComment(commentId, content) {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: JSON.stringify({ content: newContent })
+                body: JSON.stringify({ 
+                    content: newContent,
+                    csrf_token: csrfToken
+                })
             });
             
             const data = await response.json();
