@@ -18,8 +18,8 @@ class Diary {
         $where = "WHERE d.deleted_at IS NULL";
         
         if ($userId) {
-            $where .= " AND (d.is_public = 1 OR d.user_id = ?)";
-            $params[] = $userId;
+            $where .= " AND (d.is_public = 1 OR d.user_id = :user_id)";
+            $params[':user_id'] = $userId;
         } else {
             $where .= " AND d.is_public = 1";
         }
@@ -27,19 +27,19 @@ class Diary {
         $sql = "SELECT d.*, u.name as author_name, 
                 (SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id) as like_count,
                 (SELECT COUNT(*) FROM diary_comments WHERE diary_id = d.id) as comment_count,
-                " . ($userId ? "(SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id AND user_id = ?) as is_liked" : "0 as is_liked") . "
+                " . ($userId ? "(SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id AND user_id = :like_user_id) as is_liked" : "0 as is_liked") . "
                 FROM diaries d
                 LEFT JOIN users u ON d.user_id = u.id
                 $where
                 ORDER BY d.created_at DESC
-                LIMIT ? OFFSET ?";
+                LIMIT :limit OFFSET :offset";
 
         // Add parameters in the correct order
         if ($userId) {
-            $params[] = $userId; // Add userId parameter for is_liked subquery
+            $params[':like_user_id'] = $userId; // Add userId parameter for is_liked subquery
         }
-        $params[] = (int)$limit;
-        $params[] = (int)$offset;
+        $params[':limit'] = (int)$limit;
+        $params[':offset'] = (int)$offset;
 
         try {
             error_log("SQL Query: " . $sql);
