@@ -190,9 +190,9 @@ class DiaryController extends Controller {
             return json_response(['error' => 'Diary not found'], 404);
         }
 
-        // Check if the diary is public or the user is the author
-        if (!$diary['is_public'] && $diary['user_id'] !== $this->auth->id()) {
-            return json_response(['error' => 'Forbidden'], 403);
+        // Check if the diary is public
+        if (!$diary['is_public']) {
+            return json_response(['error' => 'Cannot comment on private diary'], 403);
         }
 
         $data = [
