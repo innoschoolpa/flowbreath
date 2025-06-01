@@ -217,6 +217,10 @@ function submitComment(event) {
     .then(data => {
         console.log('Response data:', data);
         
+        // 기존 알림 메시지 제거
+        const existingAlerts = form.parentNode.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => alert.remove());
+        
         if (data.success) {
             // 성공 메시지 표시
             const successAlert = document.createElement('div');
@@ -286,6 +290,10 @@ function submitComment(event) {
     })
     .catch(error => {
         console.error('Error:', error);
+        // 기존 알림 메시지 제거
+        const existingAlerts = form.parentNode.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => alert.remove());
+        
         // 에러 메시지 표시
         const errorAlert = document.createElement('div');
         errorAlert.className = 'alert alert-danger mt-3';
