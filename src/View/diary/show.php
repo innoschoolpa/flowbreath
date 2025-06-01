@@ -194,124 +194,85 @@ function deleteDiary(diaryId) {
     }
 }
 
-function submitComment(event) {
+async function submitComment(event) {
     event.preventDefault();
     
     const form = event.target;
-    const formData = new FormData(form);
     const submitButton = form.querySelector('button[type="submit"]');
     const originalButtonText = submitButton.innerHTML;
     
-    // 버튼 비활성화 및 로딩 표시
-    submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리중...';
+    // 기존 알림 메시지 제거
+    const existingAlerts = document.querySelectorAll('.alert');
+    existingAlerts.forEach(alert => alert.remove());
     
-    fetch('/diary/comment', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
-        return response.json();
-    })
-    .then(data => {
-        console.log('Response data:', data);
+    try {
+        // 버튼 비활성화 및 로딩 표시
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리중...';
         
-        // 기존 알림 메시지 제거
-        const existingAlerts = form.parentNode.querySelectorAll('.alert');
-        existingAlerts.forEach(alert => alert.remove());
+        const formData = new FormData(form);
+        const response = await fetch('/diary/comment', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        console.log('Response status:', response.status);
+        console.log('Response data:', data);
         
         if (data.success) {
             // 성공 메시지 표시
             const successAlert = document.createElement('div');
-            successAlert.className = 'alert alert-success mt-3';
-            successAlert.innerHTML = data.message || '댓글이 등록되었습니다.';
-            form.parentNode.insertBefore(successAlert, form.nextSibling);
+            successAlert.className = 'alert alert-success';
+            successAlert.textContent = data.message || '댓글이 등록되었습니다.';
+            form.parentNode.insertBefore(successAlert, form);
             
-            // 폼 초기화
-            form.reset();
-            
-            // 새 댓글 추가
-            if (data.comment) {
-                const commentsContainer = document.getElementById('comments');
-                const noCommentsMessage = commentsContainer.querySelector('.text-center.text-muted');
-                if (noCommentsMessage) {
-                    noCommentsMessage.remove();
-                }
-                
+            // 댓글 목록에 새 댓글 추가
+            const commentsList = document.querySelector('.comments-list');
+            if (commentsList && data.comment) {
                 const commentHtml = `
-                    <div class="card mb-3" id="comment-${data.comment.id}">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="d-flex align-items-center">
-                                    <img src="${data.comment.profile_image}" 
-                                         class="rounded-circle me-2" width="32" height="32" 
-                                         alt="${data.comment.author_name}">
-                                    <div>
-                                        <div class="fw-bold">
-                                            ${data.comment.author_name}
-                                        </div>
-                                        <div class="text-muted small">
-                                            ${new Date(data.comment.created_at).toLocaleString()}
-                                        </div>
-                                    </div>
+                    <div class="comment" id="comment-${data.comment.id}">
+                        <div class="d-flex align-items-start mb-2">
+                            <img src="${data.comment.profile_image}" alt="${data.comment.author_name}" class="rounded-circle me-2" style="width: 40px; height: 40px;">
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">${data.comment.author_name}</h6>
+                                    <small class="text-muted">${new Date(data.comment.created_at).toLocaleString()}</small>
                                 </div>
-                                <button class="btn btn-link text-danger btn-sm" 
-                                        onclick="deleteComment(${data.comment.id})">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                            <div class="comment-content">
-                                ${data.comment.content}
+                                <p class="mb-1">${data.comment.content}</p>
                             </div>
                         </div>
                     </div>
                 `;
-                
-                commentsContainer.insertAdjacentHTML('afterbegin', commentHtml);
+                commentsList.insertAdjacentHTML('afterbegin', commentHtml);
             }
             
-            // 3초 후 성공 메시지 제거
-            setTimeout(() => {
-                successAlert.remove();
-            }, 3000);
+            // 폼 초기화
+            form.reset();
         } else {
             // 에러 메시지 표시
             const errorAlert = document.createElement('div');
-            errorAlert.className = 'alert alert-danger mt-3';
-            errorAlert.innerHTML = data.error || '댓글 등록에 실패했습니다.';
-            form.parentNode.insertBefore(errorAlert, form.nextSibling);
-            
-            // 3초 후 에러 메시지 제거
-            setTimeout(() => {
-                errorAlert.remove();
-            }, 3000);
+            errorAlert.className = 'alert alert-danger';
+            errorAlert.textContent = data.error || '댓글 등록에 실패했습니다.';
+            form.parentNode.insertBefore(errorAlert, form);
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error:', error);
-        // 기존 알림 메시지 제거
-        const existingAlerts = form.parentNode.querySelectorAll('.alert');
-        existingAlerts.forEach(alert => alert.remove());
-        
-        // 에러 메시지 표시
         const errorAlert = document.createElement('div');
-        errorAlert.className = 'alert alert-danger mt-3';
-        errorAlert.innerHTML = '댓글 등록 중 오류가 발생했습니다.';
-        form.parentNode.insertBefore(errorAlert, form.nextSibling);
-        
-        // 3초 후 에러 메시지 제거
-        setTimeout(() => {
-            errorAlert.remove();
-        }, 3000);
-    })
-    .finally(() => {
+        errorAlert.className = 'alert alert-danger';
+        errorAlert.textContent = '댓글 등록 중 오류가 발생했습니다.';
+        form.parentNode.insertBefore(errorAlert, form);
+    } finally {
         // 버튼 상태 복원
         submitButton.disabled = false;
         submitButton.innerHTML = originalButtonText;
-    });
-    
-    return false;
+        
+        // 3초 후 알림 메시지 제거
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => alert.remove());
+        }, 3000);
+    }
 }
 
 function deleteComment(commentId) {

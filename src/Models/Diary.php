@@ -251,6 +251,10 @@ class Diary {
 
     public function addComment($data) {
         try {
+            // 트랜잭션 시작
+            $this->db->beginTransaction();
+
+            // 댓글 추가
             $sql = "INSERT INTO diary_comments (diary_id, user_id, content, created_at)
                     VALUES (?, ?, ?, ?)";
             
@@ -264,14 +268,37 @@ class Diary {
 
             if (!$result) {
                 error_log("Failed to add comment: " . implode(", ", $stmt->errorInfo()));
+                $this->db->rollBack();
                 return false;
             }
 
-            return $this->db->lastInsertId();
+            $commentId = $this->db->lastInsertId();
+            if (!$commentId) {
+                error_log("Failed to get last insert ID");
+                $this->db->rollBack();
+                return false;
+            }
+
+            // 댓글 수 업데이트
+            $updateSql = "UPDATE diaries SET comment_count = comment_count + 1 WHERE id = ?";
+            $updateStmt = $this->db->prepare($updateSql);
+            $updateResult = $updateStmt->execute([$data['diary_id']]);
+
+            if (!$updateResult) {
+                error_log("Failed to update comment count: " . implode(", ", $updateStmt->errorInfo()));
+                $this->db->rollBack();
+                return false;
+            }
+
+            // 트랜잭션 커밋
+            $this->db->commit();
+            return $commentId;
+
         } catch (\PDOException $e) {
             error_log("Database error in addComment: " . $e->getMessage());
             error_log("SQL: " . $sql);
             error_log("Data: " . print_r($data, true));
+            $this->db->rollBack();
             return false;
         }
     }

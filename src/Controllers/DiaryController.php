@@ -248,36 +248,41 @@ class DiaryController extends Controller {
 
             error_log("Attempting to add comment with data: " . print_r($data, true));
 
-            $commentId = $this->diaryModel->addComment($data);
-            if (!$commentId) {
-                error_log("Failed to add comment to database");
-                return json_response(['success' => false, 'error' => '댓글 등록에 실패했습니다.'], 500);
-            }
+            try {
+                $commentId = $this->diaryModel->addComment($data);
+                if (!$commentId) {
+                    error_log("Failed to add comment to database - No error message available");
+                    return json_response(['success' => false, 'error' => '댓글 등록에 실패했습니다.'], 500);
+                }
 
-            // 댓글 작성자 정보 가져오기
-            $comment = $this->diaryModel->findComment($commentId);
-            error_log("Comment data after creation: " . print_r($comment, true));
-            
-            if (!$comment) {
-                error_log("Comment saved but not retrieved. Comment ID: " . $commentId);
+                // 댓글 작성자 정보 가져오기
+                $comment = $this->diaryModel->findComment($commentId);
+                error_log("Comment data after creation: " . print_r($comment, true));
+                
+                if (!$comment) {
+                    error_log("Comment saved but not retrieved. Comment ID: " . $commentId);
+                    return json_response([
+                        'success' => false,
+                        'error' => '댓글이 저장되었지만 표시에 실패했습니다. 페이지를 새로고침해주세요.'
+                    ]);
+                }
+
+                error_log("Comment added successfully: " . print_r($comment, true));
                 return json_response([
-                    'success' => false,
-                    'error' => '댓글이 저장되었지만 표시에 실패했습니다. 페이지를 새로고침해주세요.'
+                    'success' => true, 
+                    'message' => '댓글이 등록되었습니다.',
+                    'comment' => [
+                        'id' => $comment['id'],
+                        'content' => $comment['content'],
+                        'author_name' => $comment['author_name'] ?? $_SESSION['user_name'],
+                        'profile_image' => $comment['profile_image'] ?? $_SESSION['user_avatar'] ?? '/assets/images/default-avatar.png',
+                        'created_at' => $comment['created_at']
+                    ]
                 ]);
+            } catch (\PDOException $e) {
+                error_log("Database error while adding comment: " . $e->getMessage());
+                return json_response(['success' => false, 'error' => '데이터베이스 오류가 발생했습니다.'], 500);
             }
-
-            error_log("Comment added successfully: " . print_r($comment, true));
-            return json_response([
-                'success' => true, 
-                'message' => '댓글이 등록되었습니다.',
-                'comment' => [
-                    'id' => $comment['id'],
-                    'content' => $comment['content'],
-                    'author_name' => $comment['author_name'] ?? $_SESSION['user_name'],
-                    'profile_image' => $comment['profile_image'] ?? $_SESSION['user_avatar'] ?? '/assets/images/default-avatar.png',
-                    'created_at' => $comment['created_at']
-                ]
-            ]);
             
         } catch (\Exception $e) {
             error_log("Error in storeComment: " . $e->getMessage() . "\n" . $e->getTraceAsString());
