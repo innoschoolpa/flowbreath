@@ -42,6 +42,9 @@ class Diary {
         $params[] = (int)$offset;
 
         try {
+            error_log("SQL Query: " . $sql);
+            error_log("Parameters: " . print_r($params, true));
+            
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
             $diaries = $stmt->fetchAll();
