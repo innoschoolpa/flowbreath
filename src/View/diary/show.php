@@ -72,6 +72,7 @@
                                 <h5 class="card-title"><?= __('diary.comment') ?></h5>
                                 <form id="commentForm" onsubmit="return submitComment(event)">
                                     <input type="hidden" name="diary_id" value="<?= $diary['id'] ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                     <div class="mb-3">
                                         <textarea class="form-control" name="content" rows="3" required></textarea>
                                     </div>

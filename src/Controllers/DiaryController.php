@@ -188,6 +188,11 @@ class DiaryController extends Controller {
             return json_response(['error' => 'Unauthorized'], 401);
         }
 
+        // CSRF 토큰 검증
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            return json_response(['error' => 'Invalid CSRF token'], 403);
+        }
+
         $diaryId = $_POST['diary_id'] ?? 0;
         $diary = $this->diaryModel->find($diaryId);
         
@@ -195,8 +200,8 @@ class DiaryController extends Controller {
             return json_response(['error' => 'Diary not found'], 404);
         }
 
-        // Check if the diary is public
-        if (!$diary['is_public']) {
+        // 비공개 일기에는 작성자만 댓글을 달 수 있도록 수정
+        if (!$diary['is_public'] && $diary['user_id'] !== $this->auth->id()) {
             return json_response(['error' => 'Cannot comment on private diary'], 403);
         }
 
@@ -210,13 +215,16 @@ class DiaryController extends Controller {
             return json_response(['error' => 'Comment content is required'], 400);
         }
 
-        $result = $this->diaryModel->addComment($data);
-
-        if ($result) {
-            return json_response(['success' => true, 'id' => $result]);
+        try {
+            $result = $this->diaryModel->addComment($data);
+            if ($result) {
+                return json_response(['success' => true, 'id' => $result]);
+            }
+            return json_response(['error' => 'Failed to add comment'], 500);
+        } catch (\Exception $e) {
+            error_log("Error in storeComment: " . $e->getMessage());
+            return json_response(['error' => 'Failed to add comment'], 500);
         }
-
-        return json_response(['error' => 'Failed to add comment'], 500);
     }
 
     public function deleteComment($id) {
