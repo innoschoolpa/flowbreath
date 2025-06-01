@@ -31,10 +31,10 @@
                                 
                                 if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id']) && isset($diary['user_id']) && $diary['user_id'] == $_SESSION['user_id']): ?>
                                     <div class="dropdown">
-                                        <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton<?= $diary['id'] ?>" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
-                                        <ul class="dropdown-menu">
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton<?= $diary['id'] ?>">
                                             <li>
                                                 <a class="dropdown-item" href="/diary/<?= $diary['id'] ?? '' ?>/edit">
                                                     <i class="fas fa-edit"></i> <?= __('diary.edit') ?>
