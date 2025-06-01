@@ -8,24 +8,14 @@
                     <div class="d-flex justify-content-between align-items-start mb-4">
                         <h2 class="card-title"><?= htmlspecialchars($diary['title']) ?></h2>
                         
-                        <?php if ($diary['user_id'] == ($_SESSION['user_id'] ?? null)): ?>
-                            <div class="dropdown">
-                                <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-ellipsis-v"></i>
+                        <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $diary['user_id']): ?>
+                            <div class="btn-group">
+                                <a href="/diary/<?= $diary['id'] ?>/edit" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit"></i> <?= __('diary.edit') ?>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" onclick="deleteDiary(<?= $diary['id'] ?>)">
+                                    <i class="fas fa-trash"></i> <?= __('diary.delete') ?>
                                 </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" href="/diary/<?= $diary['id'] ?>/edit">
-                                            <i class="fas fa-edit"></i> <?= __('diary.edit') ?>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item text-danger" href="#" 
-                                           onclick="deleteDiary(<?= $diary['id'] ?>)">
-                                            <i class="fas fa-trash"></i> <?= __('diary.delete') ?>
-                                        </a>
-                                    </li>
-                                </ul>
                             </div>
                         <?php endif; ?>
                     </div>
