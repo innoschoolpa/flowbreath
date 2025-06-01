@@ -24,42 +24,78 @@ $tinymceApiKey = $apiKeys['tinymce']['api_key'];
 }
 
 body {
-    background-color: var(--background-color);
-    color: var(--text-color);
+    background-color: var(--background-color) !important;
+    color: var(--text-color) !important;
+}
+
+.card, .card-body, .card-title, .card-header, .card-footer {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
 }
 
 .form-control {
-    background-color: var(--input-bg);
-    border-color: var(--input-border);
-    color: var(--text-color);
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-color) !important;
 }
 
 .form-control:focus {
-    background-color: var(--input-focus-bg);
-    border-color: var(--input-focus-border);
-    color: var(--text-color);
-    box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25);
+    background-color: var(--input-focus-bg) !important;
+    border-color: var(--input-focus-border) !important;
+    color: var(--text-color) !important;
+    box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25) !important;
 }
 
 .form-control::placeholder {
-    color: var(--text-color);
-    opacity: 0.5;
+    color: var(--text-color) !important;
+    opacity: 0.5 !important;
 }
 
 .form-label {
-    color: var(--text-color);
+    color: var(--text-color) !important;
 }
 
 .btn-primary {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
-    color: var(--text-color);
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    color: var(--text-color) !important;
 }
 
 .btn-primary:hover {
-    background-color: #0284c7;
-    border-color: #0284c7;
-    color: var(--text-color);
+    background-color: #0284c7 !important;
+    border-color: #0284c7 !important;
+    color: var(--text-color) !important;
+}
+
+.btn-outline-secondary {
+    background-color: transparent !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--input-focus-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+.form-check-input {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+}
+
+.form-check-input:checked {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+.form-check-label {
+    color: var(--text-color) !important;
+}
+
+.form-text {
+    color: var(--secondary-color) !important;
 }
 
 /* TinyMCE 다크모드 스타일 */
