@@ -357,17 +357,34 @@ class DiaryController extends Controller {
 
             // CSRF 토큰 검증
             $headers = getallheaders();
-            if (!isset($headers['X-CSRF-TOKEN']) || !isset($_SESSION['csrf_token'])) {
-                return json_response(['success' => false, 'error' => '보안 토큰이 없습니다.'], 403);
-            }
+            $csrfToken = null;
 
-            if ($headers['X-CSRF-TOKEN'] !== $_SESSION['csrf_token']) {
-                return json_response(['success' => false, 'error' => '보안 토큰이 유효하지 않습니다.'], 403);
+            // 헤더에서 토큰 확인
+            if (isset($headers['X-CSRF-TOKEN'])) {
+                $csrfToken = $headers['X-CSRF-TOKEN'];
+            } elseif (isset($headers['x-csrf-token'])) {
+                $csrfToken = $headers['x-csrf-token'];
             }
 
             // JSON 데이터 파싱
             $json = file_get_contents('php://input');
             $data = json_decode($json, true);
+
+            // 요청 본문에서 토큰 확인
+            if (!$csrfToken && isset($data['csrf_token'])) {
+                $csrfToken = $data['csrf_token'];
+            }
+
+            // 세션 토큰 확인
+            if (!isset($_SESSION['csrf_token'])) {
+                error_log("CSRF token missing in session");
+                return json_response(['success' => false, 'error' => '보안 토큰이 없습니다. 페이지를 새로고침 후 다시 시도해주세요.'], 403);
+            }
+
+            if (!$csrfToken || $csrfToken !== $_SESSION['csrf_token']) {
+                error_log("CSRF token mismatch - Header/Data: " . ($csrfToken ?? 'not set') . ", Session: " . $_SESSION['csrf_token']);
+                return json_response(['success' => false, 'error' => '보안 토큰이 유효하지 않습니다. 페이지를 새로고침 후 다시 시도해주세요.'], 403);
+            }
 
             if (!isset($data['content'])) {
                 return json_response(['success' => false, 'error' => '댓글 내용이 필요합니다.'], 400);
