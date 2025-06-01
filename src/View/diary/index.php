@@ -12,18 +12,15 @@
 
     <div class="row">
         <div class="col-md-8">
-            <?php if (empty($diaries)): ?>
-                <div class="alert alert-info">
-                    <?= __('diary.no_diaries') ?>
-                </div>
-            <?php else: ?>
+            <?php if (!empty($diaries) && is_array($diaries)): ?>
                 <?php foreach ($diaries as $diary): ?>
+                    <?php if (!is_array($diary)) continue; ?>
                     <div class="card mb-4">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h5 class="card-title">
-                                    <a href="/diary/<?= $diary['id'] ?>" class="text-decoration-none">
-                                        <?= htmlspecialchars($diary['title']) ?>
+                                    <a href="/diary/<?= htmlspecialchars($diary['id'] ?? '') ?>" class="text-decoration-none">
+                                        <?= htmlspecialchars($diary['title'] ?? '') ?>
                                     </a>
                                 </h5>
                                 <?php if ($diary['user_id'] == ($_SESSION['user_id'] ?? null)): ?>
@@ -49,20 +46,20 @@
                             </div>
                             
                             <div class="card-text mb-3">
-                                <?= substr(strip_tags($diary['content']), 0, 200) ?>...
+                                <?= htmlspecialchars(mb_substr(strip_tags($diary['content'] ?? ''), 0, 100)) ?>
                             </div>
 
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
                                     <img src="<?= $diary['profile_image'] ?? '/assets/images/default-avatar.png' ?>" 
                                          class="rounded-circle me-2" width="32" height="32" 
-                                         alt="<?= htmlspecialchars($diary['author_name']) ?>">
+                                         alt="<?= htmlspecialchars($diary['author_name'] ?? '') ?>">
                                     <div>
                                         <div class="text-muted small">
-                                            <?= htmlspecialchars($diary['author_name']) ?>
+                                            <?= htmlspecialchars($diary['author_name'] ?? '') ?>
                                         </div>
                                         <div class="text-muted small">
-                                            <?= date('Y-m-d H:i', strtotime($diary['created_at'])) ?>
+                                            <?= isset($diary['created_at']) && $diary['created_at'] ? date('Y-m-d H:i', strtotime($diary['created_at'])) : '' ?>
                                         </div>
                                     </div>
                                 </div>
@@ -71,11 +68,11 @@
                                     <button class="btn btn-link text-muted me-3" 
                                             onclick="toggleLike(<?= $diary['id'] ?>)">
                                         <i class="far fa-heart"></i>
-                                        <span class="like-count"><?= $diary['like_count'] ?></span>
+                                        <span class="like-count"><?= (int)($diary['like_count'] ?? 0) ?></span>
                                     </button>
                                     <a href="/diary/<?= $diary['id'] ?>" class="text-muted">
                                         <i class="far fa-comment"></i>
-                                        <span><?= $diary['comment_count'] ?></span>
+                                        <span><?= (int)($diary['comment_count'] ?? 0) ?></span>
                                     </a>
                                 </div>
                             </div>
@@ -90,6 +87,10 @@
                         </a>
                     </div>
                 <?php endif; ?>
+            <?php else: ?>
+                <div class="alert alert-info">
+                    <?= __('diary.no_diaries') ?>
+                </div>
             <?php endif; ?>
         </div>
 
