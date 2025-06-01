@@ -261,43 +261,27 @@ function submitComment(event) {
                 
                 commentsContainer.insertAdjacentHTML('afterbegin', commentHtml);
             }
-            
-            // 3초 후 성공 메시지 제거
-            setTimeout(() => {
-                successAlert.remove();
-            }, 3000);
         } else {
             // 에러 메시지 표시
             const errorAlert = document.createElement('div');
             errorAlert.className = 'alert alert-danger mt-3';
-            errorAlert.innerHTML = data.error || '댓글 등록 중 오류가 발생했습니다.';
+            errorAlert.innerHTML = data.error || '댓글 등록에 실패했습니다.';
             form.parentNode.insertBefore(errorAlert, form.nextSibling);
-            
-            // 3초 후 에러 메시지 제거
-            setTimeout(() => {
-                errorAlert.remove();
-            }, 3000);
         }
     })
     .catch(error => {
-        // 네트워크 에러 등 예외 상황 처리
+        console.error('Error:', error);
+        // 에러 메시지 표시
         const errorAlert = document.createElement('div');
         errorAlert.className = 'alert alert-danger mt-3';
-        errorAlert.innerHTML = '서버와의 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+        errorAlert.innerHTML = '댓글 등록 중 오류가 발생했습니다.';
         form.parentNode.insertBefore(errorAlert, form.nextSibling);
-        
-        // 3초 후 에러 메시지 제거
-        setTimeout(() => {
-            errorAlert.remove();
-        }, 3000);
     })
     .finally(() => {
-        // 버튼 상태 복구
+        // 버튼 상태 복원
         submitButton.disabled = false;
         submitButton.innerHTML = originalButtonText;
     });
-    
-    return false;
 }
 
 function deleteComment(commentId) {
