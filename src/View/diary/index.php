@@ -35,17 +35,8 @@
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton<?= $diary['id'] ?>">
-                                            <li>
-                                                <a class="dropdown-item" href="/diary/<?= $diary['id'] ?? '' ?>/edit">
-                                                    <i class="fas fa-edit"></i> <?= __('diary.edit') ?>
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item text-danger" href="#" 
-                                                   onclick="deleteDiary(<?= $diary['id'] ?? 0 ?>)">
-                                                    <i class="fas fa-trash"></i> <?= __('diary.delete') ?>
-                                                </a>
-                                            </li>
+                                            <li><a class="dropdown-item" href="/diary/<?= $diary['id'] ?>/edit"><?= __('diary.edit') ?></a></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteDiary(<?= $diary['id'] ?>)"><?= __('diary.delete') ?></a></li>
                                         </ul>
                                     </div>
                                 <?php endif; ?>
