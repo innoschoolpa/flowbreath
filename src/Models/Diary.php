@@ -69,7 +69,6 @@ class Diary {
         try {
             $sql = "INSERT INTO diaries (user_id, title, content, tags, is_public, created_at, updated_at, view_count, like_count, comment_count)
                     VALUES (?, ?, ?, ?, ?, NOW(), NOW(), 0, 0, 0)";
-            
             $stmt = $this->db->prepare($sql);
             $result = $stmt->execute([
                 $data['user_id'],
@@ -84,7 +83,16 @@ class Diary {
                 return false;
             }
 
-            return $this->db->lastInsertId();
+            $insertId = $this->db->lastInsertId();
+            if (!$insertId || $insertId == 0) {
+                // lastInsertId가 0이거나 false일 때, 실제로 insert된 id를 조회해서 반환
+                $query = $this->db->prepare("SELECT MAX(id) as max_id FROM diaries WHERE user_id = ?");
+                $query->execute([$data['user_id']]);
+                $row = $query->fetch();
+                $insertId = $row ? $row['max_id'] : null;
+            }
+
+            return $insertId;
         } catch (\PDOException $e) {
             error_log("Database error while creating diary: " . $e->getMessage());
             return false;
