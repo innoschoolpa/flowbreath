@@ -83,7 +83,7 @@
                                     <div class="mb-3">
                                         <textarea class="form-control" name="content" rows="3" required 
                                                   minlength="1" maxlength="1000" 
-                                                  placeholder="<?= __('diary.comment_placeholder') ?>"></textarea>
+                                                  placeholder="댓글을 입력하세요. 마크다운 문법을 지원합니다."></textarea>
                                         <div class="invalid-feedback">
                                             <?= __('diary.comment_required') ?>
                                         </div>
