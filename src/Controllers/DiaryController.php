@@ -57,7 +57,7 @@ class DiaryController extends Controller {
             return json_response(['success' => true, 'id' => $result]);
         }
 
-        return json_response(['success' => false, 'message' => 'Failed to create diary'], 500);
+        return json_response(['success' => false, 'error' => 'Failed to create diary'], 500);
     }
 
     public function show($id) {
