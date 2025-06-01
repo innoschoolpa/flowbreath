@@ -198,7 +198,8 @@ body {
     </div>
 </div>
 
-<script src="https://cdn.tiny.cloud/1/3p683d001w10l44tgvyk034uz5nsntitn1eiyjs24ufhx67a/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<!-- TinyMCE CDN -->
+<script src="https://cdn.tiny.cloud/1/<?= $tinymceApiKey ?>/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     tinymce.init({
@@ -220,29 +221,22 @@ document.addEventListener('DOMContentLoaded', function() {
         promotion: false,
         statusbar: false,
         resize: false,
-        
-        // 이미지 업로드 설정
         images_upload_url: '/upload/image',
         images_upload_base_path: '/',
         images_reuse_filename: true,
         automatic_uploads: true,
         file_picker_types: 'image',
-        
-        // 개선된 이미지 업로드 핸들러
         images_upload_handler: function (blobInfo, progress) {
             return new Promise((resolve, reject) => {
                 const formData = new FormData();
                 formData.append('image', blobInfo.blob(), blobInfo.filename());
                 formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?? '' ?>');
-
                 const xhr = new XMLHttpRequest();
-                
                 xhr.upload.onprogress = function(e) {
                     if (e.lengthComputable) {
                         progress(e.loaded / e.total * 100);
                     }
                 };
-
                 xhr.onload = function() {
                     if (xhr.status === 200) {
                         try {
@@ -266,30 +260,24 @@ document.addEventListener('DOMContentLoaded', function() {
                         reject('서버 오류: ' + xhr.status);
                     }
                 };
-
                 xhr.onerror = function() {
                     reject('네트워크 오류가 발생했습니다.');
                 };
-
                 xhr.open('POST', '/upload/image');
                 xhr.send(formData);
             });
         },
-        
-        // 파일 선택기 콜백
         file_picker_callback: function(callback, value, meta) {
             if (meta.filetype === 'image') {
                 const input = document.createElement('input');
                 input.setAttribute('type', 'file');
                 input.setAttribute('accept', 'image/*');
-                
                 input.addEventListener('change', function(e) {
                     const file = e.target.files[0];
                     if (file) {
                         const formData = new FormData();
                         formData.append('image', file);
                         formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?? '' ?>');
-                        
                         fetch('/upload/image', {
                             method: 'POST',
                             body: formData
@@ -315,24 +303,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                     }
                 });
-                
                 input.click();
             }
         },
-        
         setup: function(editor) {
-            // 이미지 드래그 앤 드롭 지원
             editor.on('drop', function(e) {
                 const files = e.dataTransfer.files;
                 if (files.length > 0) {
                     const file = files[0];
                     if (file.type.startsWith('image/')) {
                         e.preventDefault();
-                        
                         const formData = new FormData();
                         formData.append('image', file);
                         formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?? '' ?>');
-                        
                         fetch('/upload/image', {
                             method: 'POST',
                             body: formData
@@ -358,11 +341,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.getElementById('diaryForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
     const formData = new FormData(this);
     formData.append('content', tinymce.get('content').getContent());
     formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?? '' ?>');
-    
     fetch(this.action, {
         method: 'POST',
         body: formData
