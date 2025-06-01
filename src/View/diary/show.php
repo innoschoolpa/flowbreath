@@ -70,17 +70,31 @@
                         <div class="card mb-4">
                             <div class="card-body">
                                 <h5 class="card-title"><?= __('diary.comment') ?></h5>
-                                <form id="commentForm" onsubmit="return submitComment(event)">
+                                <form id="commentForm" onsubmit="return submitComment(event)" class="needs-validation" novalidate>
                                     <input type="hidden" name="diary_id" value="<?= $diary['id'] ?>">
                                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                     <div class="mb-3">
-                                        <textarea class="form-control" name="content" rows="3" required></textarea>
+                                        <textarea class="form-control" name="content" rows="3" required 
+                                                  minlength="1" maxlength="1000" 
+                                                  placeholder="<?= __('diary.comment_placeholder') ?>"></textarea>
+                                        <div class="invalid-feedback">
+                                            <?= __('diary.comment_required') ?>
+                                        </div>
+                                        <div class="form-text text-end">
+                                            <span class="char-count">0</span>/1000
+                                        </div>
                                     </div>
                                     <button type="submit" class="btn btn-primary">
-                                        <?= __('diary.comment_submit') ?>
+                                        <i class="fas fa-paper-plane"></i> <?= __('diary.comment_submit') ?>
                                     </button>
                                 </form>
                             </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <?= __('diary.login_required_comment') ?>
+                            <a href="/login" class="alert-link"><?= __('auth.login') ?></a>
                         </div>
                     <?php endif; ?>
 
@@ -178,6 +192,12 @@ function submitComment(event) {
     
     const form = event.target;
     const formData = new FormData(form);
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.innerHTML;
+    
+    // 버튼 비활성화 및 로딩 표시
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리중...';
     
     fetch('/diary/comment', {
         method: 'POST',
@@ -186,13 +206,48 @@ function submitComment(event) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            window.location.reload();
+            // 성공 메시지 표시
+            const successAlert = document.createElement('div');
+            successAlert.className = 'alert alert-success mt-3';
+            successAlert.innerHTML = data.message || '댓글이 등록되었습니다.';
+            form.parentNode.insertBefore(successAlert, form.nextSibling);
+            
+            // 폼 초기화
+            form.reset();
+            
+            // 1초 후 페이지 새로고침
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         } else {
-            alert(data.error || '<?= __('diary.comment_error') ?>');
+            // 에러 메시지 표시
+            const errorAlert = document.createElement('div');
+            errorAlert.className = 'alert alert-danger mt-3';
+            errorAlert.innerHTML = data.error || '댓글 등록 중 오류가 발생했습니다.';
+            form.parentNode.insertBefore(errorAlert, form.nextSibling);
+            
+            // 3초 후 에러 메시지 제거
+            setTimeout(() => {
+                errorAlert.remove();
+            }, 3000);
         }
     })
     .catch(error => {
-        alert('<?= __('diary.comment_error') ?>');
+        // 네트워크 에러 등 예외 상황 처리
+        const errorAlert = document.createElement('div');
+        errorAlert.className = 'alert alert-danger mt-3';
+        errorAlert.innerHTML = '서버와의 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+        form.parentNode.insertBefore(errorAlert, form.nextSibling);
+        
+        // 3초 후 에러 메시지 제거
+        setTimeout(() => {
+            errorAlert.remove();
+        }, 3000);
+    })
+    .finally(() => {
+        // 버튼 상태 복구
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonText;
     });
     
     return false;

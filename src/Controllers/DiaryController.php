@@ -184,54 +184,60 @@ class DiaryController extends Controller {
     }
 
     public function storeComment() {
-        if (!$this->auth->isLoggedIn()) {
-            return json_response(['error' => 'Unauthorized'], 401);
-        }
-
-        // CSRF 토큰 검증
-        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-            return json_response(['error' => 'Invalid CSRF token'], 403);
-        }
-
-        $diaryId = $_POST['diary_id'] ?? 0;
-        $diary = $this->diaryModel->find($diaryId);
-        
-        if (!$diary) {
-            return json_response(['error' => 'Diary not found'], 404);
-        }
-
-        // 디버깅을 위한 로그 추가
-        error_log("Diary data: " . print_r($diary, true));
-        error_log("Current user ID: " . $this->auth->id());
-        error_log("Diary user ID: " . $diary['user_id']);
-        error_log("Is public: " . ($diary['is_public'] ? 'true' : 'false'));
-
-        // 공개 일기는 모든 로그인한 사용자가 댓글 가능
-        // 비공개 일기는 작성자만 댓글 가능
-        if (!$diary['is_public'] && $diary['user_id'] != $this->auth->id()) {
-            error_log("Access denied: User is not the diary owner and diary is private");
-            return json_response(['error' => 'Cannot comment on private diary'], 403);
-        }
-
-        $data = [
-            'diary_id' => $diaryId,
-            'content' => $_POST['content'] ?? '',
-            'user_id' => $this->auth->id()
-        ];
-
-        if (empty($data['content'])) {
-            return json_response(['error' => 'Comment content is required'], 400);
-        }
-
         try {
+            if (!$this->auth->isLoggedIn()) {
+                return json_response(['error' => '로그인이 필요합니다.'], 401);
+            }
+
+            // CSRF 토큰 검증
+            if (!isset($_POST['csrf_token']) || !isset($_SESSION['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+                error_log("CSRF token mismatch - POST: " . ($_POST['csrf_token'] ?? 'not set') . ", SESSION: " . ($_SESSION['csrf_token'] ?? 'not set'));
+                return json_response(['error' => '보안 토큰이 유효하지 않습니다. 페이지를 새로고침 후 다시 시도해주세요.'], 403);
+            }
+
+            $diaryId = $_POST['diary_id'] ?? 0;
+            $diary = $this->diaryModel->find($diaryId);
+            
+            if (!$diary) {
+                return json_response(['error' => '일기를 찾을 수 없습니다.'], 404);
+            }
+
+            // 디버깅을 위한 로그 추가
+            error_log("Diary data: " . print_r($diary, true));
+            error_log("Current user ID: " . $this->auth->id());
+            error_log("Diary user ID: " . $diary['user_id']);
+            error_log("Is public: " . ($diary['is_public'] ? 'true' : 'false'));
+
+            // 공개 일기는 모든 로그인한 사용자가 댓글 가능
+            // 비공개 일기는 작성자만 댓글 가능
+            if (!$diary['is_public'] && $diary['user_id'] != $this->auth->id()) {
+                error_log("Access denied: User is not the diary owner and diary is private");
+                return json_response(['error' => '비공개 일기에는 작성자만 댓글을 달 수 있습니다.'], 403);
+            }
+
+            $content = trim($_POST['content'] ?? '');
+            if (empty($content)) {
+                return json_response(['error' => '댓글 내용을 입력해주세요.'], 400);
+            }
+
+            $data = [
+                'diary_id' => $diaryId,
+                'content' => $content,
+                'user_id' => $this->auth->id()
+            ];
+
             $result = $this->diaryModel->addComment($data);
             if ($result) {
-                return json_response(['success' => true, 'id' => $result]);
+                return json_response([
+                    'success' => true, 
+                    'id' => $result,
+                    'message' => '댓글이 등록되었습니다.'
+                ]);
             }
-            return json_response(['error' => 'Failed to add comment'], 500);
+            return json_response(['error' => '댓글 등록에 실패했습니다.'], 500);
         } catch (\Exception $e) {
             error_log("Error in storeComment: " . $e->getMessage());
-            return json_response(['error' => 'Failed to add comment'], 500);
+            return json_response(['error' => '댓글 등록 중 오류가 발생했습니다.'], 500);
         }
     }
 
