@@ -220,19 +220,34 @@ class DiaryController extends Controller {
                 return json_response(['error' => '댓글 내용을 입력해주세요.'], 400);
             }
 
+            // XSS 방지를 위한 HTML 이스케이프
+            $content = htmlspecialchars($content, ENT_QUOTES, 'UTF-8');
+
             $data = [
                 'diary_id' => $diaryId,
                 'content' => $content,
-                'user_id' => $this->auth->id()
+                'user_id' => $this->auth->id(),
+                'created_at' => date('Y-m-d H:i:s')
             ];
 
             $result = $this->diaryModel->addComment($data);
             if ($result) {
-                return json_response([
-                    'success' => true, 
-                    'id' => $result,
-                    'message' => '댓글이 등록되었습니다.'
-                ]);
+                // 댓글 작성자 정보 가져오기
+                $comment = $this->diaryModel->findComment($result);
+                if ($comment) {
+                    return json_response([
+                        'success' => true, 
+                        'id' => $result,
+                        'message' => '댓글이 등록되었습니다.',
+                        'comment' => [
+                            'id' => $comment['id'],
+                            'content' => $comment['content'],
+                            'author_name' => $comment['author_name'],
+                            'profile_image' => $comment['profile_image'] ?? '/assets/images/default-avatar.png',
+                            'created_at' => $comment['created_at']
+                        ]
+                    ]);
+                }
             }
             return json_response(['error' => '댓글 등록에 실패했습니다.'], 500);
         } catch (\Exception $e) {

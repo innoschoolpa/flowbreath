@@ -215,10 +215,50 @@ function submitComment(event) {
             // 폼 초기화
             form.reset();
             
-            // 1초 후 페이지 새로고침
+            // 새 댓글 추가
+            if (data.comment) {
+                const commentsContainer = document.getElementById('comments');
+                const noCommentsMessage = commentsContainer.querySelector('.text-center.text-muted');
+                if (noCommentsMessage) {
+                    noCommentsMessage.remove();
+                }
+                
+                const commentHtml = `
+                    <div class="card mb-3" id="comment-${data.comment.id}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <img src="${data.comment.profile_image}" 
+                                         class="rounded-circle me-2" width="32" height="32" 
+                                         alt="${data.comment.author_name}">
+                                    <div>
+                                        <div class="fw-bold">
+                                            ${data.comment.author_name}
+                                        </div>
+                                        <div class="text-muted small">
+                                            ${new Date(data.comment.created_at).toLocaleString()}
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-link text-danger btn-sm" 
+                                        onclick="deleteComment(${data.comment.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="comment-content">
+                                ${data.comment.content}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                commentsContainer.insertAdjacentHTML('afterbegin', commentHtml);
+            }
+            
+            // 3초 후 성공 메시지 제거
             setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+                successAlert.remove();
+            }, 3000);
         } else {
             // 에러 메시지 표시
             const errorAlert = document.createElement('div');
