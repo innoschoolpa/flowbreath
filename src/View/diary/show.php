@@ -313,13 +313,20 @@ function editComment(commentId, content) {
             alert('댓글 내용을 입력해주세요.');
             return;
         }
+
+        // CSRF 토큰 가져오기
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+        if (!csrfToken) {
+            alert('보안 토큰이 없습니다. 페이지를 새로고침 후 다시 시도해주세요.');
+            return;
+        }
         
         try {
             const response = await fetch(`/diary/comment/${commentId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('input[name="csrf_token"]').value
+                    'X-CSRF-TOKEN': csrfToken
                 },
                 body: JSON.stringify({ content: newContent })
             });
