@@ -24,10 +24,14 @@ class Diary {
             $where .= " AND d.is_public = 1";
         }
 
+        $isLikedSubquery = $userId ? 
+            "(SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id AND user_id = ?) as is_liked" : 
+            "0 as is_liked";
+
         $sql = "SELECT d.*, u.name as author_name, 
                 (SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id) as like_count,
                 (SELECT COUNT(*) FROM diary_comments WHERE diary_id = d.id) as comment_count,
-                " . ($userId ? "(SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id AND user_id = ?) as is_liked" : "0 as is_liked") . "
+                $isLikedSubquery
                 FROM diaries d
                 LEFT JOIN users u ON d.user_id = u.id
                 $where
