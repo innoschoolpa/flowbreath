@@ -66,19 +66,29 @@ class Diary {
     }
 
     public function create($data) {
-        $sql = "INSERT INTO diaries (user_id, title, content, tags, is_public, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            $data['user_id'],
-            $data['title'],
-            $data['content'],
-            $data['tags'],
-            $data['is_public']
-        ]);
+        try {
+            $sql = "INSERT INTO diaries (user_id, title, content, tags, is_public, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
+            
+            $stmt = $this->db->prepare($sql);
+            $result = $stmt->execute([
+                $data['user_id'],
+                $data['title'],
+                $data['content'],
+                $data['tags'],
+                $data['is_public']
+            ]);
 
-        return $this->db->lastInsertId();
+            if (!$result) {
+                error_log("Failed to create diary: " . implode(", ", $stmt->errorInfo()));
+                return false;
+            }
+
+            return $this->db->lastInsertId();
+        } catch (\PDOException $e) {
+            error_log("Database error while creating diary: " . $e->getMessage());
+            return false;
+        }
     }
 
     public function update($id, $data) {

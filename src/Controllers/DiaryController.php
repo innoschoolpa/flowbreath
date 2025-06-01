@@ -43,21 +43,26 @@ class DiaryController extends Controller {
             return json_response(['error' => 'Unauthorized'], 401);
         }
 
-        $data = [
+        $diaryData = [
+            'user_id' => $_SESSION['user_id'],
             'title' => $_POST['title'] ?? '',
             'content' => $_POST['content'] ?? '',
             'tags' => $_POST['tags'] ?? '',
-            'is_public' => isset($_POST['is_public']) ? 1 : 0,
-            'user_id' => $this->auth->id()
+            'is_public' => isset($_POST['is_public']) ? 1 : 0
         ];
 
-        $result = $this->diaryModel->create($data);
+        // Add logging
+        error_log("Attempting to create diary with data: " . json_encode($diaryData, JSON_UNESCAPED_UNICODE));
 
-        if ($result) {
-            return json_response(['success' => true, 'id' => $result]);
+        $diaryId = $this->diaryModel->create($diaryData);
+        
+        if ($diaryId) {
+            error_log("Diary created successfully with ID: " . $diaryId);
+            return json_response(['success' => true, 'diary_id' => $diaryId]);
+        } else {
+            error_log("Failed to create diary. Data: " . json_encode($diaryData, JSON_UNESCAPED_UNICODE));
+            return json_response(['success' => false, 'error' => 'Failed to create diary'], 500);
         }
-
-        return json_response(['success' => false, 'error' => 'Failed to create diary'], 500);
     }
 
     public function show($id) {
