@@ -200,8 +200,16 @@ class DiaryController extends Controller {
             return json_response(['error' => 'Diary not found'], 404);
         }
 
-        // 비공개 일기에는 작성자만 댓글을 달 수 있도록 수정
-        if (!$diary['is_public'] && $diary['user_id'] !== $this->auth->id()) {
+        // 디버깅을 위한 로그 추가
+        error_log("Diary data: " . print_r($diary, true));
+        error_log("Current user ID: " . $this->auth->id());
+        error_log("Diary user ID: " . $diary['user_id']);
+        error_log("Is public: " . ($diary['is_public'] ? 'true' : 'false'));
+
+        // 공개 일기는 모든 로그인한 사용자가 댓글 가능
+        // 비공개 일기는 작성자만 댓글 가능
+        if (!$diary['is_public'] && $diary['user_id'] != $this->auth->id()) {
+            error_log("Access denied: User is not the diary owner and diary is private");
             return json_response(['error' => 'Cannot comment on private diary'], 403);
         }
 
