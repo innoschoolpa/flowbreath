@@ -264,7 +264,10 @@ class Diary {
     }
 
     public function findComment($id) {
-        $sql = "SELECT * FROM diary_comments WHERE id = ? AND deleted_at IS NULL";
+        $sql = "SELECT c.*, u.name as author_name, u.profile_image 
+                FROM diary_comments c
+                LEFT JOIN users u ON c.user_id = u.id
+                WHERE c.id = ? AND c.deleted_at IS NULL";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch();
