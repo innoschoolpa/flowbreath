@@ -53,16 +53,25 @@ class Diary {
     }
 
     public function find($id) {
+        $userId = $_SESSION['user_id'] ?? null;
         $sql = "SELECT d.*, u.name as author_name,
                 (SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id) as like_count,
-                (SELECT COUNT(*) FROM diary_comments WHERE diary_id = d.id) as comment_count
+                (SELECT COUNT(*) FROM diary_comments WHERE diary_id = d.id) as comment_count,
+                " . ($userId ? "(SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id AND user_id = ?) as is_liked" : "0 as is_liked") . "
                 FROM diaries d
                 LEFT JOIN users u ON d.user_id = u.id
                 WHERE d.id = ? AND d.deleted_at IS NULL";
         
+        $params = $userId ? [$userId, $id] : [$id];
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$id]);
-        return $stmt->fetch();
+        $stmt->execute($params);
+        $diary = $stmt->fetch();
+        
+        if ($diary) {
+            $diary['is_liked'] = (bool)$diary['is_liked'];
+        }
+        
+        return $diary;
     }
 
     public function create($data) {
