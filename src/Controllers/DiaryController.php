@@ -191,30 +191,30 @@ class DiaryController extends Controller {
             
             if (!$this->auth->isLoggedIn()) {
                 error_log("User not logged in. Session user_id: " . ($_SESSION['user_id'] ?? 'not set'));
-                return json_response(['error' => '로그인이 필요합니다.'], 401);
+                return json_response(['success' => false, 'error' => '로그인이 필요합니다.'], 401);
             }
 
             // CSRF 토큰 검증
             if (!isset($_POST['csrf_token']) || !isset($_SESSION['csrf_token'])) {
                 error_log("CSRF token missing - POST: " . ($_POST['csrf_token'] ?? 'not set') . ", SESSION: " . ($_SESSION['csrf_token'] ?? 'not set'));
-                return json_response(['error' => '보안 토큰이 없습니다. 페이지를 새로고침 후 다시 시도해주세요.'], 403);
+                return json_response(['success' => false, 'error' => '보안 토큰이 없습니다. 페이지를 새로고침 후 다시 시도해주세요.'], 403);
             }
 
             if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
                 error_log("CSRF token mismatch - POST: " . $_POST['csrf_token'] . ", SESSION: " . $_SESSION['csrf_token']);
-                return json_response(['error' => '보안 토큰이 유효하지 않습니다. 페이지를 새로고침 후 다시 시도해주세요.'], 403);
+                return json_response(['success' => false, 'error' => '보안 토큰이 유효하지 않습니다. 페이지를 새로고침 후 다시 시도해주세요.'], 403);
             }
 
             $diaryId = $_POST['diary_id'] ?? 0;
             if (!$diaryId) {
                 error_log("Diary ID is missing or invalid: " . $diaryId);
-                return json_response(['error' => '일기 ID가 유효하지 않습니다.'], 400);
+                return json_response(['success' => false, 'error' => '일기 ID가 유효하지 않습니다.'], 400);
             }
 
             $diary = $this->diaryModel->find($diaryId);
             if (!$diary) {
                 error_log("Diary not found with ID: " . $diaryId);
-                return json_response(['error' => '일기를 찾을 수 없습니다.'], 404);
+                return json_response(['success' => false, 'error' => '일기를 찾을 수 없습니다.'], 404);
             }
 
             // 디버깅을 위한 로그 추가
@@ -227,13 +227,13 @@ class DiaryController extends Controller {
             // 비공개 일기는 작성자만 댓글 가능
             if (!$diary['is_public'] && $diary['user_id'] != $this->auth->id()) {
                 error_log("Access denied: User " . $this->auth->id() . " is not the diary owner and diary is private");
-                return json_response(['error' => '비공개 일기에는 작성자만 댓글을 달 수 있습니다.'], 403);
+                return json_response(['success' => false, 'error' => '비공개 일기에는 작성자만 댓글을 달 수 있습니다.'], 403);
             }
 
             $content = trim($_POST['content'] ?? '');
             if (empty($content)) {
                 error_log("Empty comment content");
-                return json_response(['error' => '댓글 내용을 입력해주세요.'], 400);
+                return json_response(['success' => false, 'error' => '댓글 내용을 입력해주세요.'], 400);
             }
 
             // XSS 방지를 위한 HTML 이스케이프
@@ -249,46 +249,39 @@ class DiaryController extends Controller {
             error_log("Attempting to add comment with data: " . print_r($data, true));
 
             $commentId = $this->diaryModel->addComment($data);
-            if ($commentId) {
-                // 댓글 작성자 정보 가져오기
-                $comment = $this->diaryModel->findComment($commentId);
-                error_log("Comment data after creation: " . print_r($comment, true));
-                
-                if ($comment) {
-                    error_log("Comment added successfully: " . print_r($comment, true));
-                    return json_response([
-                        'success' => true, 
-                        'message' => '댓글이 등록되었습니다.',
-                        'comment' => [
-                            'id' => $comment['id'],
-                            'content' => $comment['content'],
-                            'author_name' => $comment['author_name'] ?? $_SESSION['user_name'],
-                            'profile_image' => $comment['profile_image'] ?? $_SESSION['user_avatar'] ?? '/assets/images/default-avatar.png',
-                            'created_at' => $comment['created_at']
-                        ]
-                    ]);
-                } else {
-                    error_log("Failed to retrieve comment after creation. Comment ID: " . $commentId);
-                    // 댓글은 저장되었지만 정보를 가져오지 못한 경우
-                    return json_response([
-                        'success' => true,
-                        'message' => '댓글이 등록되었습니다.',
-                        'comment' => [
-                            'id' => $commentId,
-                            'content' => $data['content'],
-                            'author_name' => $_SESSION['user_name'],
-                            'profile_image' => $_SESSION['user_avatar'] ?? '/assets/images/default-avatar.png',
-                            'created_at' => $data['created_at']
-                        ]
-                    ]);
-                }
+            if (!$commentId) {
+                error_log("Failed to add comment to database");
+                return json_response(['success' => false, 'error' => '댓글 등록에 실패했습니다.'], 500);
             }
+
+            // 댓글 작성자 정보 가져오기
+            $comment = $this->diaryModel->findComment($commentId);
+            error_log("Comment data after creation: " . print_r($comment, true));
             
-            error_log("Failed to add comment");
-            return json_response(['error' => '댓글 등록에 실패했습니다.'], 500);
+            if (!$comment) {
+                error_log("Comment saved but not retrieved. Comment ID: " . $commentId);
+                return json_response([
+                    'success' => false,
+                    'error' => '댓글이 저장되었지만 표시에 실패했습니다. 페이지를 새로고침해주세요.'
+                ]);
+            }
+
+            error_log("Comment added successfully: " . print_r($comment, true));
+            return json_response([
+                'success' => true, 
+                'message' => '댓글이 등록되었습니다.',
+                'comment' => [
+                    'id' => $comment['id'],
+                    'content' => $comment['content'],
+                    'author_name' => $comment['author_name'] ?? $_SESSION['user_name'],
+                    'profile_image' => $comment['profile_image'] ?? $_SESSION['user_avatar'] ?? '/assets/images/default-avatar.png',
+                    'created_at' => $comment['created_at']
+                ]
+            ]);
+            
         } catch (\Exception $e) {
             error_log("Error in storeComment: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-            return json_response(['error' => '댓글 등록 중 오류가 발생했습니다.'], 500);
+            return json_response(['success' => false, 'error' => '댓글 등록 중 오류가 발생했습니다.'], 500);
         }
     }
 
