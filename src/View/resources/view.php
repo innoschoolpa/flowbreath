@@ -563,7 +563,7 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                         <div class="d-flex align-items-center gap-2">
                             <img src="<?= $resource['profile_image'] ?? '/assets/images/default-avatar.png' ?>"
                                  class="rounded-circle" width="32" height="32" alt="프로필"
-                                 style="object-fit: cover;">
+                                 style="object-fit: cover; aspect-ratio: 1/1; width: 32px; height: 32px; display: block;">
                             <a href="/profile/<?= htmlspecialchars($resource['user_id']) ?>" class="text-decoration-none">
                                 <?= htmlspecialchars($resource['author_name'] ?? '-') ?>
                             </a>
