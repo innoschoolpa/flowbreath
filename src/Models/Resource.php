@@ -1096,6 +1096,7 @@ class Resource extends Model {
                 rt.content,
                 rt.description,
                 u.name as author_name,
+                u.profile_image as profile_image,
                 r.link as url,
                 GROUP_CONCAT(t.name) as tags
                 FROM resources r
@@ -1296,6 +1297,7 @@ class Resource extends Model {
                     rt.content,
                     rt.description,
                     u.name as author_name,
+                    u.profile_image as profile_image,
                     (SELECT AVG(rating) FROM resource_ratings WHERE resource_id = r.id) as rating,
                     GROUP_CONCAT(DISTINCT t.name) as tags
                     FROM resources r
