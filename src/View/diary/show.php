@@ -119,6 +119,21 @@
 <script>
 function toggleLike(diaryId, event) {
     const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+    const icon = event.currentTarget.querySelector('i');
+    const countElement = event.currentTarget.querySelector('.like-count');
+    
+    // 현재 상태 저장
+    const isCurrentlyLiked = icon.classList.contains('fas');
+    const currentCount = parseInt(countElement.textContent);
+    
+    // 즉시 UI 업데이트 (낙관적 업데이트)
+    if (isCurrentlyLiked) {
+        icon.classList.replace('fas', 'far');
+        countElement.textContent = currentCount - 1;
+    } else {
+        icon.classList.replace('far', 'fas');
+        countElement.textContent = currentCount + 1;
+    }
     
     fetch(`/diary/${diaryId}/like`, {
         method: 'POST',
@@ -130,23 +145,36 @@ function toggleLike(diaryId, event) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            const icon = event.currentTarget.querySelector('i');
-            const countElement = event.currentTarget.querySelector('.like-count');
-            
             // 서버 응답에 따라 UI 업데이트
             if (data.liked) {
                 icon.classList.replace('far', 'fas');
             } else {
                 icon.classList.replace('fas', 'far');
             }
-            
-            // 서버에서 받은 좋아요 수로 업데이트
             countElement.textContent = data.like_count;
         } else {
+            // 실패 시 원래 상태로 되돌림
+            if (isCurrentlyLiked) {
+                icon.classList.replace('far', 'fas');
+                countElement.textContent = currentCount;
+            } else {
+                icon.classList.replace('fas', 'far');
+                countElement.textContent = currentCount;
+            }
             console.error('Error:', data.error);
         }
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => {
+        // 에러 발생 시 원래 상태로 되돌림
+        if (isCurrentlyLiked) {
+            icon.classList.replace('far', 'fas');
+            countElement.textContent = currentCount;
+        } else {
+            icon.classList.replace('fas', 'far');
+            countElement.textContent = currentCount;
+        }
+        console.error('Error:', error);
+    });
 }
 
 function deleteDiary(diaryId) {
