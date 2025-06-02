@@ -313,7 +313,7 @@ input[type="text"]::placeholder {
                 <img src="<?= $resource['profile_image'] ?? '/assets/images/default-avatar.png' ?>" 
                      class="rounded-circle me-2" width="24" height="24" 
                      alt="<?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?>">
-                <span><i class="fas fa-user me-1"></i><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></span>
+                <span><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></span>
               </div>
               <span><i class="fas fa-calendar me-1"></i><?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?></span>
             </div>
