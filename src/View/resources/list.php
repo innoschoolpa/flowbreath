@@ -312,9 +312,8 @@ img.rounded-circle { font-size: 0; color: transparent; }
             </div>
             <div class="mt-auto">
               <div class="d-flex align-items-center mb-2">
-                <img src="<?= $resource['profile_image'] ?? '/assets/images/default-avatar.png' ?>" 
-                     class="rounded-circle me-2" width="40" height="40" 
-                     alt="프로필">
+                <img src="<?= $resource['profile_image'] ?? '/assets/images/default-avatar.png' ?>"
+                     class="rounded-circle me-2" width="40" height="40" alt="프로필">
                 <div>
                   <div class="fw-bold"><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></div>
                   <div class="text-muted small"><?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?></div>
