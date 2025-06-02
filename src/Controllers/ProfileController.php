@@ -313,78 +313,88 @@ class ProfileController extends Controller
     /**
      * 프로필 이미지 업로드 처리
      */
-    public function uploadProfileImage()
+    public function updateImage()
     {
+        if (!$this->auth->check()) {
+            return (new Response())->redirect('/login');
+        }
+
+        $userId = (int)$_SESSION['user_id'];
+        $file = $this->request->getFile('profile_image');
+
+        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+            return (new Response())->json([
+                'success' => false,
+                'message' => '이미지 업로드에 실패했습니다.'
+            ], 400);
+        }
+
         try {
-            $userId = $this->checkAuth();
-            
-            if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
-                return $this->json(['error' => '이미지 업로드에 실패했습니다.'], 400);
-            }
-
-            $file = $_FILES['profile_image'];
-            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-            $maxSize = 5 * 1024 * 1024; // 5MB
-
-            // 파일 타입 검증
+            // 이미지 유효성 검사
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
             if (!in_array($file['type'], $allowedTypes)) {
-                return $this->json(['error' => '지원하지 않는 이미지 형식입니다.'], 400);
+                throw new \Exception('지원하지 않는 이미지 형식입니다.');
             }
 
-            // 파일 크기 검증
-            if ($file['size'] > $maxSize) {
-                return $this->json(['error' => '이미지 크기는 5MB를 초과할 수 없습니다.'], 400);
+            // 이미지 크기 제한 (5MB)
+            if ($file['size'] > 5 * 1024 * 1024) {
+                throw new \Exception('이미지 크기는 5MB를 초과할 수 없습니다.');
             }
 
-            // 이미지 최적화
-            $image = null;
-            switch ($file['type']) {
-                case 'image/jpeg':
-                    $image = imagecreatefromjpeg($file['tmp_name']);
-                    break;
-                case 'image/png':
-                    $image = imagecreatefrompng($file['tmp_name']);
-                    break;
-                case 'image/gif':
-                    $image = imagecreatefromgif($file['tmp_name']);
-                    break;
-            }
-
-            if (!$image) {
-                return $this->json(['error' => '이미지 처리에 실패했습니다.'], 400);
-            }
-
-            // 이미지 크기 조정
-            $maxDimension = 800;
-            $width = imagesx($image);
-            $height = imagesy($image);
-
-            if ($width > $maxDimension || $height > $maxDimension) {
-                if ($width > $height) {
-                    $newWidth = $maxDimension;
-                    $newHeight = floor($height * ($maxDimension / $width));
-                } else {
-                    $newHeight = $maxDimension;
-                    $newWidth = floor($width * ($maxDimension / $height));
-                }
-
-                $resized = imagecreatetruecolor($newWidth, $newHeight);
-                imagecopyresampled($resized, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-                $image = $resized;
-            }
-
-            // 저장 경로 설정
+            // 이미지 저장
             $uploadDir = __DIR__ . '/../../public/uploads/profiles/';
             if (!file_exists($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
 
-            $filename = uniqid('profile_') . '.jpg';
+            // 파일 확장자 유지
+            $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $filename = uniqid('profile_') . '.' . $extension;
             $filepath = $uploadDir . $filename;
 
-            // JPEG로 저장 (최적화)
-            imagejpeg($image, $filepath, 85);
-            imagedestroy($image);
+            // 이미지 최적화 (SVG가 아닌 경우에만)
+            if ($file['type'] !== 'image/svg+xml') {
+                $image = null;
+                switch ($file['type']) {
+                    case 'image/jpeg':
+                        $image = imagecreatefromjpeg($file['tmp_name']);
+                        break;
+                    case 'image/png':
+                        $image = imagecreatefrompng($file['tmp_name']);
+                        break;
+                    case 'image/gif':
+                        $image = imagecreatefromgif($file['tmp_name']);
+                        break;
+                }
+
+                if ($image) {
+                    // 이미지 크기 조정
+                    $maxDimension = 800;
+                    $width = imagesx($image);
+                    $height = imagesy($image);
+
+                    if ($width > $maxDimension || $height > $maxDimension) {
+                        if ($width > $height) {
+                            $newWidth = $maxDimension;
+                            $newHeight = floor($height * ($maxDimension / $width));
+                        } else {
+                            $newHeight = $maxDimension;
+                            $newWidth = floor($width * ($maxDimension / $height));
+                        }
+
+                        $resized = imagecreatetruecolor($newWidth, $newHeight);
+                        imagecopyresampled($resized, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                        $image = $resized;
+                    }
+
+                    // JPEG로 저장 (최적화)
+                    imagejpeg($image, $filepath, 85);
+                    imagedestroy($image);
+                }
+            } else {
+                // SVG 파일은 그대로 저장
+                move_uploaded_file($file['tmp_name'], $filepath);
+            }
 
             // 이전 프로필 이미지 삭제
             $user = $this->user->findById($userId);
@@ -397,17 +407,25 @@ class ProfileController extends Controller
 
             // DB 업데이트
             $imageUrl = '/uploads/profiles/' . $filename;
-            $this->user->update($userId, ['profile_image' => $imageUrl]);
+            $this->user->update($userId, [
+                'profile_image' => $imageUrl
+            ]);
 
-            return $this->json([
+            // 세션 업데이트
+            $_SESSION['user_avatar'] = $imageUrl;
+
+            return (new Response())->json([
                 'success' => true,
-                'image_url' => $imageUrl,
-                'message' => '프로필 이미지가 업데이트되었습니다.'
+                'message' => '프로필 이미지가 성공적으로 업데이트되었습니다.',
+                'imageUrl' => $imageUrl
             ]);
 
         } catch (\Exception $e) {
             error_log("Profile image upload error: " . $e->getMessage());
-            return $this->json(['error' => '이미지 업로드 중 오류가 발생했습니다.'], 500);
+            return (new Response())->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -463,71 +481,6 @@ class ProfileController extends Controller
             error_log("Profile update error: " . $e->getMessage());
             return $this->json([
                 'error' => '프로필 업데이트 중 오류가 발생했습니다.'
-            ], 500);
-        }
-    }
-
-    public function updateImage()
-    {
-        if (!$this->auth->check()) {
-            return (new Response())->redirect('/login');
-        }
-
-        $userId = (int)$_SESSION['user_id'];
-        $file = $this->request->getFile('profile_image');
-
-        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
-            return (new Response())->json([
-                'success' => false,
-                'message' => '이미지 업로드에 실패했습니다.'
-            ], 400);
-        }
-
-        try {
-            // 이미지 유효성 검사
-            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-            if (!in_array($file['type'], $allowedTypes)) {
-                throw new \Exception('지원하지 않는 이미지 형식입니다.');
-            }
-
-            // 이미지 크기 제한 (5MB)
-            if ($file['size'] > 5 * 1024 * 1024) {
-                throw new \Exception('이미지 크기는 5MB를 초과할 수 없습니다.');
-            }
-
-            // 이미지 저장
-            $uploadDir = __DIR__ . '/../../public/uploads/profiles/';
-            if (!file_exists($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-
-            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $filename = uniqid('profile_') . '.' . $extension;
-            $filepath = $uploadDir . $filename;
-
-            if (!move_uploaded_file($file['tmp_name'], $filepath)) {
-                throw new \Exception('이미지 저장에 실패했습니다.');
-            }
-
-            // DB 업데이트
-            $imageUrl = '/uploads/profiles/' . $filename;
-            $this->user->update($userId, [
-                'profile_image' => $imageUrl
-            ]);
-
-            // 세션 업데이트
-            $_SESSION['user_avatar'] = $imageUrl;
-
-            return (new Response())->json([
-                'success' => true,
-                'message' => '프로필 이미지가 성공적으로 업데이트되었습니다.',
-                'imageUrl' => $imageUrl
-            ]);
-        } catch (\Exception $e) {
-            error_log("Profile image update error: " . $e->getMessage());
-            return (new Response())->json([
-                'success' => false,
-                'message' => $e->getMessage()
             ], 500);
         }
     }

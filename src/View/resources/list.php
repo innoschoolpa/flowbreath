@@ -312,7 +312,7 @@ img.rounded-circle { font-size: 0; color: transparent; object-fit: cover; width:
             </div>
             <div class="mt-auto">
               <div class="d-flex align-items-center mb-2" style="min-height: 40px;">
-                <img src="<?= $resource['profile_image'] ?? '/assets/images/default-avatar.png' ?>"
+                <img src="<?= !empty($resource['profile_image']) ? htmlspecialchars($resource['profile_image']) : '/assets/images/default-avatar.png' ?>"
                      class="rounded-circle me-2" width="40" height="40" alt="프로필">
                 <div>
                   <div class="fw-bold" style="font-size:1.1rem;"><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></div>

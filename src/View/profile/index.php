@@ -278,11 +278,16 @@ a:hover {
                 <div class="card-body text-center">
                     <div class="position-relative d-inline-block mb-3">
                         <?php if (isset($user['profile_image']) && $user['profile_image']): ?>
-                            <img src="<?= htmlspecialchars($user['profile_image']) ?>" alt="<?= __('profile.profile_image') ?>" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                            <img src="<?= htmlspecialchars($user['profile_image']) ?>" 
+                                 alt="<?= __('profile.profile_image') ?>" 
+                                 class="rounded-circle" 
+                                 style="width: 150px; height: 150px; object-fit: cover; background-color: #f8f9fa; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         <?php else: ?>
                             <i class="fa fa-user-circle" style="font-size: 150px; color: #6c757d;"></i>
                         <?php endif; ?>
-                        <button type="button" class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle" data-bs-toggle="modal" data-bs-target="#profileImageModal">
+                        <button type="button" class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle" 
+                                style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;"
+                                data-bs-toggle="modal" data-bs-target="#profileImageModal">
                             <i class="fas fa-camera"></i>
                         </button>
                     </div>

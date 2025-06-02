@@ -561,9 +561,16 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
 
                     <div class="px-4 pt-2 pb-2 d-flex gap-4 align-items-center" style="font-size:1.08em; color:#cbd5e1;">
                         <div class="d-flex align-items-center gap-2">
-                            <img src="<?= !empty($resource['profile_image']) ? htmlspecialchars($resource['profile_image']) : '/assets/images/default-avatar.png' ?>"
-                                 class="rounded-circle" width="32" height="32" alt="프로필"
-                                 style="object-fit: cover;">
+                            <?php
+                            $profileImage = !empty($resource['profile_image']) ? $resource['profile_image'] : '/assets/images/default-avatar.svg';
+                            $authorName = htmlspecialchars($resource['author_name'] ?? '');
+                            ?>
+                            <img src="<?= htmlspecialchars($profileImage) ?>"
+                                 class="rounded-circle" 
+                                 width="40" 
+                                 height="40" 
+                                 alt="<?= $authorName ?>"
+                                 style="object-fit: cover; background-color: #f8f9fa; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <a href="/profile/<?= htmlspecialchars($resource['user_id']) ?>" class="text-decoration-none">
                                 <?= htmlspecialchars($resource['author_name'] ?? '-') ?>
                             </a>
