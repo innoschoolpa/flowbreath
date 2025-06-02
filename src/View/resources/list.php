@@ -214,6 +214,8 @@ input[type="text"]::placeholder {
     background-color: var(--card-bg) !important;
     color: var(--text-color) !important;
 }
+
+img.rounded-circle { font-size: 0; color: transparent; }
 </style>
 
 <!-- Hero Section -->
