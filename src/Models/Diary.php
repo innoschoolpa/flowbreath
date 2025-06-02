@@ -249,6 +249,14 @@ class Diary {
         }
     }
 
+    public function getLikeCount($diaryId) {
+        $sql = "SELECT COUNT(*) as count FROM diary_likes WHERE diary_id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$diaryId]);
+        $result = $stmt->fetch();
+        return (int)$result['count'];
+    }
+
     public function addComment($data) {
         try {
             // 트랜잭션 시작

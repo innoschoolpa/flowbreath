@@ -177,7 +177,11 @@ class DiaryController extends Controller {
         $result = $this->diaryModel->toggleLike($id, $this->auth->id());
 
         if ($result !== null) {
-            return json_response(['success' => true, 'liked' => $result]);
+            return json_response([
+                'success' => true,
+                'liked' => $result,
+                'like_count' => $this->diaryModel->getLikeCount($id)
+            ]);
         }
 
         return json_response(['error' => 'Failed to toggle like'], 500);
