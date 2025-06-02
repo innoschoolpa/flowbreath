@@ -56,7 +56,7 @@
                     <?php endif; ?>
 
                     <div class="d-flex align-items-center mb-4">
-                        <button class="btn btn-link text-muted me-3" onclick="toggleLike(<?= $diary['id'] ?>)">
+                        <button class="btn btn-link text-muted me-3" onclick="toggleLike(<?= $diary['id'] ?>, event)">
                             <i class="<?= $diary['is_liked'] ? 'fas' : 'far' ?> fa-heart"></i>
                             <span class="like-count"><?= $diary['like_count'] ?></span>
                         </button>
@@ -117,33 +117,32 @@
 </div>
 
 <script>
-function toggleLike(diaryId) {
+function toggleLike(diaryId, event) {
     fetch(`/diary/${diaryId}/like`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            const likeButton = event.currentTarget;
-            const likeCount = likeButton.querySelector('.like-count');
-            const icon = likeButton.querySelector('i');
+            const icon = event.currentTarget.querySelector('i');
+            const countElement = event.currentTarget.querySelector('.like-count');
             
             // 서버 응답에 따라 UI 업데이트
             if (data.liked) {
                 icon.classList.replace('far', 'fas');
-                likeCount.textContent = parseInt(likeCount.textContent) + 1;
             } else {
                 icon.classList.replace('fas', 'far');
-                likeCount.textContent = parseInt(likeCount.textContent) - 1;
             }
+            
+            // 서버에서 받은 좋아요 수로 업데이트
+            countElement.textContent = data.like_count;
         }
     })
-    .catch(error => {
-        console.error('Error:', error);
-    });
+    .catch(error => console.error('Error:', error));
 }
 
 function deleteDiary(diaryId) {
