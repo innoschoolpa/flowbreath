@@ -310,7 +310,8 @@ class Resource extends Model {
             $sql = "SELECT r.*, rt.language_code as translation_language_code, {$select[0]}, {$select[1]}, {$select[2]},
                     GROUP_CONCAT(DISTINCT t.name) as tags,
                     GROUP_CONCAT(DISTINCT t.id) as tag_ids,
-                    u.name as author_name
+                    u.name as author_name,
+                    u.profile_image as profile_image
                 FROM resources r
                 {$select[3]}
                 LEFT JOIN resource_tags rtag ON r.id = rtag.resource_id
