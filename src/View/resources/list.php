@@ -215,7 +215,7 @@ input[type="text"]::placeholder {
     color: var(--text-color) !important;
 }
 
-img.rounded-circle { font-size: 0; color: transparent; }
+img.rounded-circle { font-size: 0; color: transparent; object-fit: cover; width: 40px; height: 40px; }
 </style>
 
 <!-- Hero Section -->
