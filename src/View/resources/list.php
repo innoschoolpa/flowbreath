@@ -308,14 +308,16 @@ input[type="text"]::placeholder {
                 <a href="/resources/tag/<?= urlencode($tagName) ?>" class="tag-badge">#<?= htmlspecialchars($tagName) ?></a>
               <?php endforeach; ?>
             </div>
-            <div class="mt-auto d-flex justify-content-between align-items-center" style="color:#94a3b8; font-size:0.95em;">
-              <div class="d-flex align-items-center">
+            <div class="mt-auto">
+              <div class="d-flex align-items-center mb-2">
                 <img src="<?= $resource['profile_image'] ?? '/assets/images/default-avatar.png' ?>" 
-                     class="rounded-circle me-2" width="24" height="24" 
+                     class="rounded-circle me-2" width="40" height="40" 
                      alt="<?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?>">
-                <span><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></span>
+                <div>
+                  <div class="fw-bold"><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></div>
+                  <div class="text-muted small"><?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?></div>
+                </div>
               </div>
-              <span><i class="fas fa-calendar me-1"></i><?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?></span>
             </div>
           </div>
         </div>
