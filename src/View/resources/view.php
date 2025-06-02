@@ -466,11 +466,6 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                         <?php endif; ?>
                     </div>
                 </div>
-                <!-- 조회수/좋아요 표시 -->
-                <div class="px-4 pt-3 pb-1 d-flex gap-4 align-items-center" style="font-size:1.08em; color:#cbd5e1;">
-                    <span><i class="fas fa-eye text-primary me-1"></i> <?= number_format($resource['view_count'] ?? 0) ?> 조회</span>
-                    <span><i class="fas fa-heart text-danger me-1"></i> <?= number_format($resource['like_count'] ?? 0) ?> 좋아요</span>
-                </div>
                 <div class="card-body">
                     <?php if (!empty($resource['content'])): ?>
                         <?php
@@ -564,17 +559,17 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                         </ul>
                     </div>
 
-                    <!-- 조회수/좋아요 표시 (하단으로 이동) -->
                     <div class="px-4 pt-2 pb-2 d-flex gap-4 align-items-center" style="font-size:1.08em; color:#cbd5e1;">
                         <span><i class="fas fa-eye text-primary me-1"></i> <?= number_format($resource['view_count'] ?? 0) ?> 조회</span>
-                        <span id="like-count"><i class="fas fa-heart text-danger me-1"></i> <span id="like-count-num"><?= number_format($resource['like_count'] ?? 0) ?></span> 좋아요</span>
-                        <?php if (isset($_SESSION['user_id'])): ?>
-                        <button id="like-btn" class="btn btn-outline-danger btn-sm ms-2" style="font-size:1.1em; border-radius:2em; padding:0.3em 1.1em;"
-                            data-liked="<?= $resource['is_liked_by_user'] ? '1' : '0' ?>">
-                            <i class="<?= $resource['is_liked_by_user'] ? 'fas' : 'far' ?> fa-heart me-1"></i>
-                            <span><?= $resource['is_liked_by_user'] ? ($lang === 'en' ? 'Liked' : '좋아요 취소') : ($lang === 'en' ? 'Like' : '좋아요') ?></span>
-                        </button>
-                        <?php endif; ?>
+                        <span id="like-count" class="d-flex align-items-center gap-2">
+                            <i class="fas fa-heart text-danger me-1"></i>
+                            <span id="like-count-num"><?= number_format($resource['like_count'] ?? 0) ?></span>
+                            <?php if (isset($_SESSION['user_id'])): ?>
+                            <i id="like-btn" class="<?= $resource['is_liked_by_user'] ? 'fas' : 'far' ?> fa-heart text-danger" 
+                               style="cursor: pointer; font-size: 1.2em;"
+                               data-liked="<?= $resource['is_liked_by_user'] ? '1' : '0' ?>"></i>
+                            <?php endif; ?>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -1064,7 +1059,7 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
         if (likeBtn) {
             likeBtn.addEventListener('click', function() {
                 const liked = likeBtn.getAttribute('data-liked') === '1';
-                likeBtn.disabled = true;
+                likeBtn.style.pointerEvents = 'none';
                 fetch(window.location.pathname + '/like', {
                     method: 'POST',
                     headers: {
@@ -1077,14 +1072,13 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                     if (data.success) {
                         document.getElementById('like-count-num').textContent = data.like_count.toLocaleString();
                         likeBtn.setAttribute('data-liked', data.liked ? '1' : '0');
-                        likeBtn.querySelector('i').className = (data.liked ? 'fas' : 'far') + ' fa-heart me-1';
-                        likeBtn.querySelector('span').textContent = data.liked ? '<?= $lang === 'en' ? 'Liked' : '좋아요 취소' ?>' : '<?= $lang === 'en' ? 'Like' : '좋아요' ?>';
+                        likeBtn.className = (data.liked ? 'fas' : 'far') + ' fa-heart text-danger';
                     } else {
                         alert(data.error || '좋아요 처리 중 오류가 발생했습니다.');
                     }
                 })
                 .catch(() => alert('좋아요 처리 중 오류가 발생했습니다.'))
-                .finally(() => { likeBtn.disabled = false; });
+                .finally(() => { likeBtn.style.pointerEvents = 'auto'; });
             });
         }
 
