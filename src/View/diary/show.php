@@ -118,11 +118,13 @@
 
 <script>
 function toggleLike(diaryId, event) {
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+    
     fetch(`/diary/${diaryId}/like`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-TOKEN': csrfToken
         }
     })
     .then(response => response.json())
@@ -140,6 +142,8 @@ function toggleLike(diaryId, event) {
             
             // 서버에서 받은 좋아요 수로 업데이트
             countElement.textContent = data.like_count;
+        } else {
+            console.error('Error:', data.error);
         }
     })
     .catch(error => console.error('Error:', error));
