@@ -562,19 +562,20 @@ $title = $title ?? ($lang === 'en' ? 'Resource Details' : '리소스 상세');
                     <div class="px-4 pt-2 pb-2 d-flex gap-4 align-items-center" style="font-size:1.08em; color:#cbd5e1;">
                         <div class="d-flex align-items-center gap-2">
                             <img src="<?= $resource['profile_image'] ?? '/assets/images/default-avatar.png' ?>"
-                                 class="rounded-circle" width="32" height="32" alt="프로필">
+                                 class="rounded-circle" width="32" height="32" alt="프로필"
+                                 style="object-fit: cover;">
                             <a href="/profile/<?= htmlspecialchars($resource['user_id']) ?>" class="text-decoration-none">
                                 <?= htmlspecialchars($resource['author_name'] ?? '-') ?>
                             </a>
                         </div>
                         <span><i class="fas fa-eye text-primary me-1"></i> <?= number_format($resource['view_count'] ?? 0) ?> 조회</span>
                         <span id="like-count" class="d-flex align-items-center gap-2">
-                            <span id="like-count-num"><?= number_format($resource['like_count'] ?? 0) ?></span>
                             <?php if (isset($_SESSION['user_id'])): ?>
                             <i id="like-btn" class="<?= $resource['is_liked_by_user'] ? 'fas' : 'far' ?> fa-heart text-danger" 
                                style="cursor: pointer; font-size: 1.2em;"
                                data-liked="<?= $resource['is_liked_by_user'] ? '1' : '0' ?>"></i>
                             <?php endif; ?>
+                            <span id="like-count-num"><?= number_format($resource['like_count'] ?? 0) ?></span>
                         </span>
                     </div>
                 </div>
