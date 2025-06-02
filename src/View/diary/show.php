@@ -131,7 +131,8 @@ function toggleLike(diaryId) {
             const likeCount = likeButton.querySelector('.like-count');
             const icon = likeButton.querySelector('i');
             
-            if (icon.classList.contains('far')) {
+            // 서버 응답에 따라 UI 업데이트
+            if (data.liked) {
                 icon.classList.replace('far', 'fas');
                 likeCount.textContent = parseInt(likeCount.textContent) + 1;
             } else {
@@ -139,6 +140,9 @@ function toggleLike(diaryId) {
                 likeCount.textContent = parseInt(likeCount.textContent) - 1;
             }
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
     });
 }
 
