@@ -312,7 +312,7 @@ input[type="text"]::placeholder {
               <div class="d-flex align-items-center mb-2">
                 <img src="<?= $resource['profile_image'] ?? '/assets/images/default-avatar.png' ?>" 
                      class="rounded-circle me-2" width="40" height="40" 
-                     alt="<?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?>">
+                     alt="프로필 이미지">
                 <div>
                   <div class="fw-bold"><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></div>
                   <div class="text-muted small"><?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?></div>
