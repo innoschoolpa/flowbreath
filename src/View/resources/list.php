@@ -215,7 +215,7 @@ input[type="text"]::placeholder {
     color: var(--text-color) !important;
 }
 
-img.rounded-circle { font-size: 0; color: transparent; object-fit: cover; width: 40px; height: 40px; }
+img.rounded-circle { font-size: 0; color: transparent; object-fit: cover; width: 80px; height: 80px; }
 </style>
 
 <!-- Hero Section -->
@@ -311,12 +311,14 @@ img.rounded-circle { font-size: 0; color: transparent; object-fit: cover; width:
               <?php endforeach; ?>
             </div>
             <div class="mt-auto">
-              <div class="d-flex align-items-center mb-2">
+              <div class="d-flex align-items-center mb-2" style="min-height: 80px;">
                 <img src="<?= $resource['profile_image'] ?? '/assets/images/default-avatar.png' ?>"
-                     class="rounded-circle me-2" width="40" height="40" alt="프로필">
+                     class="rounded-circle me-3" width="80" height="80" alt="프로필">
                 <div>
-                  <div class="fw-bold"><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></div>
-                  <div class="text-muted small"><?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?></div>
+                  <div class="fw-bold" style="font-size:1.25rem;"><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></div>
+                  <div class="text-muted small" style="font-size:1rem; margin-top:0.5rem;">
+                    <?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?>
+                  </div>
                 </div>
               </div>
             </div>
