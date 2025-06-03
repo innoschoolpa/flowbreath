@@ -56,6 +56,10 @@ class DiaryController extends BaseController {
         }
 
         try {
+            error_log("Raw POST data: " . file_get_contents('php://input'));
+            error_log("POST data: " . print_r($_POST, true));
+            error_log("REQUEST data: " . print_r($_REQUEST, true));
+
             $data = [
                 'user_id' => $_SESSION['user_id'],
                 'title' => $_POST['title'] ?? '',
@@ -64,14 +68,16 @@ class DiaryController extends BaseController {
                 'is_public' => isset($_POST['is_public']) ? 1 : 0
             ];
 
-            error_log("Creating diary with data: " . print_r($data, true));
+            error_log("Processed diary data: " . print_r($data, true));
 
             // Validate required fields
             if (empty($data['title'])) {
+                error_log("Title validation failed - title is empty");
                 return $this->jsonResponse(['success' => false, 'error' => '제목을 입력해주세요.'], 400);
             }
 
             if (empty($data['content'])) {
+                error_log("Content validation failed - content is empty");
                 return $this->jsonResponse(['success' => false, 'error' => '내용을 입력해주세요.'], 400);
             }
 

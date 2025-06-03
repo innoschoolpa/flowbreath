@@ -204,8 +204,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.getElementById('diaryForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    
+    // Get form data
     const formData = new FormData(this);
-    formData.append('content', tinymce.get('content').getContent());
+    
+    // Get TinyMCE content
+    const content = tinymce.get('content').getContent();
+    formData.set('content', content);
+    
+    // Log form data for debugging
+    console.log('Form data before submission:');
+    for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+    }
     
     fetch(this.action, {
         method: '<?= $isEdit ? 'PUT' : 'POST' ?>',
