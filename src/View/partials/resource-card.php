@@ -8,6 +8,7 @@ if (!empty($resource['link'])) {
 // null 값 처리
 $title = $resource['title'] ?? '';
 $authorName = $resource['author_name'] ?? '익명';
+$authorImage = $resource['author_image'] ?? '/assets/images/default-avatar.png';
 $createdAt = $resource['created_at'] ?? '';
 $content = $resource['content'] ?? $resource['description'] ?? '';
 $type = $resource['type'] ?? '';
@@ -51,10 +52,16 @@ $id = $resource['id'] ?? '';
             
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <span class="badge bg-primary"><?= htmlspecialchars($type) ?></span>
-                <p class="resource-meta mb-0">
-                    <?= htmlspecialchars($authorName) ?> · 
-                    <?= $createdAt ? date('Y-m-d', strtotime($createdAt)) : '' ?>
-                </p>
+                <div class="resource-meta d-flex align-items-center">
+                    <img src="<?= htmlspecialchars($authorImage) ?>" 
+                         alt="<?= htmlspecialchars($authorName) ?>의 프로필" 
+                         class="rounded-circle me-2"
+                         style="width: 24px; height: 24px; object-fit: cover;">
+                    <span>
+                        <?= htmlspecialchars($authorName) ?> · 
+                        <?= $createdAt ? date('Y-m-d', strtotime($createdAt)) : '' ?>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
