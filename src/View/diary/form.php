@@ -222,10 +222,23 @@ document.getElementById('diaryForm').addEventListener('submit', function(e) {
     const headers = new Headers();
     headers.append('X-CSRF-TOKEN', '<?= $_SESSION['csrf_token'] ?>');
     
-    fetch(this.action, {
-        method: '<?= $isEdit ? 'PUT' : 'POST' ?>',
-        headers: headers,
-        body: formData
+    // For PUT requests, we need to send the data as application/x-www-form-urlencoded
+    const method = '<?= $isEdit ? 'PUT' : 'POST' ?>';
+    const url = this.action;
+    
+    // Convert FormData to URLSearchParams for proper encoding
+    const params = new URLSearchParams();
+    for (let pair of formData.entries()) {
+        params.append(pair[0], pair[1]);
+    }
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'X-CSRF-TOKEN': '<?= $_SESSION['csrf_token'] ?>',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: params.toString()
     })
     .then(response => response.json())
     .then(data => {
