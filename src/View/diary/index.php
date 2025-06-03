@@ -103,19 +103,19 @@
                     <h5 class="card-title"><?= __('diary.search') ?></h5>
                     <form action="/diary/search" method="GET">
                         <div class="mb-3">
-                            <input type="text" class="form-control" name="q" 
-                                   placeholder="<?= __('diary.search_placeholder') ?>">
+                            <input type="text" class="form-control" name="query" 
+                                   placeholder="<?= __('diary.search_placeholder') ?>" value="<?= htmlspecialchars($query ?? '') ?>">
                         </div>
                         <div class="mb-3">
-                            <input type="text" class="form-control" name="tags" 
-                                   placeholder="<?= __('diary.tags_placeholder') ?>">
+                            <input type="text" class="form-control" name="tag" 
+                                   placeholder="<?= __('diary.tags_placeholder') ?>" value="<?= htmlspecialchars($tag ?? '') ?>">
                         </div>
                         <div class="mb-3">
                             <label class="form-label"><?= __('diary.date_range') ?></label>
                             <div class="input-group">
-                                <input type="date" class="form-control" name="start_date">
+                                <input type="date" class="form-control" name="start_date" value="<?= htmlspecialchars($startDate ?? '') ?>">
                                 <span class="input-group-text">~</span>
-                                <input type="date" class="form-control" name="end_date">
+                                <input type="date" class="form-control" name="end_date" value="<?= htmlspecialchars($endDate ?? '') ?>">
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary w-100">
