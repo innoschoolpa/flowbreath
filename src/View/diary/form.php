@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../helpers/lang.php';
 $apiKeys = require __DIR__ . '/../../Config/api_keys.php';
-$tinymceApiKey = $apiKeys['tinymce']['api_key'];
+$tinymceApiKey = $apiKeys['tinymce']['api_key'] ?? '';
 
 // Set default values for new diary
 $diary = $diary ?? [
@@ -16,6 +16,9 @@ $isEdit = isset($diary['id']);
 $formAction = $isEdit ? "/diary/{$diary['id']}" : '/diary';
 $pageTitle = $isEdit ? __('diary.edit') : __('diary.create');
 $cancelUrl = $isEdit ? "/diary/{$diary['id']}" : '/diary';
+
+// Prepare content for TinyMCE
+$content = htmlspecialchars_decode($diary['content'] ?? '');
 ?>
 
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
@@ -95,7 +98,7 @@ $cancelUrl = $isEdit ? "/diary/{$diary['id']}" : '/diary';
 
                         <div class="mb-3">
                             <label for="content" class="form-label"><?= __('diary.content') ?></label>
-                            <textarea id="content" name="content"><?= htmlspecialchars($diary['content']) ?></textarea>
+                            <textarea id="content" name="content"><?= $content ?></textarea>
                         </div>
 
                         <div class="mb-3">
@@ -132,46 +135,70 @@ $cancelUrl = $isEdit ? "/diary/{$diary['id']}" : '/diary';
 <!-- TinyMCE CDN -->
 <script src="https://cdn.tiny.cloud/1/<?= $tinymceApiKey ?>/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
-tinymce.init({
-    selector: '#content',
-    height: 500,
-    plugins: [
-        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-        'insertdatetime', 'media', 'table', 'help', 'wordcount'
-    ],
-    toolbar: 'undo redo | blocks | ' +
-        'bold italic backcolor | alignleft aligncenter ' +
-        'alignright alignjustify | bullist numlist outdent indent | ' +
-        'removeformat | help',
-    content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; }',
-    skin: 'oxide',
-    menubar: false,
-    branding: false,
-    promotion: false,
-    images_upload_handler: function (blobInfo, progress) {
-        return new Promise((resolve, reject) => {
-            const formData = new FormData();
-            formData.append('file', blobInfo.blob(), blobInfo.filename());
-            formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?>');
-
-            fetch('/api/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    resolve(result.url);
-                } else {
-                    reject(result.error || 'Upload failed');
-                }
-            })
-            .catch(error => {
-                reject('Upload failed: ' + error);
-            });
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof tinymce === 'undefined') {
+        console.error('TinyMCE failed to load');
+        return;
     }
+
+    const editorConfig = {
+        selector: '#content',
+        height: 500,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'help', 'wordcount'
+        ],
+        toolbar: 'undo redo | blocks | ' +
+            'bold italic backcolor | alignleft aligncenter ' +
+            'alignright alignjustify | bullist numlist outdent indent | ' +
+            'removeformat | help',
+        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; }',
+        skin: 'oxide',
+        menubar: false,
+        branding: false,
+        promotion: false,
+        setup: function(editor) {
+            editor.on('init', function() {
+                console.log('TinyMCE initialized successfully');
+                // Set initial content if editing
+                if (<?= $isEdit ? 'true' : 'false' ?>) {
+                    editor.setContent(document.getElementById('content').value);
+                }
+            });
+            editor.on('error', function(e) {
+                console.error('TinyMCE error:', e);
+            });
+        },
+        images_upload_handler: function (blobInfo, progress) {
+            return new Promise((resolve, reject) => {
+                const formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+                formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?>');
+
+                fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        resolve(result.url);
+                    } else {
+                        reject(result.error || 'Upload failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Upload error:', error);
+                    reject('Upload failed: ' + error);
+                });
+            });
+        }
+    };
+
+    tinymce.init(editorConfig).catch(function(error) {
+        console.error('TinyMCE initialization error:', error);
+    });
 });
 
 document.getElementById('diaryForm').addEventListener('submit', function(e) {
