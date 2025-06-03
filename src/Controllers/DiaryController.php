@@ -38,7 +38,7 @@ class DiaryController extends Controller {
             return redirect('/login');
         }
 
-        return $this->view('diary/create');
+        return $this->view('diary/form');
     }
 
     public function store() {
@@ -98,7 +98,7 @@ class DiaryController extends Controller {
             return $this->view('errors/403');
         }
 
-        return $this->view('diary/edit', ['diary' => $diary]);
+        return $this->view('diary/form', ['diary' => $diary]);
     }
 
     public function update($id) {
