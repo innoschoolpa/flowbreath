@@ -218,8 +218,13 @@ document.getElementById('diaryForm').addEventListener('submit', function(e) {
         console.log(pair[0] + ': ' + pair[1]);
     }
     
+    // Add CSRF token to headers
+    const headers = new Headers();
+    headers.append('X-CSRF-TOKEN', '<?= $_SESSION['csrf_token'] ?>');
+    
     fetch(this.action, {
         method: '<?= $isEdit ? 'PUT' : 'POST' ?>',
+        headers: headers,
         body: formData
     })
     .then(response => response.json())
