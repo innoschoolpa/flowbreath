@@ -3,7 +3,7 @@
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-10">
-            <div class="mb-3">
+            <div class="mb-3 text-end">
                 <a href="/diary" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left"></i> 목록으로
                 </a>
