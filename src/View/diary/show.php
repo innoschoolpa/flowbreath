@@ -3,6 +3,11 @@
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-10">
+            <div class="mb-3">
+                <a href="/diary" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 목록으로
+                </a>
+            </div>
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-4">
