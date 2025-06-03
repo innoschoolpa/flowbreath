@@ -59,7 +59,7 @@ body {
 }
 
 .center-card {
-    max-width: 540px;
+    max-width: 900px;
     margin: 3rem auto 0 auto;
     background: #23263a;
     border-radius: 1.25rem;
@@ -127,6 +127,10 @@ body {
     background: #181c2f !important;
     color: #fff !important;
 }
+.tox .tox-edit-area iframe {
+    background: #181c2f !important;
+    color: #fff !important;
+}
 .tox .tox-toolbar__primary {
     background: #23263a !important;
     border-bottom: 1px solid #23263a !important;
@@ -141,6 +145,9 @@ body {
     background: #23263a !important;
     color: #b0b8c1 !important;
     border-top: 1px solid #23263a !important;
+}
+.tox .tox-edit-area__iframe {
+    background: #181c2f !important;
 }
 </style>
 
@@ -210,70 +217,30 @@ body {
 <script src="https://cdn.tiny.cloud/1/<?= $tinymceApiKey ?>/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    if (typeof tinymce === 'undefined') {
-        console.error('TinyMCE failed to load');
-        return;
-    }
-
-    const editorConfig = {
-        selector: '#content',
-        height: 500,
-        plugins: [
-            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-            'insertdatetime', 'media', 'table', 'help', 'wordcount'
-        ],
-        toolbar: 'undo redo | blocks | ' +
-            'bold italic backcolor | alignleft aligncenter ' +
-            'alignright alignjustify | bullist numlist outdent indent | ' +
-            'removeformat | help',
-        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; }',
-        skin: 'oxide',
-        menubar: false,
-        branding: false,
-        promotion: false,
-        setup: function(editor) {
-            editor.on('init', function() {
-                console.log('TinyMCE initialized successfully');
-                // Set initial content
-                const content = document.getElementById('content').value;
-                if (content) {
-                    editor.setContent(content);
-                }
-            });
-            editor.on('error', function(e) {
-                console.error('TinyMCE error:', e);
-            });
-        },
-        images_upload_handler: function (blobInfo, progress) {
-            return new Promise((resolve, reject) => {
-                const formData = new FormData();
-                formData.append('file', blobInfo.blob(), blobInfo.filename());
-                formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?>');
-
-                fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        resolve(result.url);
-                    } else {
-                        reject(result.error || 'Upload failed');
-                    }
-                })
-                .catch(error => {
-                    console.error('Upload error:', error);
-                    reject('Upload failed: ' + error);
+    if (typeof tinymce !== 'undefined') {
+        tinymce.init({
+            selector: '#content',
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+            skin: 'oxide-dark',
+            content_css: false,
+            height: 400,
+            menubar: false,
+            language: 'ko_KR',
+            setup: function(editor) {
+                editor.on('init', function() {
+                    // 다크모드 본문 스타일 적용
+                    editor.getDoc().body.style.backgroundColor = '#181c2f';
+                    editor.getDoc().body.style.color = '#fff';
+                    editor.getDoc().body.style.fontFamily = 'inherit';
                 });
-            });
-        }
-    };
-
-    tinymce.init(editorConfig).catch(function(error) {
-        console.error('TinyMCE initialization error:', error);
-    });
+            },
+            content_style: `body { background-color: #181c2f !important; color: #fff !important; font-family: inherit; }
+                ::placeholder { color: #b0b8c1 !important; opacity: 1; }
+                *::selection { background: #4fc3f7 !important; color: #181c2f !important; }
+            `
+        });
+    }
 });
 
 document.getElementById('diaryForm').addEventListener('submit', function(e) {
