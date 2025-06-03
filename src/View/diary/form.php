@@ -21,7 +21,57 @@ $cancelUrl = $isEdit ? "/diary/{$diary['id']}" : '/diary';
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
 <style>
-// ... existing code ...
+.card {
+    background-color: #fff !important;
+    border: 1px solid rgba(0, 0, 0, 0.125) !important;
+    border-radius: 0.25rem !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.card-body {
+    padding: 1.25rem !important;
+}
+
+.form-control {
+    background-color: #fff !important;
+    border: 1px solid #ced4da !important;
+    color: #212529 !important;
+}
+
+.form-control:focus {
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+.btn-primary {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+.btn-outline-secondary {
+    color: #6c757d !important;
+    border-color: #6c757d !important;
+}
+
+.btn-outline-secondary:hover {
+    color: #fff !important;
+    background-color: #6c757d !important;
+}
+
+.tox-tinymce {
+    border: 1px solid #ced4da !important;
+    border-radius: 0.25rem !important;
+}
+
+.form-check-input:checked {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+.form-text {
+    color: #6c757d !important;
+}
 </style>
 
 <div class="container mt-4">
@@ -82,7 +132,47 @@ $cancelUrl = $isEdit ? "/diary/{$diary['id']}" : '/diary';
 <!-- TinyMCE CDN -->
 <script src="https://cdn.tiny.cloud/1/<?= $tinymceApiKey ?>/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
-// ... existing TinyMCE configuration ...
+tinymce.init({
+    selector: '#content',
+    height: 500,
+    plugins: [
+        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+        'insertdatetime', 'media', 'table', 'help', 'wordcount'
+    ],
+    toolbar: 'undo redo | blocks | ' +
+        'bold italic backcolor | alignleft aligncenter ' +
+        'alignright alignjustify | bullist numlist outdent indent | ' +
+        'removeformat | help',
+    content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; }',
+    skin: 'oxide',
+    menubar: false,
+    branding: false,
+    promotion: false,
+    images_upload_handler: function (blobInfo, progress) {
+        return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append('file', blobInfo.blob(), blobInfo.filename());
+            formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?>');
+
+            fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    resolve(result.url);
+                } else {
+                    reject(result.error || 'Upload failed');
+                }
+            })
+            .catch(error => {
+                reject('Upload failed: ' + error);
+            });
+        });
+    }
+});
 
 document.getElementById('diaryForm').addEventListener('submit', function(e) {
     e.preventDefault();
