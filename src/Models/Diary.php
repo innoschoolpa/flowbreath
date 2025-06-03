@@ -112,9 +112,9 @@ class Diary {
         
         if ($diary) {
             $diary['is_liked'] = (bool)$diary['is_liked'];
-            // Convert tags string to array
-            $diary['tags'] = !empty($diary['tags']) ? array_map('trim', explode(',', $diary['tags'])) : [];
-            // Debug information
+            // 태그는 원본 문자열 유지
+            $diary['tags'] = $diary['tags'] ?? '';
+            // 디버그 정보
             error_log("Diary::find - Diary data: " . print_r($diary, true));
         }
         

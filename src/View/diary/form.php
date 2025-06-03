@@ -18,7 +18,7 @@ $pageTitle = $isEdit ? __('diary.edit') : __('diary.create');
 $cancelUrl = $isEdit ? "/diary/{$diary['id']}" : '/diary';
 
 // Prepare content for TinyMCE
-$content = htmlspecialchars_decode($diary['content'] ?? '');
+$content = $diary['content'] ?? '';
 ?>
 
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
@@ -161,9 +161,10 @@ document.addEventListener('DOMContentLoaded', function() {
         setup: function(editor) {
             editor.on('init', function() {
                 console.log('TinyMCE initialized successfully');
-                // Set initial content if editing
-                if (<?= $isEdit ? 'true' : 'false' ?>) {
-                    editor.setContent(document.getElementById('content').value);
+                // Set initial content
+                const content = document.getElementById('content').value;
+                if (content) {
+                    editor.setContent(content);
                 }
             });
             editor.on('error', function(e) {
