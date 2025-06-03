@@ -135,12 +135,12 @@ class DiaryController extends BaseController {
             $diaryModel = new Diary();
             $diary = $diaryModel->find($id);
             if (!$diary) {
-                return $this->jsonResponse(['error' => __('diary.not_found')], 404);
+                return $this->jsonResponse(['error' => '일기를 찾을 수 없습니다.'], 404);
             }
 
             // Check authorization
             if ($diary['user_id'] !== $_SESSION['user_id']) {
-                return $this->jsonResponse(['error' => __('diary.unauthorized')], 403);
+                return $this->jsonResponse(['error' => '권한이 없습니다.'], 403);
             }
 
             // Get request data
@@ -152,7 +152,7 @@ class DiaryController extends BaseController {
             
             // Validate required fields
             if (empty($data['title'])) {
-                return $this->jsonResponse(['error' => __('diary.title_required')], 400);
+                return $this->jsonResponse(['error' => '제목을 입력해주세요.'], 400);
             }
 
             // Prepare update data
@@ -167,18 +167,18 @@ class DiaryController extends BaseController {
             // Update the diary
             $result = $diaryModel->update($id, $updateData);
             if (!$result) {
-                return $this->jsonResponse(['error' => __('diary.update_error')], 500);
+                return $this->jsonResponse(['error' => '일기 수정에 실패했습니다.'], 500);
             }
 
             return $this->jsonResponse([
                 'success' => true,
                 'id' => $id,
-                'message' => __('diary.update_success')
+                'message' => '일기가 수정되었습니다.'
             ]);
 
         } catch (\Exception $e) {
             error_log('Error in DiaryController::update: ' . $e->getMessage());
-            return $this->jsonResponse(['error' => __('diary.update_error')], 500);
+            return $this->jsonResponse(['error' => '일기 수정 중 오류가 발생했습니다.'], 500);
         }
     }
 
