@@ -15,7 +15,7 @@ class Resource
 
     public function getRecentPublic($limit = 10, $language = 'ko')
     {
-        $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.name as author_name,
+        $sql = "SELECT r.*, rt.title, rt.content, rt.description, u.name as author_name, u.profile_image,
                 GROUP_CONCAT(t.name) as tags
                 FROM resources r
                 INNER JOIN resource_translations rt ON r.id = rt.resource_id AND rt.language_code = ?

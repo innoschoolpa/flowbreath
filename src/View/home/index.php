@@ -90,60 +90,74 @@ load_view('layout/header', ['title' => $page_title ?? 'FlowBreath.io']);
         <?php foreach ($recentResources as $resource): ?>
         <div class="col-md-6 col-lg-4">
             <div class="card resource-card h-100 shadow-sm border-0">
-                <?php
-                $videoId = null;
-                $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
-                
-                // Check link field first
-                if (!empty($resource['link']) && preg_match($youtube_pattern, $resource['link'], $matches)) {
-                    $videoId = $matches[1];
-                }
-                
-                // If no video ID found in link, check content
-                if (!$videoId && !empty($resource['content'])) {
-                    if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
-                        if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
-                            $videoId = $matches[1];
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="<?= htmlspecialchars($resource['profile_image'] ?? '/assets/images/default-avatar.png') ?>" 
+                             alt="<?= htmlspecialchars($resource['author_name'] ?? 'Anonymous') ?>" 
+                             class="rounded-circle me-2" 
+                             style="width: 40px; height: 40px; object-fit: cover;">
+                        <div>
+                            <h5 class="card-title mb-0"><?= htmlspecialchars($resource['title']) ?></h5>
+                            <small class="text-muted">
+                                <?= htmlspecialchars($resource['author_name'] ?? 'Anonymous') ?> · 
+                                <?= date('Y-m-d', strtotime($resource['created_at'])) ?>
+                            </small>
+                        </div>
+                    </div>
+                    <?php
+                    $videoId = null;
+                    $youtube_pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/)|youtu\.be\/)([^"&?\/\s]{11})/';
+                    
+                    // Check link field first
+                    if (!empty($resource['link']) && preg_match($youtube_pattern, $resource['link'], $matches)) {
+                        $videoId = $matches[1];
+                    }
+                    
+                    // If no video ID found in link, check content
+                    if (!$videoId && !empty($resource['content'])) {
+                        if (preg_match('/https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/[\w\-?=&#;]+/', $resource['content'], $ytMatch)) {
+                            if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
+                                $videoId = $matches[1];
+                            }
                         }
                     }
-                }
-                ?>
-                <?php if ($videoId): ?>
-                    <div class="ratio ratio-16x9 mb-2" style="max-width:320px; max-height:180px; margin:auto;">
-                        <iframe 
-                            src="https://www.youtube.com/embed/<?= $videoId ?>?autoplay=0" 
-                            title="YouTube video player"
-                            frameborder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen
-                            style="width:100%; height:100%; min-height:120px;">
-                        </iframe>
-                    </div>
-                <?php endif; ?>
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title mb-2"><?php echo e($resource['title']); ?></h5>
-                    <?php if (!$videoId): ?>
-                        <div class="card-summary mb-2 flex-grow-1">
-                            <?php
-                            $content = $resource['content'] ?? '';
-                            if (empty($content)) {
-                                $content = $resource['summary'] ?? '';
-                            }
-                            if (is_html($content)) {
-                                echo $content;
-                            } else {
-                                echo markdown_to_html($content);
-                            }
-                            ?>
+                    ?>
+                    <?php if ($videoId): ?>
+                        <div class="ratio ratio-16x9 mb-2" style="max-width:320px; max-height:180px; margin:auto;">
+                            <iframe 
+                                src="https://www.youtube.com/embed/<?= $videoId ?>?autoplay=0" 
+                                title="YouTube video player"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen
+                                style="width:100%; height:100%; min-height:120px;">
+                            </iframe>
                         </div>
                     <?php endif; ?>
-                    <div class="mt-auto">
-                        <p class="card-text mb-1">
-                            <small class="text-muted">
-                                <?php echo date('Y-m-d', strtotime($resource['date_added'])); ?> 등록
-                            </small>
-                        </p>
-                        <a href="/resources/view/<?php echo $resource['resource_id']; ?>" class="btn btn-outline-primary btn-sm">상세보기</a>
+                    <div class="card-body d-flex flex-column">
+                        <?php if (!$videoId): ?>
+                            <div class="card-summary mb-2 flex-grow-1">
+                                <?php
+                                $content = $resource['content'] ?? '';
+                                if (empty($content)) {
+                                    $content = $resource['summary'] ?? '';
+                                }
+                                if (is_html($content)) {
+                                    echo $content;
+                                } else {
+                                    echo markdown_to_html($content);
+                                }
+                                ?>
+                            </div>
+                        <?php endif; ?>
+                        <div class="mt-auto">
+                            <p class="card-text mb-1">
+                                <small class="text-muted">
+                                    <?php echo date('Y-m-d', strtotime($resource['date_added'])); ?> 등록
+                                </small>
+                            </p>
+                            <a href="/resources/view/<?php echo $resource['resource_id']; ?>" class="btn btn-outline-primary btn-sm">상세보기</a>
+                        </div>
                     </div>
                 </div>
             </div>
