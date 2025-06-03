@@ -24,42 +24,78 @@ $tinymceApiKey = $apiKeys['tinymce']['api_key'];
 }
 
 body {
-    background-color: var(--background-color);
-    color: var(--text-color);
+    background-color: var(--background-color) !important;
+    color: var(--text-color) !important;
+}
+
+.card, .card-body, .card-title, .card-header, .card-footer {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
 }
 
 .form-control {
-    background-color: var(--input-bg);
-    border-color: var(--input-border);
-    color: var(--text-color);
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-color) !important;
 }
 
 .form-control:focus {
-    background-color: var(--input-focus-bg);
-    border-color: var(--input-focus-border);
-    color: var(--text-color);
-    box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25);
+    background-color: var(--input-focus-bg) !important;
+    border-color: var(--input-focus-border) !important;
+    color: var(--text-color) !important;
+    box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25) !important;
 }
 
 .form-control::placeholder {
-    color: var(--text-color);
-    opacity: 0.5;
+    color: var(--text-color) !important;
+    opacity: 0.5 !important;
 }
 
 .form-label {
-    color: var(--text-color);
+    color: var(--text-color) !important;
 }
 
 .btn-primary {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
-    color: var(--text-color);
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    color: var(--text-color) !important;
 }
 
 .btn-primary:hover {
-    background-color: #0284c7;
-    border-color: #0284c7;
-    color: var(--text-color);
+    background-color: #0284c7 !important;
+    border-color: #0284c7 !important;
+    color: var(--text-color) !important;
+}
+
+.btn-outline-secondary {
+    background-color: transparent !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--input-focus-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+.form-check-input {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+}
+
+.form-check-input:checked {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+.form-check-label {
+    color: var(--text-color) !important;
+}
+
+.form-text {
+    color: var(--secondary-color) !important;
 }
 
 /* TinyMCE 다크모드 스타일 */
@@ -123,7 +159,7 @@ body {
 
 .tox .tox-textfield {
     background-color: var(--input-bg) !important;
-    border-color: var(--border-color) !important;
+    border-color: var(--input-border) !important;
     color: var(--text-color) !important;
 }
 
@@ -158,30 +194,51 @@ body {
 </style>
 
 <div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <h2><?= __('diary.edit') ?></h2>
-            <form id="diaryForm" onsubmit="return submitDiary(event)">
-                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                <div class="mb-3">
-                    <label for="title" class="form-label"><?= __('diary.title') ?></label>
-                    <input type="text" class="form-control" id="title" name="title" value="<?= htmlspecialchars($diary['title']) ?>" required>
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title mb-4"><?= __('diary.edit') ?></h2>
+                    
+                    <form id="diaryForm" method="POST" action="/diary/<?= $diary['id'] ?>">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label"><?= __('diary.title') ?></label>
+                            <input type="text" class="form-control" id="title" name="title" value="<?= htmlspecialchars($diary['title']) ?>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="content" class="form-label"><?= __('diary.content') ?></label>
+                            <textarea id="content" name="content"><?= htmlspecialchars($diary['content']) ?></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tags" class="form-label"><?= __('diary.tags') ?></label>
+                            <input type="text" class="form-control" id="tags" name="tags" 
+                                   value="<?= htmlspecialchars($diary['tags']) ?>"
+                                   placeholder="<?= __('diary.tags_placeholder') ?>">
+                            <div class="form-text"><?= __('diary.tags_help') ?></div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_public" name="is_public" <?= $diary['is_public'] ? 'checked' : '' ?>>
+                            <label class="form-check-label" for="is_public">
+                                <?= __('diary.public') ?>
+                            </label>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="/diary/<?= $diary['id'] ?>" class="btn btn-outline-secondary">
+                                <?= __('common.cancel') ?>
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <?= __('diary.save') ?>
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div class="mb-3">
-                    <label for="content" class="form-label"><?= __('diary.content') ?></label>
-                    <textarea class="form-control" id="content" name="content" rows="10" required><?= htmlspecialchars($diary['content']) ?></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="tags" class="form-label"><?= __('diary.tags') ?></label>
-                    <input type="text" class="form-control" id="tags" name="tags" value="<?= htmlspecialchars($diary['tags']) ?>">
-                    <div class="form-text"><?= __('diary.tags_help') ?></div>
-                </div>
-                <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="is_public" name="is_public" value="1" <?= $diary['is_public'] ? 'checked' : '' ?>>
-                    <label class="form-check-label" for="is_public"><?= __('diary.is_public') ?></label>
-                </div>
-                <button type="submit" class="btn btn-primary"><?= __('diary.save') ?></button>
-            </form>
+            </div>
         </div>
     </div>
 </div>
@@ -327,35 +384,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function submitDiary(event) {
-    event.preventDefault();
+document.getElementById('diaryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    formData.append('content', tinymce.get('content').getContent());
     
-    const form = event.target;
-    const formData = new FormData(form);
-    
-    // TinyMCE 에디터의 내용을 폼 데이터에 추가
-    const content = tinymce.get('content').getContent();
-    formData.set('content', content);
-    
-    // 디버깅을 위한 로그
-    console.log('Content being sent:', content);
-    
-    fetch('/diary/<?= $diary['id'] ?>', {
+    fetch(this.action, {
         method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        },
         body: formData
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         if (data.success) {
-            window.location.href = '/diary/<?= $diary['id'] ?>';
+            window.location.href = '/diary/' + data.id;
         } else {
             alert(data.error || '<?= __('diary.save_error') ?>');
         }
@@ -364,9 +405,7 @@ function submitDiary(event) {
         console.error('Error:', error);
         alert('<?= __('diary.save_error') ?>');
     });
-    
-    return false;
-}
+});
 
 // 태그 입력 처리
 const tagsInput = document.getElementById('tags');
