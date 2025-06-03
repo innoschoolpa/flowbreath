@@ -14,6 +14,7 @@ use App\Controllers\ProfileController;
 use App\Controllers\BreathingController;
 use App\Controllers\UploadController;
 use App\Controllers\DiaryController;
+use App\Controllers\ApiController;
 
 return function (Router $router) {
     // 홈 라우트
@@ -231,7 +232,7 @@ return function (Router $router) {
     $router->post('/diary/comment', 'App\\Controllers\\DiaryController', 'storeComment');
     $router->get('/diary/{id}', 'App\\Controllers\\DiaryController', 'show');
     $router->get('/diary/{id}/edit', 'App\\Controllers\\DiaryController', 'edit');
-    $router->post('/diary/{id}', 'App\\Controllers\\DiaryController', 'update');
+    $router->put('/diary/{id}', 'App\\Controllers\\DiaryController', 'update');
     $router->delete('/diary/{id}', 'App\\Controllers\\DiaryController', 'delete');
     $router->post('/diary/{id}/like', 'App\\Controllers\\DiaryController', 'toggleLike');
     $router->delete('/diary/comment/{id}', 'App\\Controllers\\DiaryController', 'deleteComment');
