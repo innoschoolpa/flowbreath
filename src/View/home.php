@@ -388,7 +388,7 @@ h1, h2, h3, h4, h5, h6 {
                             <div class="mt-auto d-flex justify-content-between align-items-center" style="color:#94a3b8; font-size:0.95em;">
                                 <div class="d-flex align-items-center">
                                     <div class="profile-image-container me-2" style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; background-color: var(--card-bg);">
-                                        <img src="<?= $resource['author_image'] ?? '/assets/images/default-avatar.png' ?>" 
+                                        <img src="<?= $resource['profile_image'] ?? '/assets/images/default-avatar.png' ?>" 
                                              alt="<?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?>의 프로필" 
                                              style="width: 100%; height: 100%; object-fit: cover;">
                                     </div>
