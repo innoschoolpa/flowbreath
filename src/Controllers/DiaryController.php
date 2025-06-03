@@ -42,29 +42,42 @@ class DiaryController extends Controller {
     }
 
     public function store() {
-        if (!$this->auth->isLoggedIn()) {
-            return json_response(['error' => 'Unauthorized'], 401);
+        if (!isset($_SESSION['user_id'])) {
+            return $this->jsonResponse(['success' => false, 'error' => '로그인이 필요합니다.'], 401);
         }
 
-        $diaryData = [
-            'user_id' => $_SESSION['user_id'],
-            'title' => $_POST['title'] ?? '',
-            'content' => $_POST['content'] ?? '',
-            'tags' => $_POST['tags'] ?? '',
-            'is_public' => isset($_POST['is_public']) ? 1 : 0
-        ];
+        try {
+            $data = [
+                'user_id' => $_SESSION['user_id'],
+                'title' => $_POST['title'] ?? '',
+                'content' => $_POST['content'] ?? '',
+                'tags' => $_POST['tags'] ?? '',
+                'is_public' => isset($_POST['is_public']) ? 1 : 0
+            ];
 
-        // Add logging
-        error_log("Attempting to create diary with data: " . json_encode($diaryData, JSON_UNESCAPED_UNICODE));
+            error_log("Creating diary with data: " . print_r($data, true));
 
-        $diaryId = $this->diaryModel->create($diaryData);
-        
-        if ($diaryId) {
-            error_log("Diary created successfully with ID: " . $diaryId);
-            return json_response(['success' => true, 'id' => $diaryId]);
-        } else {
-            error_log("Failed to create diary. Data: " . json_encode($diaryData, JSON_UNESCAPED_UNICODE));
-            return json_response(['success' => false, 'error' => 'Failed to create diary'], 500);
+            // Validate required fields
+            if (empty($data['title'])) {
+                return $this->jsonResponse(['success' => false, 'error' => '제목을 입력해주세요.'], 400);
+            }
+
+            if (empty($data['content'])) {
+                return $this->jsonResponse(['success' => false, 'error' => '내용을 입력해주세요.'], 400);
+            }
+
+            $diaryId = $this->diaryModel->create($data);
+            
+            if ($diaryId) {
+                error_log("Diary created successfully with ID: " . $diaryId);
+                return $this->jsonResponse(['success' => true, 'id' => $diaryId]);
+            } else {
+                error_log("Failed to create diary");
+                return $this->jsonResponse(['success' => false, 'error' => '일기 저장에 실패했습니다.'], 500);
+            }
+        } catch (\Exception $e) {
+            error_log("Error creating diary: " . $e->getMessage());
+            return $this->jsonResponse(['success' => false, 'error' => '일기 저장 중 오류가 발생했습니다.'], 500);
         }
     }
 
@@ -102,64 +115,56 @@ class DiaryController extends Controller {
     }
 
     public function update($id) {
-        if (!$this->auth->isLoggedIn()) {
-            return json_response(['error' => 'Unauthorized'], 401);
+        if (!isset($_SESSION['user_id'])) {
+            return $this->jsonResponse(['success' => false, 'error' => '로그인이 필요합니다.'], 401);
         }
 
-        // 1. 기존 일기 데이터 조회
-        $diary = $this->diaryModel->find($id);
-        error_log("Updating diary ID: " . $id);
-        error_log("Current diary data: " . print_r($diary, true));
-        
-        if (!$diary) {
-            error_log("Diary not found with ID: " . $id);
-            return json_response(['error' => '일기를 찾을 수 없습니다.'], 404);
-        }
-
-        // 2. 권한 확인
-        if ($diary['user_id'] !== $this->auth->id()) {
-            error_log("Permission denied - User ID: " . $this->auth->id() . ", Diary User ID: " . $diary['user_id']);
-            return json_response(['error' => '수정 권한이 없습니다.'], 403);
-        }
-
-        // 3. 새로운 데이터 준비
-        $data = [
-            'title' => $_POST['title'] ?? '',
-            'content' => $_POST['content'] ?? '',
-            'tags' => $_POST['tags'] ?? '',
-            'is_public' => isset($_POST['is_public']) ? 1 : 0,
-            'updated_at' => date('Y-m-d H:i:s')
-        ];
-
-        error_log("New diary data: " . print_r($data, true));
-
-        // 4. 데이터 유효성 검사
-        if (empty($data['title'])) {
-            return json_response(['error' => '제목을 입력해주세요.'], 400);
-        }
-
-        if (empty($data['content'])) {
-            return json_response(['error' => '내용을 입력해주세요.'], 400);
-        }
-
-        // 5. 데이터베이스 업데이트
         try {
+            // Get existing diary
+            $diary = $this->diaryModel->find($id);
+            error_log("Current diary data: " . print_r($diary, true));
+
+            if (!$diary) {
+                error_log("Diary not found - ID: " . $id);
+                return $this->jsonResponse(['success' => false, 'error' => '일기를 찾을 수 없습니다.'], 404);
+            }
+
+            if ($diary['user_id'] != $_SESSION['user_id']) {
+                error_log("Permission denied - User ID: " . $_SESSION['user_id'] . ", Diary User ID: " . $diary['user_id']);
+                return $this->jsonResponse(['success' => false, 'error' => '수정 권한이 없습니다.'], 403);
+            }
+
+            $data = [
+                'title' => $_POST['title'] ?? '',
+                'content' => $_POST['content'] ?? '',
+                'tags' => $_POST['tags'] ?? '',
+                'is_public' => isset($_POST['is_public']) ? 1 : 0,
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+
+            error_log("Updating diary with data: " . print_r($data, true));
+
+            // Validate required fields
+            if (empty($data['title'])) {
+                return $this->jsonResponse(['success' => false, 'error' => '제목을 입력해주세요.'], 400);
+            }
+
+            if (empty($data['content'])) {
+                return $this->jsonResponse(['success' => false, 'error' => '내용을 입력해주세요.'], 400);
+            }
+
             $result = $this->diaryModel->update($id, $data);
             
             if ($result) {
                 error_log("Diary updated successfully - ID: " . $id);
-                return json_response([
-                    'success' => true,
-                    'message' => '일기가 수정되었습니다.',
-                    'id' => $id
-                ]);
+                return $this->jsonResponse(['success' => true, 'id' => $id]);
             } else {
                 error_log("Failed to update diary - ID: " . $id);
-                return json_response(['error' => '일기 수정에 실패했습니다.'], 500);
+                return $this->jsonResponse(['success' => false, 'error' => '일기 수정에 실패했습니다.'], 500);
             }
         } catch (\Exception $e) {
             error_log("Error updating diary: " . $e->getMessage());
-            return json_response(['error' => '일기 수정 중 오류가 발생했습니다.'], 500);
+            return $this->jsonResponse(['success' => false, 'error' => '일기 수정 중 오류가 발생했습니다.'], 500);
         }
     }
 
