@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../helpers/lang.php';
 $apiKeys = require __DIR__ . '/../../Config/api_keys.php';
 $tinymceApiKey = $apiKeys['tinymce']['api_key'];
 

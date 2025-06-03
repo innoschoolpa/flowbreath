@@ -117,5 +117,17 @@
     "footer": {
         "copyright": "© {year} FlowBreath.io. All rights reserved.",
         "description": "The Best Resource Platform for Breathing Health"
+    },
+    "diary": {
+        "create": "Write Diary",
+        "edit": "Edit Diary",
+        "title": "Title",
+        "content": "Content",
+        "tags": "Tags",
+        "tags_placeholder": "Enter tags separated by commas",
+        "tags_help": "Enter tags separated by commas (e.g., meditation, breathing, daily)",
+        "public": "Public",
+        "save": "Save",
+        "save_error": "An error occurred while saving"
     }
 }

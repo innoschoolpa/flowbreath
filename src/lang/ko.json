@@ -117,5 +117,17 @@
     "footer": {
         "copyright": "© {year} FlowBreath.io. All rights reserved.",
         "description": "호흡을 위한 최고의 자료 플랫폼"
+    },
+    "diary": {
+        "create": "일기 작성",
+        "edit": "일기 수정",
+        "title": "제목",
+        "content": "내용",
+        "tags": "태그",
+        "tags_placeholder": "태그를 쉼표로 구분하여 입력하세요",
+        "tags_help": "쉼표로 구분된 태그를 입력하세요 (예: 명상, 호흡, 일상)",
+        "public": "공개",
+        "save": "저장",
+        "save_error": "저장 중 오류가 발생했습니다"
     }
 }
