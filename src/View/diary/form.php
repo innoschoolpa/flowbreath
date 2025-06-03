@@ -24,166 +24,187 @@ $content = $diary['content'] ?? '';
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
 <style>
-/* 제목 영역 다크모드 */
-#title {
-    background-color: #23272b !important;
-    color: #f8f9fa !important;
-    border-color: #495057 !important;
+body {
+    background: #101522 !important;
+    min-height: 100vh;
 }
-#title:focus {
-    background-color: #23272b !important;
-    color: #f8f9fa !important;
-    border-color: #0d6efd !important;
-    box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25) !important;
+.navbar-custom {
+    background: #181c2f;
+    border-bottom: 1px solid #23263a;
+    padding: 0.75rem 0;
+}
+.navbar-custom .navbar-brand {
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+}
+.navbar-custom .nav-link, .navbar-custom .navbar-text {
+    color: #cfd8dc !important;
+    font-weight: 500;
+    margin-right: 1rem;
+}
+.navbar-custom .nav-link.active {
+    color: #4fc3f7 !important;
 }
 
-/* TinyMCE 다크모드 보강 */
+.footer-custom {
+    background: #181c2f;
+    color: #b0b8c1;
+    font-size: 0.95rem;
+    padding: 2rem 0 1rem 0;
+    text-align: center;
+    border-top: 1px solid #23263a;
+    margin-top: 3rem;
+}
+
+.center-card {
+    max-width: 540px;
+    margin: 3rem auto 0 auto;
+    background: #23263a;
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 32px 0 rgba(16,22,34,0.12);
+    border: none;
+}
+.center-card .card-body {
+    padding: 2.5rem 2rem;
+}
+
+.form-label {
+    color: #cfd8dc;
+    font-weight: 500;
+}
+.form-control, #title, #tags {
+    background: #181c2f !important;
+    color: #fff !important;
+    border: 1px solid #23263a !important;
+    border-radius: 0.5rem !important;
+}
+.form-control:focus, #title:focus, #tags:focus {
+    background: #23263a !important;
+    color: #fff !important;
+    border-color: #4fc3f7 !important;
+    box-shadow: 0 0 0 0.15rem rgba(79,195,247,0.15) !important;
+}
+.btn-primary {
+    background: linear-gradient(90deg,#4fc3f7 0,#1976d2 100%);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    padding: 0.6rem 2.2rem;
+    font-size: 1.1rem;
+}
+.btn-primary:hover {
+    background: linear-gradient(90deg,#1976d2 0,#4fc3f7 100%);
+}
+.btn-outline-secondary {
+    border-radius: 0.5rem;
+    color: #b0b8c1;
+    border: 1px solid #23263a;
+    background: transparent;
+}
+.btn-outline-secondary:hover {
+    background: #23263a;
+    color: #fff;
+}
+.form-check-input:checked {
+    background-color: #4fc3f7 !important;
+    border-color: #4fc3f7 !important;
+}
+.form-text {
+    color: #b0b8c1 !important;
+}
+.invalid-feedback {
+    color: #ff6b81;
+}
 .tox-tinymce {
-    background-color: #23272b !important;
-    border-color: #495057 !important;
-    border-radius: 0.25rem !important;
+    background: #181c2f !important;
+    border: 1px solid #23263a !important;
+    border-radius: 0.5rem !important;
 }
 .tox .tox-edit-area__iframe {
-    background-color: #23272b !important;
+    background: #181c2f !important;
+    color: #fff !important;
 }
 .tox .tox-toolbar__primary {
-    background-color: #23272b !important;
-    border-bottom: 1px solid #495057 !important;
-}
-.tox .tox-toolbar__group {
-    border-color: #495057 !important;
+    background: #23263a !important;
+    border-bottom: 1px solid #23263a !important;
 }
 .tox .tox-tbtn {
-    color: #f8f9fa !important;
+    color: #cfd8dc !important;
 }
 .tox .tox-tbtn:hover {
-    background-color: #495057 !important;
+    background: #181c2f !important;
 }
 .tox .tox-statusbar {
-    background-color: #23272b !important;
-    color: #adb5bd !important;
-    border-top: 1px solid #495057 !important;
-}
-.tox .tox-edit-area {
-    background-color: #23272b !important;
-}
-
-/* 태그 영역 다크모드 */
-#tags {
-    background-color: #23272b !important;
-    color: #f8f9fa !important;
-    border-color: #495057 !important;
-}
-#tags:focus {
-    background-color: #23272b !important;
-    color: #f8f9fa !important;
-    border-color: #0d6efd !important;
-    box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25) !important;
-}
-
-/* 기존 스타일 유지 */
-.card {
-    background-color: #fff !important;
-    border: 1px solid rgba(0, 0, 0, 0.125) !important;
-    border-radius: 0.25rem !important;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
-}
-
-.card-body {
-    padding: 1.25rem !important;
-}
-
-.form-control {
-    background-color: #fff !important;
-    border: 1px solid #ced4da !important;
-    color: #212529 !important;
-}
-
-.form-control:focus {
-    border-color: #86b7fe !important;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
-}
-
-.btn-primary {
-    background-color: #0d6efd !important;
-    border-color: #0d6efd !important;
-    color: #fff !important;
-}
-
-.btn-outline-secondary {
-    color: #6c757d !important;
-    border-color: #6c757d !important;
-}
-
-.btn-outline-secondary:hover {
-    color: #fff !important;
-    background-color: #6c757d !important;
-}
-
-.form-check-input:checked {
-    background-color: #0d6efd !important;
-    border-color: #0d6efd !important;
-}
-
-.form-text {
-    color: #6c757d !important;
+    background: #23263a !important;
+    color: #b0b8c1 !important;
+    border-top: 1px solid #23263a !important;
 }
 </style>
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card">
-                <div class="card-body">
-                    <h2 class="card-title mb-4"><?= $pageTitle ?></h2>
-                    
-                    <form id="diaryForm" method="POST" action="<?= $formAction ?>">
-                        <?php if ($isEdit): ?>
-                            <input type="hidden" name="_method" value="PUT">
-                        <?php endif; ?>
-                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                        
-                        <div class="mb-3">
-                            <label for="title" class="form-label"><?= __('diary.title') ?></label>
-                            <input type="text" class="form-control" id="title" name="title" 
-                                   value="<?= htmlspecialchars($diary['title']) ?>" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="content" class="form-label"><?= __('diary.content') ?></label>
-                            <textarea id="content" name="content"><?= $content ?></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="tags" class="form-label"><?= __('diary.tags') ?></label>
-                            <input type="text" class="form-control" id="tags" name="tags" 
-                                   value="<?= htmlspecialchars($diary['tags']) ?>"
-                                   placeholder="<?= __('diary.tags_placeholder') ?>">
-                            <div class="form-text"><?= __('diary.tags_help') ?></div>
-                        </div>
-
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="is_public" name="is_public" 
-                                   <?= $diary['is_public'] ? 'checked' : '' ?>>
-                            <label class="form-check-label" for="is_public">
-                                <?= __('diary.public') ?>
-                            </label>
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <a href="<?= $cancelUrl ?>" class="btn btn-outline-secondary">
-                                <?= __('common.cancel') ?>
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <?= __('diary.save') ?>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+<!-- 네비게이션 -->
+<nav class="navbar navbar-expand-lg navbar-custom">
+  <div class="container">
+    <a class="navbar-brand" href="/">FlowBreath</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="/resources">자료</a></li>
+        <li class="nav-item"><a class="nav-link active" href="/diary">수련 일기</a></li>
+        <li class="nav-item"><a class="nav-link" href="/tags">태그</a></li>
+        <li class="nav-item"><a class="nav-link" href="/login">로그인</a></li>
+        <li class="nav-item"><a class="nav-link" href="/register">회원가입</a></li>
+      </ul>
     </div>
+  </div>
+</nav>
+
+<!-- 중앙 카드형 폼 -->
+<div class="container">
+  <div class="center-card card mt-5">
+    <div class="card-body">
+      <h2 class="card-title mb-4 text-center" style="color:#fff; font-weight:700; letter-spacing:0.5px;">
+        <?= $pageTitle ?>
+      </h2>
+      <form id="diaryForm" method="POST" action="<?= $formAction ?>">
+        <?php if ($isEdit): ?>
+          <input type="hidden" name="_method" value="PUT">
+        <?php endif; ?>
+        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+        <div class="mb-3">
+          <label for="title" class="form-label">수련 일기</label>
+          <input type="text" class="form-control" id="title" name="title" value="<?= htmlspecialchars($diary['title']) ?>" required>
+        </div>
+        <div class="mb-3">
+          <label for="content" class="form-label">내용</label>
+          <textarea id="content" name="content"><?= $content ?></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="tags" class="form-label">태그</label>
+          <input type="text" class="form-control" id="tags" name="tags" value="<?= htmlspecialchars($diary['tags']) ?>" placeholder="예: 수련, 명상, 호흡">
+          <div class="form-text">쉼표(,)로 구분해 여러 태그를 입력할 수 있습니다.</div>
+        </div>
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" id="is_public" name="is_public" <?= $diary['is_public'] ? 'checked' : '' ?>>
+          <label class="form-check-label" for="is_public">공개</label>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-4">
+          <a href="<?= $cancelUrl ?>" class="btn btn-outline-secondary">취소</a>
+          <button type="submit" class="btn btn-primary">저장하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
+
+<!-- 푸터 -->
+<footer class="footer-custom mt-5">
+  <div class="container">
+    <div>본 사이트의 내용은 정보 공유를 위한 것이며, 어떠한 의학적 진단, 치료, 처방도 제공하지 않습니다.<br>건강상의 문제가 있거나 특정 수련법을 시작하기 전에는 반드시 전문 의료인과 상담하십시오.</div>
+    <div class="mt-2">© 2025 FlowBreath</div>
+  </div>
+</footer>
 
 <!-- TinyMCE CDN -->
 <script src="https://cdn.tiny.cloud/1/<?= $tinymceApiKey ?>/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
