@@ -68,9 +68,13 @@
                             <i class="<?= $diary['is_liked'] ? 'fas' : 'far' ?> fa-heart"></i>
                             <span class="like-count"><?= $diary['like_count'] ?></span>
                         </button>
-                        <span class="text-muted">
+                        <span class="text-muted me-3">
                             <i class="far fa-comment"></i>
                             <span><?= $diary['comment_count'] ?></span>
+                        </span>
+                        <span class="text-muted">
+                            <i class="far fa-eye"></i>
+                            <span><?= $diary['view_count'] ?? 0 ?></span>
                         </span>
                     </div>
 

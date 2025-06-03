@@ -390,4 +390,15 @@ class Diary {
             return false;
         }
     }
+
+    public function incrementViewCount($id) {
+        try {
+            $sql = "UPDATE diaries SET view_count = view_count + 1 WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$id]);
+        } catch (\PDOException $e) {
+            error_log("Database error in incrementViewCount: " . $e->getMessage());
+            return false;
+        }
+    }
 } 
