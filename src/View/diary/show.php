@@ -46,12 +46,20 @@
 
                     <?php if (!empty($diary['tags'])): ?>
                         <div class="mb-4">
-                            <?php foreach ($diary['tags'] as $tag): ?>
+                            <?php 
+                            $tags = is_array($diary['tags']) ? $diary['tags'] : explode(',', $diary['tags']);
+                            foreach ($tags as $tag): 
+                                $tag = trim($tag);
+                                if (!empty($tag)):
+                            ?>
                                 <a href="/diary/search?tags=<?= urlencode($tag) ?>" 
                                    class="badge bg-light text-dark text-decoration-none me-1">
                                     #<?= htmlspecialchars($tag) ?>
                                 </a>
-                            <?php endforeach; ?>
+                            <?php 
+                                endif;
+                            endforeach; 
+                            ?>
                         </div>
                     <?php endif; ?>
 
