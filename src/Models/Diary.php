@@ -112,6 +112,8 @@ class Diary {
         
         if ($diary) {
             $diary['is_liked'] = (bool)$diary['is_liked'];
+            // Convert tags string to array
+            $diary['tags'] = !empty($diary['tags']) ? array_map('trim', explode(',', $diary['tags'])) : [];
             // Debug information
             error_log("Diary::find - Diary data: " . print_r($diary, true));
         }
