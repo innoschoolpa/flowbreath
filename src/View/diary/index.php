@@ -45,6 +45,25 @@
                                 <?= htmlspecialchars(mb_substr(strip_tags($diary['content'] ?? ''), 0, 100)) ?>
                             </div>
 
+                            <?php if (!empty($diary['tags'])): ?>
+                                <div class="mb-2">
+                                    <?php 
+                                    $tags = [];
+                                    if (is_array($diary['tags'])) {
+                                        $tags = $diary['tags'];
+                                    } else if (is_string($diary['tags'])) {
+                                        $tags = array_filter(array_map('trim', explode(',', $diary['tags'])));
+                                    }
+                                    foreach ($tags as $tag): 
+                                    ?>
+                                        <a href="/diary/search?tags=<?= urlencode($tag) ?>" 
+                                           class="badge bg-light text-dark text-decoration-none me-1">
+                                            #<?= htmlspecialchars($tag) ?>
+                                        </a>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
                                     <img src="<?= $diary['profile_image'] ?? '/assets/images/default-avatar.svg' ?>" 

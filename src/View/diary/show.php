@@ -31,20 +31,6 @@
                         <?php endif; ?>
                     </div>
 
-                    <div class="d-flex align-items-center mb-4">
-                        <img src="<?= $diary['profile_image'] ?? '/assets/images/default-avatar.png' ?>" 
-                             class="rounded-circle me-2" width="40" height="40" 
-                             alt="<?= htmlspecialchars($diary['author_name']) ?>">
-                        <div>
-                            <div class="fw-bold">
-                                <?= htmlspecialchars($diary['author_name']) ?>
-                            </div>
-                            <div class="text-muted small">
-                                <?= date('Y-m-d H:i', strtotime($diary['created_at'])) ?>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="diary-content mb-4">
                         <?= $diary['content'] ?>
                     </div>
@@ -67,6 +53,20 @@
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
+
+                    <div class="d-flex align-items-center mb-4">
+                        <img src="<?= $diary['profile_image'] ?? '/assets/images/default-avatar.png' ?>" 
+                             class="rounded-circle me-2" width="40" height="40" 
+                             alt="<?= htmlspecialchars($diary['author_name']) ?>">
+                        <div>
+                            <div class="fw-bold">
+                                <?= htmlspecialchars($diary['author_name']) ?>
+                            </div>
+                            <div class="text-muted small">
+                                <?= date('Y-m-d H:i', strtotime($diary['created_at'])) ?>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="d-flex align-items-center mb-4">
                         <button class="btn btn-link text-muted me-3" onclick="toggleLike(<?= $diary['id'] ?>, event)">
