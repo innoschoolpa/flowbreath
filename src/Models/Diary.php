@@ -156,18 +156,45 @@ class Diary {
     }
 
     public function update($id, $data) {
-        $sql = "UPDATE diaries 
-                SET title = ?, content = ?, tags = ?, is_public = ?, updated_at = NOW()
-                WHERE id = ? AND deleted_at IS NULL";
-        
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            $data['title'],
-            $data['content'],
-            $data['tags'],
-            $data['is_public'],
-            $id
-        ]);
+        try {
+            error_log("Updating diary in database - ID: " . $id);
+            error_log("Update data: " . print_r($data, true));
+
+            $sql = "UPDATE diaries SET 
+                    title = :title,
+                    content = :content,
+                    tags = :tags,
+                    is_public = :is_public,
+                    updated_at = :updated_at
+                    WHERE id = :id AND deleted_at IS NULL";
+
+            $params = [
+                ':id' => $id,
+                ':title' => $data['title'],
+                ':content' => $data['content'],
+                ':tags' => $data['tags'],
+                ':is_public' => $data['is_public'],
+                ':updated_at' => $data['updated_at']
+            ];
+
+            error_log("SQL Query: " . $sql);
+            error_log("Parameters: " . print_r($params, true));
+
+            $stmt = $this->db->prepare($sql);
+            $result = $stmt->execute($params);
+
+            if ($result) {
+                error_log("Diary updated successfully in database - ID: " . $id);
+                return true;
+            } else {
+                error_log("Failed to update diary in database - ID: " . $id);
+                error_log("Database error: " . print_r($stmt->errorInfo(), true));
+                return false;
+            }
+        } catch (\PDOException $e) {
+            error_log("Database error while updating diary: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function delete($id) {
