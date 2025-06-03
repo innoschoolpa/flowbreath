@@ -171,8 +171,8 @@ body {
 <div class="container">
   <div class="center-card card mt-5">
     <div class="card-body">
-      <h2 class="card-title mb-4 text-center" style="color:#fff; font-weight:700; letter-spacing:0.5px;">
-        <?= $pageTitle ?>
+      <h2 class="card-title mb-4 text-center" style="color:#fff; font-weight:700; letter-spacing:0.5px; font-size:2.2rem;">
+        수련 일기
       </h2>
       <form id="diaryForm" method="POST" action="<?= $formAction ?>">
         <?php if ($isEdit): ?>
