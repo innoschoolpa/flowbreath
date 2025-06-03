@@ -386,7 +386,13 @@ h1, h2, h3, h4, h5, h6 {
                                 <?php endforeach; ?>
                             </div>
                             <div class="mt-auto d-flex justify-content-between align-items-center" style="color:#94a3b8; font-size:0.95em;">
-                                <span><i class="fas fa-user me-1"></i><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></span>
+                                <div class="d-flex align-items-center">
+                                    <img src="<?= htmlspecialchars($resource['author_image'] ?? '/assets/images/default-avatar.png') ?>" 
+                                         alt="<?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?>의 프로필" 
+                                         class="rounded-circle me-2"
+                                         style="width: 24px; height: 24px; object-fit: cover;">
+                                    <span><i class="fas fa-user me-1"></i><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></span>
+                                </div>
                                 <span><i class="fas fa-calendar me-1"></i><?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?></span>
                             </div>
                         </div>
