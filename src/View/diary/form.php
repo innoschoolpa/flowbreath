@@ -180,7 +180,7 @@ body {
         <?php endif; ?>
         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
         <div class="mb-3">
-          <label for="title" class="form-label">수련 일기</label>
+          <label for="title" class="form-label">제목</label>
           <input type="text" class="form-control" id="title" name="title" value="<?= htmlspecialchars($diary['title']) ?>" required>
         </div>
         <div class="mb-3">
