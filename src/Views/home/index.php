@@ -156,17 +156,34 @@ input[type="text"]::placeholder {
                     </div>
                 <?php endif; ?>
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title mb-2">
-                        <a href="/resources/<?= $resource['id'] ?>">
-                            <?= htmlspecialchars($resource['title']) ?>
-                        </a>
-                    </h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="<?= htmlspecialchars($resource['profile_image'] ?? '/assets/images/default-avatar.png') ?>" 
+                             alt="<?= htmlspecialchars($resource['user_name'] ?? 'Anonymous') ?>" 
+                             class="rounded-circle me-2" 
+                             style="width: 40px; height: 40px; object-fit: cover;">
+                        <div>
+                            <h5 class="card-title mb-0">
+                                <a href="/resources/<?= $resource['id'] ?>">
+                                    <?= htmlspecialchars($resource['title']) ?>
+                                </a>
+                            </h5>
+                            <small class="text-muted">
+                                <?= htmlspecialchars($resource['user_name'] ?? 'Anonymous') ?> · 
+                                <?= date('Y-m-d', strtotime($resource['created_at'])) ?>
+                            </small>
+                        </div>
+                    </div>
                     <p class="card-text mb-2">
                         <?= $content ?>
                     </p>
                     <div class="mt-auto d-flex justify-content-between align-items-center" style="color:#94a3b8; font-size:0.95em;">
-                        <span><i class="fas fa-user me-1"></i><?= htmlspecialchars($resource['user_name']) ?></span>
-                        <span><i class="fas fa-calendar me-1"></i><?= date('Y-m-d', strtotime($resource['created_at'])) ?></span>
+                        <?php if (!empty($resource['tags'])): ?>
+                            <div class="d-flex gap-2">
+                                <?php foreach (explode(',', $resource['tags']) as $tag): ?>
+                                    <span class="dark-tag-badge">#<?= htmlspecialchars(trim($tag)) ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
