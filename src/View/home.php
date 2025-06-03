@@ -390,8 +390,8 @@ h1, h2, h3, h4, h5, h6 {
                                     <img src="<?= htmlspecialchars($resource['author_image'] ?? '/assets/images/default-avatar.png') ?>" 
                                          alt="<?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?>의 프로필" 
                                          class="rounded-circle me-2"
-                                         style="width: 24px; height: 24px; object-fit: cover;">
-                                    <span><i class="fas fa-user me-1"></i><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></span>
+                                         style="width: 48px; height: 48px; object-fit: cover;">
+                                    <span><?= htmlspecialchars($resource['author_name'] ?? $language->get('common.anonymous')) ?></span>
                                 </div>
                                 <span><i class="fas fa-calendar me-1"></i><?= htmlspecialchars(date('Y-m-d', strtotime($resource['created_at'] ?? ''))) ?></span>
                             </div>
