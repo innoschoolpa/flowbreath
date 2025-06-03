@@ -130,56 +130,55 @@ class DiaryController extends BaseController {
     }
 
     public function update($id) {
-        if (!isset($_SESSION['user_id'])) {
-            return $this->jsonResponse(['success' => false, 'error' => '로그인이 필요합니다.'], 401);
-        }
-
         try {
-            // Get existing diary
-            $diary = $this->diaryModel->find($id);
-            error_log("Current diary data: " . print_r($diary, true));
-
+            // Get the diary
+            $diaryModel = new Diary();
+            $diary = $diaryModel->find($id);
             if (!$diary) {
-                error_log("Diary not found - ID: " . $id);
-                return $this->jsonResponse(['success' => false, 'error' => '일기를 찾을 수 없습니다.'], 404);
+                return $this->jsonResponse(['error' => __('diary.not_found')], 404);
             }
 
-            if ($diary['user_id'] != $_SESSION['user_id']) {
-                error_log("Permission denied - User ID: " . $_SESSION['user_id'] . ", Diary User ID: " . $diary['user_id']);
-                return $this->jsonResponse(['success' => false, 'error' => '수정 권한이 없습니다.'], 403);
+            // Check authorization
+            if ($diary['user_id'] !== $_SESSION['user_id']) {
+                return $this->jsonResponse(['error' => __('diary.unauthorized')], 403);
             }
 
-            $data = [
-                'title' => $_POST['title'] ?? '',
-                'content' => $_POST['content'] ?? '',
-                'tags' => $_POST['tags'] ?? '',
-                'is_public' => isset($_POST['is_public']) ? 1 : 0,
+            // Get request data
+            $data = [];
+            parse_str(file_get_contents('php://input'), $data);
+            
+            // Log the received data
+            error_log('Received data in update: ' . print_r($data, true));
+            
+            // Validate required fields
+            if (empty($data['title'])) {
+                return $this->jsonResponse(['error' => __('diary.title_required')], 400);
+            }
+
+            // Prepare update data
+            $updateData = [
+                'title' => $data['title'],
+                'content' => $data['content'] ?? '',
+                'tags' => $data['tags'] ?? '',
+                'is_public' => isset($data['is_public']) ? 1 : 0,
                 'updated_at' => date('Y-m-d H:i:s')
             ];
 
-            error_log("Updating diary with data: " . print_r($data, true));
-
-            // Validate required fields
-            if (empty($data['title'])) {
-                return $this->jsonResponse(['success' => false, 'error' => '제목을 입력해주세요.'], 400);
+            // Update the diary
+            $result = $diaryModel->update($id, $updateData);
+            if (!$result) {
+                return $this->jsonResponse(['error' => __('diary.update_error')], 500);
             }
 
-            if (empty($data['content'])) {
-                return $this->jsonResponse(['success' => false, 'error' => '내용을 입력해주세요.'], 400);
-            }
+            return $this->jsonResponse([
+                'success' => true,
+                'id' => $id,
+                'message' => __('diary.update_success')
+            ]);
 
-            $result = $this->diaryModel->update($id, $data);
-            
-            if ($result) {
-                error_log("Diary updated successfully - ID: " . $id);
-                return $this->jsonResponse(['success' => true, 'id' => $id]);
-            } else {
-                error_log("Failed to update diary - ID: " . $id);
-                return $this->jsonResponse(['success' => false, 'error' => '일기 수정에 실패했습니다.'], 500);
-            }
         } catch (\Exception $e) {
-            error_log("Error updating diary: " . $e->getMessage());
-            return $this->jsonResponse(['success' => false, 'error' => '일기 수정 중 오류가 발생했습니다.'], 500);
+            error_log('Error in DiaryController::update: ' . $e->getMessage());
+            return $this->jsonResponse(['error' => __('diary.update_error')], 500);
         }
     }
 
