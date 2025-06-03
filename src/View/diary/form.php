@@ -205,13 +205,7 @@ body {
   </div>
 </div>
 
-<!-- 푸터 -->
-<footer class="footer-custom mt-5">
-  <div class="container">
-    <div>본 사이트의 내용은 정보 공유를 위한 것이며, 어떠한 의학적 진단, 치료, 처방도 제공하지 않습니다.<br>건강상의 문제가 있거나 특정 수련법을 시작하기 전에는 반드시 전문 의료인과 상담하십시오.</div>
-    <div class="mt-2">© 2025 FlowBreath</div>
-  </div>
-</footer>
+
 
 <!-- TinyMCE CDN -->
 <script src="https://cdn.tiny.cloud/1/<?= $tinymceApiKey ?>/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
