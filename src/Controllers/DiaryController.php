@@ -210,12 +210,12 @@ class DiaryController extends BaseController {
         $page = $_GET['page'] ?? 1;
         $limit = 20;
 
-        $diaries = $this->diaryModel->search($query, $tag, $startDate, $endDate, $page, $limit);
+        $result = $this->diaryModel->search($query, $tag, $startDate, $endDate, $page, $limit);
 
         return $this->view('diary/index', [
-            'diaries' => $diaries,
+            'diaries' => $result['items'],
             'currentPage' => $page,
-            'totalPages' => ceil($diaries['total'] / $limit),
+            'totalPages' => ceil($result['total'] / $limit),
             'query' => $query,
             'tag' => $tag,
             'startDate' => $startDate,
