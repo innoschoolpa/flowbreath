@@ -24,52 +24,61 @@ $content = $diary['content'] ?? '';
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
 <style>
-/* 제목 영역 스타일 */
+/* 제목 영역 다크모드 */
 #title {
-    background-color: var(--bs-light) !important;
-    color: var(--bs-dark) !important;
-    border-color: var(--bs-gray-600) !important;
+    background-color: #23272b !important;
+    color: #f8f9fa !important;
+    border-color: #495057 !important;
 }
 #title:focus {
-    background-color: var(--bs-light) !important;
-    color: var(--bs-dark) !important;
-    border-color: var(--bs-primary) !important;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    background-color: #23272b !important;
+    color: #f8f9fa !important;
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25) !important;
 }
 
-/* 내용 영역 스타일 */
+/* TinyMCE 다크모드 보강 */
 .tox-tinymce {
-    border-color: var(--bs-gray-700) !important;
-    background-color: var(--bs-dark) !important;
+    background-color: #23272b !important;
+    border-color: #495057 !important;
+    border-radius: 0.25rem !important;
 }
 .tox .tox-edit-area__iframe {
-    background-color: var(--bs-dark) !important;
+    background-color: #23272b !important;
 }
 .tox .tox-toolbar__primary {
-    background-color: var(--bs-dark) !important;
-    border-bottom: 1px solid var(--bs-gray-700) !important;
+    background-color: #23272b !important;
+    border-bottom: 1px solid #495057 !important;
 }
 .tox .tox-toolbar__group {
-    border-color: var(--bs-gray-700) !important;
+    border-color: #495057 !important;
 }
 .tox .tox-tbtn {
-    color: var(--bs-light) !important;
+    color: #f8f9fa !important;
 }
 .tox .tox-tbtn:hover {
-    background-color: var(--bs-gray-700) !important;
+    background-color: #495057 !important;
+}
+.tox .tox-statusbar {
+    background-color: #23272b !important;
+    color: #adb5bd !important;
+    border-top: 1px solid #495057 !important;
+}
+.tox .tox-edit-area {
+    background-color: #23272b !important;
 }
 
-/* 태그 영역 스타일 */
+/* 태그 영역 다크모드 */
 #tags {
-    background-color: var(--bs-dark) !important;
-    color: var(--bs-light) !important;
-    border-color: var(--bs-gray-700) !important;
+    background-color: #23272b !important;
+    color: #f8f9fa !important;
+    border-color: #495057 !important;
 }
 #tags:focus {
-    background-color: var(--bs-dark) !important;
-    color: var(--bs-light) !important;
-    border-color: var(--bs-primary) !important;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    background-color: #23272b !important;
+    color: #f8f9fa !important;
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25) !important;
 }
 
 /* 기존 스타일 유지 */
