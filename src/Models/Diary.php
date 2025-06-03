@@ -231,7 +231,7 @@ class Diary {
 
         $whereClause = "WHERE " . implode(" AND ", $where);
 
-        $sql = "SELECT d.*, u.name as author_name,
+        $sql = "SELECT d.*, u.name as author_name, u.profile_image,
                 (SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id) as like_count,
                 (SELECT COUNT(*) FROM diary_comments WHERE diary_id = d.id) as comment_count
                 FROM diaries d
