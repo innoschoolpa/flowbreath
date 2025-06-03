@@ -28,7 +28,7 @@ class Diary {
 
         $sql = "SELECT d.*, u.name as author_name, u.profile_image,
                 (SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id) as like_count,
-                (SELECT COUNT(*) FROM diary_comments WHERE diary_id = d.id) as comment_count,
+                (SELECT COUNT(*) FROM diary_comments WHERE diary_id = d.id AND deleted_at IS NULL) as comment_count,
                 " . ($userId ? "(SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id AND user_id = :like_user_id) as is_liked" : "0 as is_liked") . "
                 FROM diaries d
                 LEFT JOIN users u ON d.user_id = u.id
@@ -99,7 +99,7 @@ class Diary {
         $userId = $_SESSION['user_id'] ?? null;
         $sql = "SELECT d.*, u.name as author_name, u.profile_image,
                 (SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id) as like_count,
-                (SELECT COUNT(*) FROM diary_comments WHERE diary_id = d.id) as comment_count,
+                (SELECT COUNT(*) FROM diary_comments WHERE diary_id = d.id AND deleted_at IS NULL) as comment_count,
                 " . ($userId ? "(SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id AND user_id = ?) as is_liked" : "0 as is_liked") . "
                 FROM diaries d
                 LEFT JOIN users u ON d.user_id = u.id
@@ -233,7 +233,7 @@ class Diary {
 
         $sql = "SELECT d.*, u.name as author_name, u.profile_image,
                 (SELECT COUNT(*) FROM diary_likes WHERE diary_id = d.id) as like_count,
-                (SELECT COUNT(*) FROM diary_comments WHERE diary_id = d.id) as comment_count
+                (SELECT COUNT(*) FROM diary_comments WHERE diary_id = d.id AND deleted_at IS NULL) as comment_count
                 FROM diaries d
                 LEFT JOIN users u ON d.user_id = u.id
                 $whereClause
