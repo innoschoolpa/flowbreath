@@ -50,7 +50,6 @@ function formatContent($content, $hasYoutubeLink) {
         return '';
     }
 
-    
     // First decode HTML entities
     $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     
@@ -64,8 +63,9 @@ function formatContent($content, $hasYoutubeLink) {
     $content = str_replace(['<br>', '<br/>', '<br />', '</p><p>'], "\n", $content);
     $content = str_replace(['<p>', '</p>'], '', $content);
     
-    // Remove multiple consecutive newlines
-    $content = preg_replace('/\n\s*\n/', "\n", $content);
+    // Remove multiple consecutive newlines and trim whitespace
+    $content = preg_replace('/\n\s*\n+/', "\n", $content);
+    $content = trim($content);
     
     // Trim content to specified length
     if (mb_strlen($content, 'UTF-8') > $contentLength) {
@@ -79,7 +79,7 @@ function formatContent($content, $hasYoutubeLink) {
     }
     
     // Convert newlines to <br> tags and escape HTML
-    return nl2br(htmlspecialchars(trim($content), ENT_QUOTES, 'UTF-8'));
+    return nl2br(htmlspecialchars($content, ENT_QUOTES, 'UTF-8'));
 }
 
 // YouTube 동영상 ID 추출 함수
