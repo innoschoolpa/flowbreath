@@ -358,7 +358,22 @@ h1, h2, h3, h4, h5, h6 {
                 // Prepare content with only line breaks preserved
                 $content = strip_tags($resource['content'] ?? '');
                 $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                $content = mb_strimwidth($content, 0, $contentLength, '...');
+                
+                // Remove multiple consecutive newlines and trim whitespace
+                $content = preg_replace('/\n\s*\n+/', "\n", $content);
+                $content = trim($content);
+                
+                // Trim content to specified length
+                if (mb_strlen($content, 'UTF-8') > $contentLength) {
+                    $content = mb_substr($content, 0, $contentLength, 'UTF-8');
+                    // Find the last space before the cutoff
+                    $lastSpace = mb_strrpos($content, ' ', 0, 'UTF-8');
+                    if ($lastSpace !== false) {
+                        $content = mb_substr($content, 0, $lastSpace, 'UTF-8');
+                    }
+                    $content .= '...';
+                }
+                
                 $content = nl2br(htmlspecialchars($content));
                 ?>
                 <div class="col-12 col-md-6 col-lg-4">
