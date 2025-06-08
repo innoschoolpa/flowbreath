@@ -280,12 +280,28 @@ img.rounded-circle { font-size: 0; color: transparent; object-fit: cover; width:
       }
       
       // Determine content length based on YouTube link presence
-      $contentLength = $hasYoutubeLink ? 130 :550; // Longer content for non-video resources
+      $contentLength = $hasYoutubeLink ? 130 : 550; // Longer content for non-video resources
       
       // Prepare content with only line breaks preserved
       $content = strip_tags($resource['content'] ?? '');
       $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-      $content = mb_strimwidth($content, 0, $contentLength, '...');
+      
+      // Remove multiple consecutive newlines and normalize line breaks
+      $content = preg_replace('/\r\n|\r|\n/', "\n", $content); // Normalize line endings
+      $content = preg_replace('/\n\s*\n+/', "\n", $content); // Remove multiple consecutive newlines
+      $content = trim($content); // Remove leading/trailing whitespace
+      
+      // Trim content to specified length
+      if (mb_strlen($content, 'UTF-8') > $contentLength) {
+          $content = mb_substr($content, 0, $contentLength, 'UTF-8');
+          // Find the last space before the cutoff
+          $lastSpace = mb_strrpos($content, ' ', 0, 'UTF-8');
+          if ($lastSpace !== false) {
+              $content = mb_substr($content, 0, $lastSpace, 'UTF-8');
+          }
+          $content .= '...';
+      }
+      
       $content = nl2br(htmlspecialchars($content));
       ?>
       <div class="col-12 col-md-6 col-lg-4">
