@@ -359,9 +359,10 @@ h1, h2, h3, h4, h5, h6 {
                 $content = strip_tags($resource['content'] ?? '');
                 $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 
-                // Remove multiple consecutive newlines and trim whitespace
-                $content = preg_replace('/\n\s*\n+/', "\n", $content);
-                $content = trim($content);
+                // Remove multiple consecutive newlines and normalize line breaks
+                $content = preg_replace('/\r\n|\r|\n/', "\n", $content); // Normalize line endings
+                $content = preg_replace('/\n\s*\n+/', "\n", $content); // Remove multiple consecutive newlines
+                $content = trim($content); // Remove leading/trailing whitespace
                 
                 // Trim content to specified length
                 if (mb_strlen($content, 'UTF-8') > $contentLength) {
