@@ -280,7 +280,7 @@ img.rounded-circle { font-size: 0; color: transparent; object-fit: cover; width:
       }
       
       // Determine content length based on YouTube link presence
-      $contentLength = $hasYoutubeLink ? 130 : 550; // Longer content for non-video resources
+      $contentLength = $hasYoutubeLink ? 130 : 350; // Longer content for non-video resources
       
       // Prepare content with only line breaks preserved
       $content = strip_tags($resource['content'] ?? '');
