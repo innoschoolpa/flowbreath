@@ -75,7 +75,17 @@ if (!function_exists('is_youtube_url')) {
                             <?php
                             $preview = '';
                             if (!empty($resource['content'])) {
-                                $preview = mb_strimwidth(strip_tags($resource['content']), 0, 100, '...');
+                                // Prepare content with only line breaks preserved
+                                $preview = strip_tags($resource['content']);
+                                $preview = html_entity_decode($preview, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                                
+                                // Remove multiple consecutive newlines and normalize line breaks
+                                $preview = preg_replace('/\r\n|\r|\n/', "\n", $preview); // Normalize line endings
+                                $preview = preg_replace('/\n\s*\n+/', "\n", $preview); // Remove multiple consecutive newlines
+                                $preview = trim($preview); // Remove leading/trailing whitespace
+                                
+                                // Trim content to preview length
+                                $preview = mb_strimwidth($preview, 0, 100, '...');
                             } elseif (!empty($resource['summary'])) {
                                 $preview = $resource['summary'];
                             }
