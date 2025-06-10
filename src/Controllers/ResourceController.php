@@ -52,7 +52,6 @@ class ResourceController extends BaseController {
         $selected_tags = $request->get('tags', []);
         $sort = $request->get('sort', 'created_desc');
         $type = $request->get('type', '');
-        $visibility = $request->get('visibility', null);
         $page = max(1, (int)$request->get('page', 1));
         $limit = 12;
         $offset = ($page - 1) * $limit;
@@ -68,9 +67,16 @@ class ResourceController extends BaseController {
             'limit' => $limit,
             'offset' => $offset,
             'type' => $type,
-            'visibility' => $visibility,
             'language_code' => (isset($_SESSION['lang']) && $_SESSION['lang'] === 'en') ? 'en' : null,
         ];
+        // visibility 파라미터 제거 및 custom_visibility 추가
+        if ($user) {
+            $params['custom_visibility'] = [
+                'user_id' => $user['id']
+            ];
+        } else {
+            $params['visibility'] = 'public';
+        }
 
         try {
             $resourceModel = new \App\Models\Resource();
@@ -107,7 +113,6 @@ class ResourceController extends BaseController {
                 'keyword' => $keyword,
                 'sort' => $sort,
                 'type' => $type,
-                'visibility' => $visibility,
                 'current_page' => $page,
                 'total_pages' => $total_pages,
                 'user' => $user,
@@ -124,7 +129,6 @@ class ResourceController extends BaseController {
                 'keyword' => $keyword,
                 'sort' => $sort,
                 'type' => $type,
-                'visibility' => $visibility,
                 'current_page' => $page,
                 'total_pages' => 1,
                 'user' => $user,

@@ -1251,6 +1251,17 @@ class Resource extends Model {
             $where[] = "r.id IN (SELECT resource_id FROM resource_translations WHERE language_code = ?)";
             $sqlParams[] = $language_code;
 
+            // 공개/비공개 조건
+            if (isset($params['custom_visibility']) && isset($params['custom_visibility']['user_id'])) {
+                $where[] = "(r.visibility = 'public' OR (r.visibility = 'private' AND r.user_id = ?))";
+                $sqlParams[] = $params['custom_visibility']['user_id'];
+            } else if (!isset($params['visibility'])) {
+                $where[] = "r.visibility = 'public'";
+            } else if ($params['visibility'] !== '') {
+                $where[] = "r.visibility = ?";
+                $sqlParams[] = $params['visibility'];
+            }
+
             // 키워드 검색
             if (!empty($params['keyword'])) {
                 $where[] = "(rt.title LIKE ? OR rt.description LIKE ?)";
@@ -1263,12 +1274,6 @@ class Resource extends Model {
             if (!empty($params['type'])) {
                 $where[] = "r.type = ?";
                 $sqlParams[] = $params['type'];
-            }
-
-            // 공개 여부 필터
-            if (isset($params['visibility']) && $params['visibility'] !== '') {
-                $where[] = "r.visibility = ?";
-                $sqlParams[] = $params['visibility'];
             }
 
             // 태그 필터
@@ -1348,7 +1353,7 @@ class Resource extends Model {
                 $where[] = "r.type = ?";
                 $sqlParams[] = $params['type'];
             }
-            if (isset($params['visibility']) && $params['visibility'] !== '') {
+            if (!empty($params['visibility'])) {
                 $where[] = "r.visibility = ?";
                 $sqlParams[] = $params['visibility'];
             }
