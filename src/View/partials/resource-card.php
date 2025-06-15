@@ -1,8 +1,10 @@
 <?php
 // YouTube 동영상 ID 추출
 $youtubeId = null;
+$isShorts = false;
 if (!empty($resource['link'])) {
     $youtubeId = extractYoutubeId($resource['link']);
+    $isShorts = strpos($resource['link'], '/shorts/') !== false;
 }
 
 // null 값 처리
@@ -18,14 +20,14 @@ $id = $resource['id'] ?? '';
 <div class="col-md-4 mb-4">
     <div class="card card-resource h-100">
         <?php if ($youtubeId): ?>
-            <div class="ratio ratio-16x9 mb-3">
+            <div class="ratio <?= $isShorts ? 'ratio-9x16' : 'ratio-16x9' ?> mb-3">
                 <iframe 
-                    src="https://www.youtube.com/embed/<?= htmlspecialchars($youtubeId) ?>?autoplay=0&rel=0" 
+                    src="https://www.youtube.com/embed/<?= htmlspecialchars($youtubeId) ?>?autoplay=0&rel=0<?= $isShorts ? '&controls=1&modestbranding=1&showinfo=0' : '' ?>" 
                     title="YouTube video player"
                     frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen
-                    style="width: 100%; height: 100%;">
+                    style="width: 100%; height: 100%; <?= $isShorts ? 'max-width: 180px; max-height: 320px; margin: auto;' : '' ?>">
                 </iframe>
             </div>
         <?php endif; ?>
