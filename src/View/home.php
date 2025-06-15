@@ -91,6 +91,11 @@ function extractYoutubeId($url) {
     return null;
 }
 
+// YouTube Shorts 확인 함수
+function isYoutubeShorts($url) {
+    return strpos($url, '/shorts/') !== false;
+}
+
 class HomeController {
     public function index() {
         // ... existing code ...
@@ -332,6 +337,7 @@ h1, h2, h3, h4, h5, h6 {
                 <?php
                 $videoId = null;
                 $hasYoutubeLink = false;
+                $isShorts = false;
                 $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
                 
                 // Check for YouTube link in link field
@@ -339,6 +345,7 @@ h1, h2, h3, h4, h5, h6 {
                     if (preg_match($youtube_pattern, $resource['link'], $matches)) {
                         $videoId = $matches[1];
                         $hasYoutubeLink = true;
+                        $isShorts = isYoutubeShorts($resource['link']);
                     }
                 }
                 
@@ -348,6 +355,7 @@ h1, h2, h3, h4, h5, h6 {
                         if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
                             $videoId = $matches[1];
                             $hasYoutubeLink = true;
+                            $isShorts = isYoutubeShorts($ytMatch[0]);
                         }
                     }
                 }
@@ -380,8 +388,16 @@ h1, h2, h3, h4, h5, h6 {
                 <div class="col-12 col-md-6 col-lg-4">
                     <div class="card h-100 shadow-lg border-0">
                         <?php if ($videoId): ?>
-                            <div class="ratio ratio-16x9">
-                                <iframe src="https://www.youtube.com/embed/<?= $videoId ?>?autoplay=0" class="rounded-top" allowfullscreen></iframe>
+                            <div class="ratio <?= $isShorts ? 'ratio-9x16' : 'ratio-16x9' ?>">
+                                <iframe 
+                                    src="https://www.youtube.com/embed/<?= $videoId ?>?autoplay=0<?= $isShorts ? '&controls=1&modestbranding=1&rel=0&showinfo=0' : '' ?>" 
+                                    class="rounded-top"
+                                    title="YouTube video player"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen
+                                    style="<?= $isShorts ? 'max-width: 180px; max-height: 320px; margin: auto;' : '' ?>">
+                                </iframe>
                             </div>
                         <?php endif; ?>
                         <div class="card-body d-flex flex-column">
