@@ -338,14 +338,14 @@ h1, h2, h3, h4, h5, h6 {
                 $videoId = null;
                 $hasYoutubeLink = false;
                 $isShorts = false;
-                $youtube_pattern = '/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=|live\\/)|youtu\\.be\\/)([^"&?\\/\\s]{11})/';
+                $youtube_pattern = '/(?:youtube\.com\/(?:shorts\/|(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/))|youtu\.be\/)([^"&?\/\s]{11})/';
                 
                 // Check for YouTube link in link field
                 if (!empty($resource['link'])) {
                     if (preg_match($youtube_pattern, $resource['link'], $matches)) {
                         $videoId = $matches[1];
                         $hasYoutubeLink = true;
-                        $isShorts = isYoutubeShorts($resource['link']);
+                        $isShorts = strpos($resource['link'], '/shorts/') !== false;
                     }
                 }
                 
@@ -355,7 +355,7 @@ h1, h2, h3, h4, h5, h6 {
                         if (preg_match($youtube_pattern, $ytMatch[0], $matches)) {
                             $videoId = $matches[1];
                             $hasYoutubeLink = true;
-                            $isShorts = isYoutubeShorts($ytMatch[0]);
+                            $isShorts = strpos($ytMatch[0], '/shorts/') !== false;
                         }
                     }
                 }

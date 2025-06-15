@@ -2,9 +2,13 @@
 // YouTube 동영상 ID 추출
 $youtubeId = null;
 $isShorts = false;
+$youtube_pattern = '/(?:youtube\.com\/(?:shorts\/|(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|live\/))|youtu\.be\/)([^"&?\/\s]{11})/';
+
 if (!empty($resource['link'])) {
-    $youtubeId = extractYoutubeId($resource['link']);
-    $isShorts = strpos($resource['link'], '/shorts/') !== false;
+    if (preg_match($youtube_pattern, $resource['link'], $matches)) {
+        $youtubeId = $matches[1];
+        $isShorts = strpos($resource['link'], '/shorts/') !== false;
+    }
 }
 
 // null 값 처리
