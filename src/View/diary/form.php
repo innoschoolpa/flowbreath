@@ -151,22 +151,6 @@ body {
 }
 </style>
 
-<!-- 네비게이션 -->
-<nav class="navbar navbar-expand-lg navbar-custom">
-  <div class="container">
-    <a class="navbar-brand" href="/">FlowBreath</a>
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="/resources">자료</a></li>
-        <li class="nav-item"><a class="nav-link active" href="/diary">수련 일기</a></li>
-        <li class="nav-item"><a class="nav-link" href="/tags">태그</a></li>
-        <li class="nav-item"><a class="nav-link" href="/login">로그인</a></li>
-        <li class="nav-item"><a class="nav-link" href="/register">회원가입</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
-
 <!-- 중앙 카드형 폼 -->
 <div class="container">
   <div class="center-card card mt-5">
