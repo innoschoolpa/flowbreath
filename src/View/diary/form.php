@@ -205,12 +205,43 @@ document.addEventListener('DOMContentLoaded', function() {
             height: 400,
             menubar: false,
             language: 'ko_KR',
+            forced_root_block: 'p',
+            force_br_newlines: false,
+            force_p_newlines: true,
+            paste_as_text: false,
+            paste_enable_default_filters: true,
+            paste_word_valid_elements: 'b,strong,i,em,h1,h2,h3,h4,h5,h6',
+            paste_retain_style_properties: 'none',
+            paste_remove_styles_if_webkit: true,
+            paste_remove_styles: true,
+            paste_auto_cleanup_on_paste: true,
+            paste_convert_word_fake_lists: false,
             setup: function(editor) {
                 editor.on('init', function() {
                     // 다크모드 본문 스타일 적용
                     editor.getDoc().body.style.backgroundColor = '#181c2f';
                     editor.getDoc().body.style.color = '#fff';
                     editor.getDoc().body.style.fontFamily = 'inherit';
+                });
+                
+                // 내용 변경 시 불필요한 줄바꿈 제거
+                editor.on('BeforeSetContent', function(e) {
+                    if (e.content) {
+                        // 빈 p 태그나 &nbsp; 제거
+                        e.content = e.content.replace(/<p>\s*&nbsp;\s*<\/p>/gi, '');
+                        e.content = e.content.replace(/<p>\s*<\/p>/gi, '');
+                    }
+                });
+                
+                // 내용 가져올 때 정리
+                editor.on('GetContent', function(e) {
+                    if (e.content) {
+                        // 연속된 빈 줄 제거
+                        e.content = e.content.replace(/(<p>\s*<\/p>)+/gi, '<p></p>');
+                        // 시작과 끝의 불필요한 태그 제거
+                        e.content = e.content.replace(/^(<p>\s*<\/p>)+/gi, '');
+                        e.content = e.content.replace(/(<p>\s*<\/p>)+$/gi, '');
+                    }
                 });
             },
             content_style: `body { background-color: #181c2f !important; color: #fff !important; font-family: inherit; }
